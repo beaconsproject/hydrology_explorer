@@ -1,0 +1,11 @@
+name: beaconshydro_explorer
+title:
+username:
+account: beaconsproject
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9099286
+bundleId: 7212045
+url: https://beaconsproject.shinyapps.io/beaconshydro_explorer/
+when: 1683931877.11549
+lastSyncTime: 1683931877.1155
