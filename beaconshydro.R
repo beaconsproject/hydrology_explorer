@@ -253,7 +253,6 @@ get_upstream_catchments <- function(cons_sf, cons_id, catchments_sf){
 
   up_agg_list <- list()
   for(col_id in colnames(cons_catchnums_tab)){
-
     # get list of catchments
     agg_catchments <- get_catch_list(col_id, cons_catchnums_tab)
     up_agg <- getAggregationUpstreamCatchments_R(catchments_sf, agg_catchments)

@@ -170,20 +170,20 @@ server = function(input, output) {
       file <- input$upload_dist$datapath
       ext <- tools::file_ext(file)
       if(ext == "gpkg"){
-        aoi <- st_read(file, 'aoi', quiet = TRUE) 
+        planreg <- st_read(file, 'aoi', quiet = TRUE) 
       } else{
         showNotification("Wrong file type, must be geopackage (.gpkg)", type = "error") 
       }
     }else if(input$select_fda != "Select an FDA"){
       if(input$select_fda != "Full extent"){
-        aoi <- fda()
+        planreg <- fda()
       }else{
-        aoi <- bnd()
+        planreg <- bnd()
       }
     }else{
-      aoi <- NULL
+      planreg <- NULL
     }
-    return(aoi)
+    return(planreg)
   })
 
   #stream
@@ -227,16 +227,35 @@ server = function(input, output) {
   ################################################################################################
   # Upload AOI and zoom in to its extent
   ################################################################################################
-  aoi_sf <- eventReactive(input$upload_poly, {
-    file <- input$upload_poly$datapath
-    ext <- tools::file_ext(file)
-    if(ext == "gpkg"){
-      aoi <- st_read(file, 'aoi') #%>% st_transform(4326)
+  #aoi_sf <- eventReactive(input$upload_poly, {
+  #  file <- input$upload_poly$datapath
+  #  ext <- tools::file_ext(file)
+  #  if(ext == "gpkg"){
+  #    aoi <- st_read(file, 'aoi') #%>% st_transform(4326)
+  #  }else{
+  #    showNotification("Wrong file type, must be geopackage (.gpkg)", type = "error")
+   # }
+  #})
+  aoi_sf <- reactive({
+    if(!is.null(input$upload_poly)){
+      file <- input$upload_poly$datapath
+      ext <- tools::file_ext(file)
+      if(ext == "gpkg"){
+        aoi <- st_read(file, 'aoi') #%>% st_transform(4326)
+      }else{
+        showNotification("Wrong file type, must be geopackage (.gpkg)", type = "error")
+      }
+    }else if(input$gen_aoi_button>0){
+      req(length(selected_catchments$catchnum) > 0)
+      catch_sf <- catchment()[catchment()$CATCHNUM %in% selected_catchments$catchnum,]
+      aoi <- st_union(catch_sf)
     }else{
-      showNotification("Wrong file type, must be geopackage (.gpkg)", type = "error")
+      aoi <- NULL
     }
+    return(aoi)
   })
-
+  
+  
   catch_aoi <- reactive({
     if(!is.null(input$upload_poly)){
       aoi <-  aoi_sf()
@@ -260,6 +279,7 @@ server = function(input, output) {
   catch_up <- eventReactive(input$goButtonDown, {
     # Generate upstream catchments
     aoi_sf <- aoi_sf() %>%
+      st_as_sf() %>%
       mutate(AOI_ID = "AOI_01")
     upstream_list <- get_upstream_catchments(aoi_sf, "AOI_ID", catchment())
     upstream_area <- dissolve_catchments_from_table(catchments(), upstream_list, "AOI_ID")
@@ -289,6 +309,7 @@ server = function(input, output) {
   ####################################################################################################
   catch_stem <- eventReactive(input$goButtonDown, {
     aoi_sf <- aoi_sf() %>%
+      st_as_sf() %>%
       mutate(AOI_ID = "AOI_01")
     # downstream stem polygon
     downstream_stem_list <- get_downstream_catchments(aoi_sf, "AOI_ID", catchment())
@@ -314,6 +335,7 @@ server = function(input, output) {
     # downstream  polygon
     # Extract upstream catchment along the downstream stem
     aoi_sf <- aoi_sf() %>%
+      st_as_sf() %>%
       mutate(AOI_ID = "AOI_01")
     downstream_stem_list <- get_downstream_catchments(aoi_sf, "AOI_ID", catchment())
     catch_stem <- extract_catchments_from_table(catchment(), downstream_stem_list, as.character(colnames(downstream_stem_list)), "AOI_ID")
@@ -578,7 +600,7 @@ server = function(input, output) {
                          baseGroups=c("Esri.NatGeoWorldMap", "Esri.WorldImagery"),
                          overlayGroups = c("Data extent", "Planning region", "AOI", "Catchments", "Streams","Footprint", "Upstream", "Downstream", "Downstream stem"),
                          options = layersControlOptions(collapsed = FALSE)) %>%
-        hideGroup(c("Downstream", "Downstream stem"))
+        hideGroup(c("Downstream stem"))
     } 
   })
 
@@ -633,7 +655,7 @@ server = function(input, output) {
       x$Percent[x$Variables=="Upstream mean AWI*"] <- round(((sum(catch_map$Area_total)-sum(catch_map$area_dist))/sum(catch_map$Area_total))*100,1)
       x$Percent[x$Variables=="Downstream stem mean AWI*"] <- round(((sum(downstream_stem_int$Area_total)-sum(downstream_stem_int$area_dist))/sum(downstream_stem_int$Area_total))*100,1)
     }else{
-      req(planreg_sf())
+      req(aoi_sf())
       x <- tibble(Variables=c("Planning region",
                               "AOI",
                               "Percent AOI in planning region" ,
