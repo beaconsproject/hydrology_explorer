@@ -5,5 +5,5 @@ account: beaconsproject
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9099286
-bundleId: 7744948
+bundleId: 7801247
 url: https://beaconsproject.shinyapps.io/beaconshydro_explorer/
