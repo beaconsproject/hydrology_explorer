@@ -1,5 +1,5 @@
 
-# beaconshydro <img src="man/figures/logo.png" align="right" alt="" width="120" />
+# beaconshydro (under-development) <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
 <!-- badges: start -->
 <!-- badges: end -->
