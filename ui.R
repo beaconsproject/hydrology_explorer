@@ -1,91 +1,237 @@
-ui = dashboardPage(skin="blue",
-                   dashboardHeader(title = div("Hydrology Explorer", 
-                                               style = "position: relative;  display:right-align;"
-                   ), 
-                   #titleWidth=300,
-                   tags$li(
-                     actionButton("reset_button", 
-                                  label = "Reset AOI", 
-                                  icon = icon("arrows-rotate"),
-                                  style = "background-color: #FF0000; color: white; border: none; width: 100px; height: 50px; font-size: 16px;"),
-                     class = "dropdown",
-                     style = "background-color: #FF0000; color: white; border: none; width: 100px; height: 50px; font-size: 16px;")
+ui = dashboardPage(skin="black",
+                   dashboardHeader(title = tags$div(
+                     tags$img(
+                       src = "logoblanc.png",  # Replace with your logo file name
+                       height = "50px",   # Adjust the height of the logo
+                       style = "margin-right: 10px;"  # Add some spacing around the logo
+                     ),"BEACONs Hydro Explorer"), titleWidth = 400,
+                     # Add Reload Button Next to Sidebar Toggle
+                     tags$li(
+                       class = "dropdown",
+                       actionButton(
+                         "reload_btn",
+                         label = "Reload",
+                         icon = icon("refresh"),
+                         style = "color: black; background-color: orange; border: none; font-size: 16px;"
+                       ),
+                       style = "position: absolute; left: 50px; top: 10px;"  # Adjust margin for placement next to the toggle
+                     ),
+                     tags$li(
+                       class = "dropdown",  # Required for dropdown functionality
+                       dropdownMenu(
+                         type = "tasks", 
+                         badgeStatus = NULL,
+                         icon = icon("life-ring"),  # Life-ring icon triggering dropdown
+                         headerText = "",  # No header text in dropdown
+                         menuItem("Website", href = "https://beaconsproject.ualberta.ca/", icon = icon("globe")),
+                         menuItem("GitHub", href = "https://github.com/beaconsproject/", icon = icon("github")),
+                         menuItem("Contact us", href = "mailto: beacons@ualberta.ca", icon = icon("address-book"))
+                       ),
+                       # Plain Text "About Us" Positioned Next to Dropdown
+                       tags$span(
+                         "About Us", 
+                         style = "font-size: 16px; position: relative; top: 15px; right: 10px; white-space: nowrap; color: white;"
+                       )
+                     )
                    ),
-                   #dashboardHeader(title = "Hydrology Explorer"),
+                   
                    dashboardSidebar(
-                     width = 275,
+                     width = 300,
                      sidebarMenu(id = "tabs",
                                  menuItem("Overview", tabName = "overview", icon = icon("th")),
-                                 menuItem("Explorer", tabName = "explorer", icon = icon("th"), startExpanded = TRUE,
-                                          menuSubItem("Select study area", tabName = "selectSA", icon = icon("th")),                
-                                          menuSubItem("Select AOI", tabName = "selectAOI", icon = icon("th")),
-                                          menuSubItem("Generate upstream and downstream", tabName = "upstream", icon = icon("arrows-rotate"))),
-                                 menuItem("Download results", tabName = "download", icon = icon("th")),
-                                 hr(),
+                                 menuItem("Set input parameters", tabName = "tabUpload", icon = icon("th"), startExpanded = FALSE),
+                                 menuItem("Add display elements (OPTIONAL)", tabName = "addLayers", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
+                                 menuItem("Select AOI", tabName = "selectAOI", icon = icon(name = "fas fa-draw-polygon", lib = "font-awesome")),
+                                 menuItem("Generate upstream and downstream", tabName = "upstream", icon = icon(name = "fas fa-map", lib = "font-awesome")),
+                                 menuItem("Download results", tabName = "download", icon = icon(name = "fas fa-download", lib = "font-awesome")),
                                  hr()
                      ),
                      conditionalPanel(
-                       condition="input.tabs=='selectSA'",
-                       HTML("<h4>&nbsp; &nbsp; Specify study area</h4>"),
-                       selectInput("select_wsd", label= div(style = "font-size:13px","Use watershed unit"), choices=c("Please select", hydrounit_list), selected="Select an FDA"),
-                       fileInput(inputId = "upload_dist", label = div(style = "font-size:13px", "Or upload a file. Geopackage (gpkg) is the supported format. 
-       Use output from Disturbance Explorer or a custom gpkg.  Study area layer must be named “studyarea”. 
-       If the gpkg does not include intactness (“intactness”) and/or human footprint (“footprint”) layers, 
-       alternative options are provided below."), multiple = FALSE, accept = ".gpkg"),
-                       radioButtons("intactSource", "Select source for catchment intactness:",
-                                    choices = list("Value in catchment dataset" = "intcatch", 
-                                                   "Intactness layer in geopackage (gpkg)" = "intgpkg",
-                                                   "Upload intactness or footprint layer" = "intupload"),
-                                    selected = character(0), 
-                                    inline = FALSE),
+                       condition="input.tabs=='tabUpload'",
+                       div(style = "margin-top: -20px;", radioButtons("selectsource", "Select source dataset",
+                                                                      choices = list("Use demo dataset" = "usedemo", 
+                                                                                     "Upload spatial dataset" = "usedata"),
+                                                                      selected = character(0), 
+                                                                      inline = FALSE)),
+                       conditionalPanel(
+                         condition = "input.selectsource == 'usedata'",
+                         radioButtons("upload_type", "How do you want to upload your data?",
+                                      choices = c("Upload individual Shapefile layers" = "layers",
+                                                  "Upload CSV with file paths" = "csv_file",
+                                                  "Upload GeoPackage with layers" = "gpkg"), selected = character(0))
+                       ),
+                       # Individual layers
+                       conditionalPanel(
+                         condition = "input.selectsource == 'usedata' && input.upload_type == 'layers'",
+                         tagList(
+                           div(style = "margin-top: -10px;", fileInput("upload_sa", "Study area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
+                           div(style = "margin-top: -30px;", fileInput("upload_stream", "Streams dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
+                           div(style = "margin-top: -30px;", fileInput("upload_catch", "Catchments dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
+                         )
+                       ),
+                       
+                       # CSV
+                       conditionalPanel(
+                         condition = "input.selectsource == 'usedata' && input.upload_type == 'csv_file'",
+                         fileInput("csv_paths", "Upload CSV with file paths", accept = ".csv")
+                       ),
+                       
+                       # GeoPackage
+                       conditionalPanel(
+                         condition = "input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
+                         fileInput("gpkg_file", "Upload GeoPackage (.gpkg)", accept = ".gpkg")
+                       ),
+                       conditionalPanel(
+                         condition = "output.gpkgReady == true && input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
+                         div(style = "margin-top: -10px;", selectInput("sa_layer", "Study area", choices = NULL,  multiple = FALSE)),
+                         div(style = "margin-top: -20px;", selectInput("catch_layer", "Catchments", choices = NULL, multiple = FALSE)),
+                         div(style = "margin-top: -20px;", selectInput("streams_layer", "Streams", choices = NULL,  multiple = FALSE))
+                       ),
+                       actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
+                       
+                       conditionalPanel(
+                         condition = "input.previewLayers > 0",
+                         div(style = "margin: 15px; font-size:15px; font-weight: bold", "Set intactness"),
+                         div(style = "margin-left: 12px; margin-top: -10px; font-size:12px;", "Intactness refers to natural areas that have not been subject to industrial-scale development or disturbance."),
+                         radioButtons("intactSource", "Select source for catchment intactness:",
+                                      choices = list("Value in catchment dataset" = "intcatch", 
+                                                     "Upload intactness layer" = "intupload"),
+                                      selected = character(0), 
+                                      inline = FALSE)
+                       ),
+                       # Intactness
                        conditionalPanel(
                          condition = "input.intactSource == 'intcatch'",
-                         selectInput("intactColumnName", "Catchment dataset - select intactness attribute", choices = NULL)
+                         selectInput("intactColumnName", "Catchment dataset - select intactness attribute", choices = NULL, selected = "IntactPB")
                        ),
                        conditionalPanel(
                          condition = "input.intactSource == 'intupload'",
-                         radioButtons("intacttype", "Select the type of custom layer:",
-                                      choices = list("Intactness map" = "intmap", 
-                                                     "Footprint map" = "footmap"),
-                                      selected = character(0),
+                         radioButtons("intactformat", "Select intactness file format:",
+                                      choices = list("Shapefile" = "intshp", 
+                                                     "GeoPackage" = "intgpkg"),
+                                      selected = character(0), 
                                       inline = TRUE),
-                         fileInput("shp_intact", "Upload a Shapefile", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')),
+                         fileInput("upload_intact", "Upload undisturbed layer", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))
+                       ), 
+                       conditionalPanel(
+                         condition = "input.intactSource == 'intupload' && input.intactformat == 'intgpkg'",
+                         div(style = "margin-top: -40px;", checkboxInput("distExplo", label = "Undisturbed layer is part of Disturbance Explorer output", value = F)),
+                         div(style = "margin-top: -20px;", selectInput("intactLayer", "Select intactness layer", choices = NULL,  multiple = FALSE))
                        ),
-                       actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:200px"),
+                       conditionalPanel(
+                         condition = "input.intactSource == 'intupload' || input.intactSource == 'intcatch'",
+                         actionButton("confIntact", "Confirm", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
+                       ),
                        
                      ),
+                     # Add extra layers
+                     conditionalPanel(
+                       condition="input.tabs=='addLayers'",
+                       radioButtons("extraupload", "Select source for extra layers to be displayed:",
+                                    choices = list("Shapefile" = "extrashp", 
+                                                   "GeoPackage" = "extragpkg"),
+                                    selected = character(0), 
+                                    inline = TRUE)
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs=='addLayers' && input.extraupload == 'extrashp'",
+                       div(style = "margin-top: -10px;",fileInput(inputId = "display1",   label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#663300; margin-right:8px; border:1px solid #000;"></span>Select layer 1'),
+                                                                  multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile")),
+                       div(style = "margin-top: -30px;",fileInput(inputId = "display2", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#330066; margin-right:8px; border:1px solid #000;"></span>Select layer 2'),
+                                                                  multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile")),
+                       div(style = "margin-top: -30px;",fileInput(inputId = "display3", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#003333; margin-right:8px; border:1px solid #000;"></span>Select layer 3'),
+                                                                  multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile"))
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs=='addLayers' && input.extraupload == 'extragpkg'",
+                       fileInput(inputId = "display4", label = HTML("<h5><b>OPTIONAL - </b>Upload a GeoPackage that contains layers to be displayed on the map.</h5>"),
+                                 multiple = FALSE, accept = ".gpkg", placeholder = "Select a GeoPackage"),
+                       div(style = "margin-top: -10px;", selectInput("display4a", "Select layer 1", choices = NULL)),
+                       div(style = "margin-top: -20px;", selectInput("display4b", "Select layer 2", choices = NULL)),
+                       div(style = "margin-top: -20px;", selectInput("display4c", "Select layer 3", choices = NULL))
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs == 'addLayers'",
+                       br(),
+                       hr(),
+                       br(),
+                       actionButton("confExtra", "Confirm", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
+                     ),
+                     # Select AOI
                      conditionalPanel(
                        condition="input.tabs=='selectAOI'",
-                       HTML("<h4>&nbsp; &nbsp; Choose Area of Interest (AOI) from &nbsp; &nbsp; one of the two options:</h4>"),
-                       tags$br(),
-                       fileInput(inputId = "upload_poly", label = div(style = "font-size:13px", "OPTION 1 - Upload polygon(s) (gpkg) to select underlying catchments"), multiple = FALSE, accept = ".gpkg"),
-                       uiOutput("conditional_ui"),
-                       hr(),
-                       div(style = "margin: 15px; font-size:13px; font-weight: bold", "OPTION 2 - Select a set of catchments on the map"),
-                       tags$br(),
-                       tags$br(),
-                       tags$br(),
-                       actionButton(inputId = "gen_aoi_button", label = div(style = "font-size:13px;background-color:gey;color: black",HTML(" Confirm AOI boundary (Analysis AOI)")), icon = icon(name = "check", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
-                       tags$br(),
-                       tags$br()
-                     ), 
+                       radioButtons("typeAOI", "Set an Area of Interest (AOI):",
+                                    choices = list("Upload an AOI" = "uploadAOI", 
+                                                   "Select a set of catchments on the map" = "catchAOI"),
+                                    selected = character(0), 
+                                    inline = FALSE),
+                     ),
+                     conditionalPanel(
+                       condition="input.tabs=='selectAOI' && input.typeAOI == 'uploadAOI'",
+                       radioButtons("sourceAOI", "Select file format",
+                                    choices = list("ShapeFile" = "shpAOI", 
+                                                   "GeoPackage" = "gpkgAOI"),
+                                    selected = character(0), 
+                                    inline = TRUE)
+                     ),
+                     # AOI upload
+                     conditionalPanel(
+                       condition = "input.tabs=='selectAOI' && input.sourceAOI",
+                       div(style = "margin-top: -20px;", fileInput("upload_aoi", "", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg')))
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs=='selectAOI' && input.sourceAOI == 'gpkgAOI'",
+                       div(style = "margin-top: -20px;", selectInput("aoiLayer", "Select AOI layer", choices = NULL,  multiple = FALSE))
+                     ),
+                     conditionalPanel(
+                       condition = "input.tabs=='selectAOI' && input.sourceAOI",
+                       div(style = "margin-top: -20px;", checkboxInput("editAOI", label = "Enable studyarea boundary editing using catchment", value = F))
+                     ),
+                     conditionalPanel(
+                       condition = "input.editAOI == true",
+                       div(style = "margin: 10px; font-size: 12px;",
+                           "Intersecting catchments are highlighted on the map. Please select or unselect catchments to edit your studyarea.")
+                     ),
+                     conditionalPanel(
+                       condition=" input.tabs=='selectAOI' && input.typeAOI == 'uploadAOI' && input.sourceAOI || input.tabs=='selectAOI' && input.typeAOI == 'catchAOI'",
+                       br(),
+                       actionButton(inputId = "confAOI", label = div(style = "font-size:13px;background-color:gey;color: black",HTML(" Confirm AOI boundary (Analysis AOI)")), icon = icon(name = "check", lib = "font-awesome"), class = "btn-warning", style="width:250px")
+                     ),
+                     # tab upstream
                      conditionalPanel(
                        condition="input.tabs=='upstream'",
-                       actionButton("goButtonDown", label  = div(style = "font-size:13px;background-color:gey;color: black", HTML("View upstream and
-                    <br /> downstream intactness")), icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:200px")
+                       actionButton("confAnalysis", label  = div(style = "font-size:13px;background-color:gey;color: black", HTML("View upstream and
+                    <br /> downstream areas")), icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
                      ),     
                      conditionalPanel(
                        condition="input.tabs=='download'",
-                       HTML("<h5>&nbsp; &nbsp; Specify EPSG <a href='https://spatialreference.org/'>spatial reference system</a> for <br> &nbsp; &nbsp; gpkg.</h5>"),
-                       HTML("<h5>&nbsp; &nbsp; (Default: NAD83 Canada Albers)</h5>"),
-                       textInput("textproj", "", value = "102001"),
                        tags$style(type="text/css", "#downloadData {background-color:gey;color: black}"),
                        div(style="position:relative; left:calc(10%);", downloadButton("downloadData", "Download results"))
                      )
-                   ),
+                   ),     
                    dashboardBody(
                      useShinyjs(),
-                     tags$head(tags$style(".skin-blue .sidebar a { color: #8a8a8a; }")),
+                     tags$head(
+                       # Link to custom CSS for the orange theme
+                       tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css"),
+                       tags$style(HTML("
+      .leaflet-container {
+        background: white;
+      }
+    ")),
+                       tags$style(HTML("
+    .main-sidebar {
+      overflow-y: auto;      /* enable vertical scroll */
+      overflow-x: hidden;    /* prevent horizontal scroll */
+      max-height: 100vh;     /* occupy full viewport height */
+      width: 300px !important; /* match your sidebar width */
+      position: fixed;       /* keep it fixed */
+    }
+    .content-wrapper, .right-side {
+      margin-left: 300px;    /* same as sidebar width */
+    }
+  "))
+                     ),
                      tabItems(
                        tabItem(tabName="overview",
                                fluidRow(
@@ -96,26 +242,20 @@ ui = dashboardPage(skin="blue",
                                  ),
                                )
                        ),
-                       tabItem(tabName="selectSA",
+                       tabItem(tabName="tabUpload",
                                fluidRow(
-                                 tabBox(id = "three", width="8",
+                                 tabBox(id = "mapid", width="8",
                                         tabPanel(HTML("<b>Mapview</b>"),
                                                  leafletOutput("map", height = 750) %>% withSpinner()
                                         )
                                  ),
-                                 #tabBox(id = "two", width="4", title = HTML("<h4>Area Intactness and Hydrology statistics</h4>"),
-                                 tabBox(id = "two", width="4",
+                                 tabBox(id = "stat", width="4",
                                         tabsetPanel(id="tabset1",
                                                     tabPanel(HTML("<h4>Area Intactness and Hydrology statistics</h4>"), tableOutput("tab1"),
                                                              "*Catchment Area Weighted Intactness",)
                                         )
                                  ),
-                                 tabBox(id = "three", width="4",  
-                                        tabsetPanel(id="tabset2",
-                                                    tabPanel(HTML("<h4>Dendritic Connectivity Index (DCI)</h4>"), tableOutput("tabDCI")),
-                                                    tabPanel(HTML("<h4>Fire statistics</h4>"), tableOutput("tabFires"))
-                                        )
-                                 )
+                                 uiOutput("dynamicTabs")
                                )
                        )
                      )

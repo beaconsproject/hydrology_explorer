@@ -40,11 +40,10 @@ vignettes/*.pdf
 .Renviron
 
 # pkgdown site
-docs/
-www/
-archived/
+archive/
 # translation temp files
 po/*~
 
 # RStudio Connect folder
 rsconnect/
+test/
