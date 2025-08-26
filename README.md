@@ -1,9 +1,9 @@
 # hydrology_explorer
 
-Repository for the core development and release versions of the hydrology_explorer Shiny application.
+Repository for the core development and release versions of the BEACONs hydrology_explorer Shiny application.
 
-To access the code for regional versions:
+Regional application can be access using the link below:
 
- Quebec : <a href="https://github.com/beaconsproject/beaconshydro_explorer_qc" target="_blank">Quebec hydrology explorer</a>
+  <a href="https://github.com/beaconsproject/beaconshydro_explorer_qc" target="_blank">Quebec hydrology explorer</a>
  
- KDTT : <a href="https://github.com/beaconsproject/beaconshydro_explorer_kdtt" target="_blank">KDTT hydrology explorer</a> 
+  <a href="https://github.com/beaconsproject/beaconshydro_explorer_kdtt" target="_blank">KDTT hydrology explorer</a> 
