@@ -237,7 +237,7 @@ ui = dashboardPage(skin="black",
                                fluidRow(
                                  tabBox(id = "one", width="8",
                                         tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
-                                        tabPanel(HTML("Quick start"), includeMarkdown("docs/quick_start.md")),
+                                        tabPanel(HTML("User guide"), includeMarkdown("docs/user_guide.md")),
                                         tabPanel(HTML("Dataset"), includeMarkdown("docs/datasets.md"))
                                  ),
                                )
@@ -247,6 +247,29 @@ ui = dashboardPage(skin="black",
                                  tabBox(id = "mapid", width="8",
                                         tabPanel(HTML("<b>Mapview</b>"),
                                                  leafletOutput("map", height = 750) %>% withSpinner()
+                                        ),
+                                        tabPanel("Guidance",
+                                                 # Dynamically update the content of Guidance based on selected tab
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'tabUpload'",
+                                                   includeMarkdown("./Rmd/upload_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'addLayers'",
+                                                   includeMarkdown("./Rmd/addLayers_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'selectAOI'",
+                                                   includeMarkdown("./Rmd/selectAOI_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'upstream'",
+                                                   includeMarkdown("./Rmd/upstream_doc.md")
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "input.tabs == 'download'",
+                                                   includeMarkdown("./Rmd/download_doc.md")
+                                                 )
                                         )
                                  ),
                                  tabBox(id = "stat", width="4",
