@@ -884,7 +884,6 @@ server = function(input, output, session) {
   ####################################################################################################
   catch_stem <- eventReactive(input$confAnalysis, {
     req(toListen())
-    browser()
     # downstream stem polygon
     downstream_stem_list <- get_downstream_catchments(analysis_aoi(), "AOI_ID", catchment_pr())
     if(nrow(downstream_stem_list)==0)

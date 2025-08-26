@@ -1,21 +1,31 @@
-required_packages <- c(
-  "sf", "dplyr", "terra", "raster", "shiny", "shinydashboard",
-  "leaflet", "shinyjs", "shinyWidgets", "leafem", "shinycssloaders", 
-  "rhandsontable", "tibble", "markdown"
-)
 #required_packages <- c(
-#  "shiny", "shinydashboard", "shinyjs", "shinyWidgets", "shinycssloaders", 
-#  "leaflet", "leaflet.extras2", "leafem", "htmlwidgets", 
-#  "sf", "terra", "raster", "dplyr", "tibble", "rhandsontable", "markdown"
+#  "sf", "dplyr", "terra", "raster", "shiny", "shinydashboard",
+#  "leaflet", "shinyjs", "shinyWidgets", "leafem", "shinycssloaders", 
+#  "rhandsontable", "tibble", "markdown"
 #)
+
 # Install any missing packages
-missing_packages <- required_packages[!(required_packages %in% installed.packages()[, "Package"])]
-if (length(missing_packages) > 0) {
-  install.packages(missing_packages)
-}
+#missing_packages <- required_packages[!(required_packages %in% installed.packages()[, "Package"])]
+#if (length(missing_packages) > 0) {
+#  install.packages(missing_packages)
+#}
 
 # Load the packages
-invisible(lapply(required_packages, library, character.only = TRUE))
+#invisible(lapply(required_packages, library, character.only = TRUE))
+library(shiny)
+library(shinydashboard)
+library(dplyr)
+library(sf)
+library(terra)
+library(raster)
+library(leaflet)
+library(shinyjs)
+library(shinyWidgets)
+library(leafem)
+library(shinycssloaders)
+library(rhandsontable)
+library(tibble)
+library(markdown)
 
 source("./R/beaconshydro.R")
 source("./R/utils.R")

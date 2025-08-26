@@ -844,7 +844,6 @@ server = function(input, output, session) {
   # Render the initial map
   output$map <- renderLeaflet({
     # Render initial map
-    browser()
     map <- leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
       fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
       addMapPane(name = "ground", zIndex=380) %>%
