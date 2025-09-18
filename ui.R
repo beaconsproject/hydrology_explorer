@@ -38,7 +38,7 @@ ui = dashboardPage(skin="black",
                    dashboardSidebar(
                      width = 300,
                      sidebarMenu(id = "tabs",
-                                 menuItem("Overview", tabName = "overview", icon = icon("th")),
+                                 menuItem("Welcome", tabName = "overview", icon = icon("th")),
                                  menuItem("Set input parameters", tabName = "tabUpload", icon = icon("th"), startExpanded = FALSE),
                                  menuItem("Add display elements (OPTIONAL)", tabName = "addLayers", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
                                  menuItem("Select AOI", tabName = "selectAOI", icon = icon(name = "fas fa-draw-polygon", lib = "font-awesome")),
@@ -185,7 +185,7 @@ ui = dashboardPage(skin="black",
                      ),
                      conditionalPanel(
                        condition = "input.tabs=='selectAOI' && input.sourceAOI",
-                       div(style = "margin-top: -20px;", checkboxInput("editAOI", label = "Enable studyarea boundary editing using catchment", value = F))
+                       div(style = "margin-top: -20px;", checkboxInput("editAOI", label = "Enable AOI boundary editing using catchment", value = F))
                      ),
                      conditionalPanel(
                        condition = "input.editAOI == true",
@@ -235,11 +235,19 @@ ui = dashboardPage(skin="black",
                      tabItems(
                        tabItem(tabName="overview",
                                fluidRow(
-                                 tabBox(id = "one", width="8",
-                                        tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
-                                        tabPanel(HTML("User guide"), includeMarkdown("docs/user_guide.md")),
-                                        tabPanel(HTML("Dataset"), includeMarkdown("docs/datasets.md"))
-                                 ),
+                                 column(width = 10,  # Adjusted from 6 to 8 for better alignment
+                                        tabBox(id = "one", width="8",
+                                               tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
+                                               tabPanel(HTML("User guide"), includeMarkdown("docs/user_guide.md")),
+                                               tabPanel(HTML("Dataset requirements"), includeMarkdown("docs/datasets.md"))
+                                               )
+                               ),
+                               absolutePanel(
+                                 right = 0, top = 0, width = 250, height = "100%",
+                                 #style = "background-color: white; padding: 0px; overflow-y: auto; z-index: 1000;",
+                                 style = "background-color: white; padding: 0;margin: 0;border: none; right: 0;overflow: hidden;z-index: 1000;",
+                                 tags$img(src = "intact.jpg",width = "100%", style = "display: block;")
+                                 )
                                )
                        ),
                        tabItem(tabName="tabUpload",
@@ -248,27 +256,27 @@ ui = dashboardPage(skin="black",
                                         tabPanel(HTML("<b>Mapview</b>"),
                                                  leafletOutput("map", height = 750) %>% withSpinner()
                                         ),
-                                        tabPanel("Guidance",
+                                        tabPanel("User Guide",
                                                  # Dynamically update the content of Guidance based on selected tab
                                                  conditionalPanel(
                                                    condition = "input.tabs == 'tabUpload'",
-                                                   includeMarkdown("./Rmd/upload_doc.md")
+                                                   includeMarkdown("./docs/upload_doc.md")
                                                  ),
                                                  conditionalPanel(
                                                    condition = "input.tabs == 'addLayers'",
-                                                   includeMarkdown("./Rmd/addLayers_doc.md")
+                                                   includeMarkdown("./docs/addLayers_doc.md")
                                                  ),
                                                  conditionalPanel(
                                                    condition = "input.tabs == 'selectAOI'",
-                                                   includeMarkdown("./Rmd/selectAOI_doc.md")
+                                                   includeMarkdown("./docs/selectAOI_doc.md")
                                                  ),
                                                  conditionalPanel(
                                                    condition = "input.tabs == 'upstream'",
-                                                   includeMarkdown("./Rmd/upstream_doc.md")
+                                                   includeMarkdown("./docs/upstream_doc.md")
                                                  ),
                                                  conditionalPanel(
                                                    condition = "input.tabs == 'download'",
-                                                   includeMarkdown("./Rmd/download_doc.md")
+                                                   includeMarkdown("./docs/download_doc.md")
                                                  )
                                         )
                                  ),

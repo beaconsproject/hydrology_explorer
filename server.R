@@ -23,7 +23,28 @@ server = function(input, output, session) {
     session$reload()
   })
   ################################################################################################
-  ####################################################################################################
+  ######################################################
+  ##  SERVE USER GUIDE SECTION
+  ######################################################
+  output$guide_ui <- renderUI({
+    req(input$tabs)  # 'sidebar' is the id of your sidebarMenu
+    
+    guide_file <- switch(input$tabs,
+                         "tabUpload" = "docs/upload_doc.md",
+                         "addLayers" = "docs/addLayers_doc.md",
+                         "selectAOI" = "docs/selectAOI_doc.md",
+                         "upstream" = "docs/upstream_doc.md",
+                         "download" = "docs/download_doc.md",
+                         NULL
+    )
+    
+    if (!is.null(guide_file) && file.exists(guide_file)) {
+      includeMarkdown(guide_file)
+    } else {
+      tags$p("No user guide available for this section.")
+    }
+  })
+  ################################################################################################
   # Set reactiveValues
   selected_catchments <- reactiveValues( # this is the list of currently selected catchments
     catchnum = c()
@@ -157,18 +178,47 @@ server = function(input, output, session) {
   # Observe on tabs
   ################################################################################################
   observe({
+    req(input$tabs == "addLayers")  # Trigger when "Select AOI" is active
+    
+    # Check if intactSource is unset or NULL
+    if (input$previewLayers == 0) {
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please set input parameters prior to upload additional elements.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
+  observe({
     req(input$tabs == "selectAOI")  # Trigger when "Select AOI" is active
     
     # Check if intactSource is unset or NULL
     if (is.null(input$intactSource) || input$intactSource == "") {
       showModal(modalDialog(
-        title = "Missing Input",
+        title = "Missing input parameters",
         "Please set the Intactness Source before selecting an Area of Interest (AOI).",
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
     }
   })
+  
+  observe({
+    req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
+    
+    # Check if intactSource is unset or NULL
+    if (input$confAOI ==0 || input$confIntact ==0 || input$previewLayers == 0) {
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please confirm input parameters and Area of Interest (AOI) in previous step.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
   ####################################################################################################
   # READ SPATIAL DATA
   ####################################################################################################
@@ -480,7 +530,7 @@ server = function(input, output, session) {
   display1_sf <- eventReactive(input$confExtra,{
     req(input$confExtra)  
     i <- NULL
-    
+    #browser()
     if(input$extraupload == "extrashp"){
       if(!is.null(input$display1)){
         req(input$display1)
@@ -488,7 +538,8 @@ server = function(input, output, session) {
           st_zm(drop = TRUE, what = "ZM")  %>%
           st_make_valid()
         
-        name <- substr(attr(i, "name"), 1, 25)
+        shp_file <- input$display1$name[grepl("\\.shp$", input$display1$name)][1]
+        name <- tools::file_path_sans_ext(shp_file)
         display1_name(name)
         
         geom_type <- unique(sf::st_geometry_type(i))
@@ -523,7 +574,8 @@ server = function(input, output, session) {
           st_zm(drop = TRUE, what = "ZM")  %>%
           st_make_valid()
         
-        name <- substr(attr(i, "name"), 1, 25)
+        shp_file <- input$display2$name[grepl("\\.shp$", input$display2$name)][1]
+        name <- tools::file_path_sans_ext(shp_file)
         display2_name(name)
         
         geom_type <- unique(sf::st_geometry_type(i))
@@ -558,7 +610,8 @@ server = function(input, output, session) {
           st_zm(drop = TRUE, what = "ZM")  %>%
           st_make_valid()
         
-        name <- substr(attr(i, "name"), 1, 25)
+        shp_file <- input$display3$name[grepl("\\.shp$", input$display3$name)][1]
+        name <- tools::file_path_sans_ext(shp_file)
         display3_name(name)
         
         geom_type <- unique(sf::st_geometry_type(i))
@@ -753,7 +806,6 @@ server = function(input, output, session) {
   
   #Catchments within AOI
   catch_aoi <- reactive({
-    #req(input$editAOI)
     catch_pr <- st_make_valid(catchment_pr())
     if(!is.null(input$upload_aoi)){
       catch_sf <- st_filter(catch_pr, aoi_sf(), .predicate = st_intersects)
@@ -810,21 +862,12 @@ server = function(input, output, session) {
       end_inside   <- lengths(st_intersects(end_points, analysis_aoi())) > 0
       streams_end_only <- aoi_stream[end_inside & !start_inside, ]
       catch_up_bits <- catchment_pr()[catchment_pr()$SKELUID %in% streams_end_only$SKELUID,]
-            #catch_up_bits <- st_difference(catch_stream, st_union(catch_aoi()))
-      
-      #split_lines <- st_difference(catch_stream, st_union(analysis_aoi()))
-      #catch_up_bits2 <- split_lines[ lengths(st_intersects(split_lines, start_points)) > 0, ]
 
-      
-      
-
-      
       catch_stream$AOI_ID <- "AOI_1"
       upstream_list <- get_upstream_catchments(catch_stream, "AOI_ID", catchment_pr())
     }else{
       upstream_list <- get_upstream_catchments(analysis_aoi(), "AOI_ID", catchment_pr())
       catch_up_bits <- NULL
-      #catch_up_bits2 <-  NULL
     } 
     # Tabulate dist area per catchment within the upstream area
     if(nrow(upstream_list)==0)
@@ -855,30 +898,6 @@ server = function(input, output, session) {
     return(catch_up)
   })
   
-  catch_up2 <- eventReactive(input$confAnalysis, {
-    req(toListen())
-    upstream_list <- get_upstream_catchments(analysis_aoi(), "AOI_ID", catchment_pr())
-    
-    # Tabulate dist area per catchment within the upstream area
-    if(nrow(upstream_list)==0)
-    {# show pop-up ...
-      showModal(modalDialog(
-        title = "No upstream catchments found!",
-        easyClose = TRUE,
-        footer = modalButton("OK")))
-      catchment <- catchment_pr() %>%
-        mutate(up = 0)
-    }else{
-      catch_up <- catchment_pr()[catchment_pr()$CATCHNUM %in% upstream_list$AOI_1,]
-      catch_up <- catch_up %>%
-        mutate(up =1) %>%
-        st_drop_geometry()
-      catchment <- merge(catchment_pr(), catch_up[,c("CATCHNUM", "up")], by = "CATCHNUM", all.x = TRUE)
-      catchment$up[is.na(catchment$up)] <- 0
-    }
-    return(catchment)
-  })
-  
   ####################################################################################################
   # DOWNSTREAM STEM SECTION
   ####################################################################################################
@@ -894,8 +913,7 @@ server = function(input, output, session) {
         footer = modalButton("OK")))
     }else{
       catch_stem <- catchment_pr()[catchment_pr()$CATCHNUM %in% downstream_stem_list$AOI_1, drop = FALSE]
-      #catch_stem <- merge(catchment_pr(), catch_stem[,c("CATCHNUM")], by = "CATCHNUM", all.y = TRUE)
-      
+
       aoi_stream <- st_filter(stream_sf(), analysis_aoi(), .predicate = st_intersects)
       catch_stream <- catchment_pr()[catchment_pr()$SKELUID %in% aoi_stream$SKELUID,]
       start_points <- st_as_sf(
@@ -964,27 +982,6 @@ server = function(input, output, session) {
     }else{
       catch_down<- catchment_pr()[catchment_pr()$CATCHNUM %in% catchList$AOI_1, drop = FALSE]
       catch_down$down <- 1
-      # Final dataframe
-      #catch_down <- catch_down %>%
-      #  st_drop_geometry() %>%
-      #  dplyr::select(CATCHNUM, down) 
-      
-      #catch_stem <- catch_stem() %>%
-      #  st_drop_geometry() %>%
-      #  dplyr::select(CATCHNUM, stem)       
-      
-      #catch_up <- catch_up() %>%
-      #  st_drop_geometry() %>%
-      #  dplyr::select(CATCHNUM, up)
-      
-      #catch_att <- catchment_pr() %>%
-      #  left_join(catch_down, by = "CATCHNUM") %>%
-      #  left_join(catch_stem, by = "CATCHNUM") %>%
-      #  left_join(catch_up, by = "CATCHNUM") %>%
-      #  filter(!CATCHNUM %in% analysis_aoi()$CATCHNUM)
-      #catch_att$up[is.na(catch_att$up)] <- 0
-      #catch_att$down[is.na(catch_att$down)] <- 0
-      #catch_att$stem[is.na(catch_att$stem)] <- 0
       return(catch_down)
     }
   })
@@ -996,8 +993,7 @@ server = function(input, output, session) {
   ####################################################################################################
   # Render the initial map
   output$map <- renderLeaflet({
-    # Render initial map
-    
+
     map <- leaflet(options = leafletOptions(attributionControl=FALSE)) %>%
       fitBounds(lng1 = -121, lat1 = 44, lng2 = -65, lat2 = 78) %>%
       addMapPane(name = "ground", zIndex=380) %>%
@@ -1007,13 +1003,18 @@ server = function(input, output, session) {
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
                        options = layersControlOptions(collapsed = FALSE)) 
-    
   })
-  
   
   # Render planning region
   observeEvent(input$previewLayers, {
     req(planreg_sf())
+    # show pop-up ...
+    showModal(modalDialog(
+      title = "Please wait.", " Layers are being uploaded.",
+      easyClose = TRUE,
+      footer = modalButton("OK")
+    ))
+    
     grps <- grps()
     planreg_sf <- planreg_sf() %>% st_transform(4326)
     stream_4326 <- st_transform(stream_sf(), 4326)
@@ -1021,12 +1022,6 @@ server = function(input, output, session) {
     legend <- c("Study area", "Streams", "Catchments")
     overlayBase(legend)
     map_bounds <- planreg_sf %>% st_bbox() %>% as.character()
-    
-    # show pop-up ...
-    showModal(modalDialog(
-      title = "Please wait.", " Layers are being uploaded.",
-      easyClose = TRUE,
-      footer = modalButton("OK")))
     
     map <- leafletProxy("map") %>% 
       clearGroup('Study area') %>%
@@ -1288,6 +1283,7 @@ server = function(input, output, session) {
   # Render Upstream / downstream
   observe({
     req(input$confAnalysis >0)
+    
     # show pop-up ...
     showModal(modalDialog(
       title = "Generating upstream and downstream layers. This may take several minutes to display.",
