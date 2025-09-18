@@ -1,15 +1,16 @@
 ## Datasets
   
-For each study area (planning region), the **Hydrology Explorer** app depends on several key data layers contained within one GeoPackage ("gpkg" extension). Several example datasets come with the app - they consist of fundamental drainage areas (FDAs or watersheds) from southeast Yukon and northeast BC. In addition, the user can upload his or her own dataset provided that it contains the same layers (and attributes) and is in the same format as the demo dataset. Below we describe the required datasets along with their attributes (if any).
+The **BEACONs Hydrology Explorer** app depends on several key data layers. A demo dataset located the Dawson area from central Yukon, Canada, comes with the app. 
+The user can upload his or her own dataset as long as the layer name, attributes and structure follow the requirement. Below we describe the required datasets along with their attributes (if any).
   
 ### Required data layers
-
-The demo datasets or user-defined datasets require the following layers within a file geopackage. All layers within the geopackage should be using the coordinate reference system NAD83(CSRS) / Yukon Albers (EPSG:3578).
+The following layers are required:
     
-  - footprint : distribution of footprint outlining the boundary of the study area; displayed as "Footprint" in the map legend.
-  - intactness : distribution of intact forest landscapes; displayed as "Intactness" in the map legend.
   - studyarea : A single polygon outlining the boundary of the study area e.g., a watershed or ecoregion or any other user-defined area; displayed as "Study area" in the map legend.
+  - catchments : A polygon layers representing catchments overlapping the study area. Inside the catchments layers, attributes suche as BASIN, ORDER1, ORDER2, ORDER3, SKELUID and STHRALER must be present. distribution of intact forest landscapes; displayed as "Intactness" in the map legend.
+  - streams : 
   
+User-defined datasets require the following layers within a file geopackage. All layers within the geopackage should be using the coordinate reference system NAD83(CSRS) / Yukon Albers (EPSG:3578).
  
 An additional layer, which is not a user-defined layer, is available in the Mapview tab:
 
@@ -19,3 +20,6 @@ An additional layer, which is not a user-defined layer, is available in the Mapv
 
 
 Additional attributes may be added in the near future.
+
+
+In the **catchments** layer, catchment intactness is provided using decimal (0-1) and the identification of each catchment to either upstream, downstream and downstream stem is provided using binomial value. 

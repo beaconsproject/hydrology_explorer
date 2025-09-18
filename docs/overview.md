@@ -1,53 +1,69 @@
 
-> ***To run the App, click on Select study area in the Explorer section on the left panel.
+## Welcome to the BEACONs Hydrology Explorer
+
+ **BEACONs Hydrology Explorer** uses the BEACONs catchments dataset as building blocks for identifying the upstream and downstream areas 
+ of a user-defined Area of Interest (AOI) that lies within a predefine study area and provide associated hydrological metrics. 
+ From here, you can access:
+
+  - The **User Guide**, which provides step-by-step instructions for using the app.
+
+  - The **Dataset Requirements**, which outline the spatial layers and attributes needed to run the analyses.
+  
+
+## Input data
+
+**BEACONs Hydrology Explorer** requires several key spatial layers such as a study area, catchments and stream segments layers. Details on the necessary layers, their attributes, and formatting can 
+be found under the **Dataset Requirements** tab. Users can upload their own data using one of the available upload options, as long as it 
+follows the required structure. A demo dataset for the Dawson area in central Yukon, Canada, is included with the app.
 
 
-
-## Introduction
-
-The Hydrology Explorer app uses the BEACONs catchments dataset as building blocks for identifying upstream and downstream areas of an area of interest and provide hydrological metrics within a predefine study area. The user need first to identify a study area by either using a predefined FDAs or by uploading a geopackage output produced by the [Disturbance Explorer app](https://beaconsproject.shinyapps.io/disturbance_explorer/). The user can then specify the area of interest for which the upstream and downstream area will be computed by uploading a geopackage that only contain the layer representing the AOI or by interactively selecting catchments on the Mapviewer. Currently, the app can only be used in the southeast Yukon.
-
-<center>
-  <img src="app.jpg" width="80%">
-    <br>
-    Figure 1. Shiny-based disturbance explorer app.
-  </center>
-    
 ## Functionality
     
-The app consists of two sections:
-    
-**Overview**:
-    
-The overview provides a description of the app, its functionality, and contain 2 tabs that give on how to use the app and information on underlying datasets.
-
-**Explorer**:
-
-The Explorer section is where the analysis is happening. The analysis require 4 steps:
-
-  - Select a study area by either :
-     -Select a fundamental drainage area found in the dropdown menu.
-     -Upload a geopackage created by the [Disturbance Area Explorer](https://beaconsproject.shinyapps.io/disturbance_explorer/) or,
-      
-Predefined fundamental drainage areas provided in the dropdown menu have been pre-processed by the Disturbance Area Explorer by applying a 500m buffer around areal and linear disturbances. 
-
-
-  - Choose an Area of Interest (AOI) from one of the two options:
-     - Upload a polygon saved as single later geopackage. The projection must be NAD83(CSRS) / Yukon Albers (EPSG:3578). Moreover, the polygon must overlay the study area. An AOI that exceed the extent of the study area will prevent the tools to calculate the hydrological connectivity and statistics. An error message will appear on the interface. 
-     - Generate AOI by interactively selecting catchments within your study area. 
+The main functionality of the app consists of the following sections:
     
 
-  - Generate upstream and downstream
-     - This section launch the calculation of statistics such as total areas and mean of catchment area weighted intactness along the upstream, downstream and downstream stem related to the chosen AOI. Hydrological metrics  are provided in the adjacent table. 
+#### - Set input parameters
 
-  - Download the results. 
-     - The output is provided as .gpkg and it includes the following:
-       - Extent of the area of interest (aoi)
-       - Catchments overlaying the study area (catchments)
-       - Fires overlaying the study area (fires)
-       - Footprint map of the study area (footprint)
-       - Intactness map of the study area (intactness)
-       - Protected areas overlaying the study area (protected_areas)
-       - Extent of the study area (studyarea)
-  
-In the **catchments** layer, catchment intactness is provided using decimal (0-1) and the identification of each catchment to either upstream, downstream and downstream stem is provided using binomial value. 
+  - Use the demo dataset or upload the required spatial layers. Layers can be uploaded either as Shapefiles, a GeoPackage or by 
+  providing a csv where access path are defined for each Shapefile layers. If a custom GeoPackage, layer names must match the expected names. 
+
+  - Preview the spatial layers (studya rea, catchments and streams segments)
+
+📌 Note: All layers must have the same projection. Additionally, the catchments and stream segments must capture the full extent of the study areas to ensure accurate analysis.
+
+<br>
+   
+#### - Add display elements (OPTIONAL)
+
+This section allows users to add additional features for visualization. These features must be vector data (points, lines, or polygons) and 
+cannot be rasters. A maximum of three additional features can be added. The file or layer names are automatically used as display names on 
+the map. Colors are assigned by the app and cannot be modified.
+
+<br>
+
+#### - Select AOI
+
+Define an Area of Interest (AOI) by either uploading a spatial layer or selecting a set of catchments found within the study area
+
+<br>
+
+#### - Generate upstream and downstream
+
+This section launch the calculation of statistics such as total areas and mean of catchment area weighted intactness along the upstream, 
+downstream and downstream stem related to the chosen AOI. Hydrological metrics are provided in the adjacent table. 
+
+<br>
+
+#### - Download results
+
+Download a GeoPackage of the upstream, downstream stem and overall downstream areas created by the app, as well as the input spatial layers (e.g., study area, AOI, catchments, streams).
+
+<br>
+
+### BEACONs Hydrology Explorer workflow diagram
+
+The worflow diagram below provides an overview of the process.
+
+<br><br>
+<center><img src="pics/workflow.png" width="600"></center>
+<br><br>
