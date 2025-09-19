@@ -26,6 +26,7 @@ library(shinycssloaders)
 library(rhandsontable)
 library(tibble)
 library(markdown)
+library(purrr)
 
 source("./R/beaconshydro.R")
 source("./R/utils.R")
