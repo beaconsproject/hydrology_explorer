@@ -47,6 +47,7 @@ ui = dashboardPage(skin="black",
                                  hr()
                      ),
                      conditionalPanel(
+                       #UPLOAD
                        condition="input.tabs=='tabUpload'",
                        div(style = "margin-top: -20px;", radioButtons("selectsource", "Select source dataset",
                                                                       choices = list("Use demo dataset" = "usedemo", 
@@ -60,7 +61,7 @@ ui = dashboardPage(skin="black",
                                                   "Upload CSV with file paths" = "csv_file",
                                                   "Upload GeoPackage with layers" = "gpkg"), selected = character(0))
                        ),
-                       # Individual layers
+                       # UPLOAD - Individual layers
                        conditionalPanel(
                          condition = "input.selectsource == 'usedata' && input.upload_type == 'layers'",
                          tagList(
@@ -70,13 +71,13 @@ ui = dashboardPage(skin="black",
                          )
                        ),
                        
-                       # CSV
+                       # UPLOAD - CSV
                        conditionalPanel(
                          condition = "input.selectsource == 'usedata' && input.upload_type == 'csv_file'",
                          fileInput("csv_paths", "Upload CSV with file paths", accept = ".csv")
                        ),
                        
-                       # GeoPackage
+                       # UPLOAD - GeoPackage
                        conditionalPanel(
                          condition = "input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
                          fileInput("gpkg_file", "Upload GeoPackage (.gpkg)", accept = ".gpkg")
@@ -89,6 +90,7 @@ ui = dashboardPage(skin="black",
                        ),
                        actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
                        
+                       # UPLOAD - Intactness
                        conditionalPanel(
                          condition = "input.previewLayers > 0",
                          div(style = "margin: 15px; font-size:15px; font-weight: bold", "Set intactness"),
@@ -99,7 +101,6 @@ ui = dashboardPage(skin="black",
                                       selected = character(0), 
                                       inline = FALSE)
                        ),
-                       # Intactness
                        conditionalPanel(
                          condition = "input.intactSource == 'intcatch'",
                          selectInput("intactColumnName", "Catchment dataset - select intactness attribute", choices = NULL, selected = "IntactPB")
@@ -124,7 +125,7 @@ ui = dashboardPage(skin="black",
                        ),
                        
                      ),
-                     # Add extra layers
+                     # EXTRA LAYERS
                      conditionalPanel(
                        condition="input.tabs=='addLayers'",
                        radioButtons("extraupload", "Select source for extra layers to be displayed:",
@@ -146,9 +147,9 @@ ui = dashboardPage(skin="black",
                        condition = "input.tabs=='addLayers' && input.extraupload == 'extragpkg'",
                        fileInput(inputId = "display4", label = HTML("<h5><b>OPTIONAL - </b>Upload a GeoPackage that contains layers to be displayed on the map.</h5>"),
                                  multiple = FALSE, accept = ".gpkg", placeholder = "Select a GeoPackage"),
-                       div(style = "margin-top: -10px;", selectInput("display4a", "Select layer 1", choices = NULL)),
-                       div(style = "margin-top: -20px;", selectInput("display4b", "Select layer 2", choices = NULL)),
-                       div(style = "margin-top: -20px;", selectInput("display4c", "Select layer 3", choices = NULL))
+                       div(style = "margin-top: -10px;", selectInput("display4a", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#663300; margin-right:8px; border:1px solid #000;"></span>Select layer 1'), choices = NULL)),
+                       div(style = "margin-top: -20px;", selectInput("display4b", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#330066; margin-right:8px; border:1px solid #000;"></span>Select layer 2'), choices = NULL)),
+                       div(style = "margin-top: -20px;", selectInput("display4c", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#003333; margin-right:8px; border:1px solid #000;"></span>Select layer 3'), choices = NULL))
                      ),
                      conditionalPanel(
                        condition = "input.tabs == 'addLayers'",
