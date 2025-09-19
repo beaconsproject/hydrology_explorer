@@ -2,6 +2,8 @@
 
 Repository for the core development and release versions of the BEACONs hydrology_explorer Shiny application.
 
+Shiny server: https://beaconsproject.shinyapps.io/hydrology_explorer/
+
 
 Regional applications can be accessed using links below:
 
