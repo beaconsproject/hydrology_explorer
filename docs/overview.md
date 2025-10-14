@@ -1,20 +1,22 @@
 
 ## Welcome to the BEACONs Hydrology Explorer
 
- **BEACONs Hydrology Explorer** uses the BEACONs catchments dataset as building blocks for identifying the upstream and downstream areas 
- of a user-defined Area of Interest (AOI) that lies within a predefine study area and provide associated hydrological metrics. 
+ **BEACONs Hydrology Explorer** uses the BEACONs catchment dataset as building blocks to identify areas upstream and downstream 
+ of a user-defined Area of Interest (AOI) (e.g., conservation area, mine site, etc.) within a predefined study area, as well as associated hydrologic metrics. 
  From here, you can access:
 
-  - The **User Guide**, which provides step-by-step instructions for using the app.
+  - The **User Guide** tab provides step-by-step instructions for using the app.
 
-  - The **Dataset Requirements**, which outline the spatial layers and attributes needed to run the analyses.
+  - The **Dataset Requirements** tab describes the spatial layers and associated attributes needed to run the analyses.
   
 
 ## Input data
 
-**BEACONs Hydrology Explorer** requires several key spatial layers such as a study area, catchments and stream segments layers. Details on the necessary layers, their attributes, and formatting can 
-be found under the **Dataset Requirements** tab. Users can upload their own data using one of the available upload options, as long as it 
-follows the required structure. A demo dataset for the Dawson area in central Yukon, Canada, is included with the app.
+**BEACONs Hydrology Explorer** requires several key spatial layers such as a study area, catchments, and stream layers. Details on the necessary layers, their attributes, and formatting can 
+be found under the **Dataset Requirements** tab. There are twooptions for input data: 
+
+1. A demo dataset for the Dawson area in central Yukon, Canada, is included with the app.
+2. Users can upload their own data using one of the available upload options, as long as the data follows the required structure. 
 
 
 ## Functionality
