@@ -3,28 +3,18 @@
 
  **BEACONs Hydrology Explorer** uses the BEACONs catchment dataset as building blocks to identify areas upstream and downstream 
  of a user-defined area of interest (AOI) (e.g., conservation area, mine site, etc.) within a predefined study area, as well as associated hydrologic metrics. 
- From here, you can access:
-
-  - The **User Guide** tab provides step-by-step instructions for using the app.
-
-  - The **Dataset Requirements** tab describes the spatial layers and associated attributes needed to run the analyses.
+A built-in **User Guide** tab provides step-by-step instructions and function descriptions, while the **Dataset Requirements** tab details data formats and spatial layers needed to run the app.
   
-
 ## Input data
 
 **BEACONs Hydrology Explorer** requires several key spatial layers such as a study area, catchments, and stream layers. Details on the necessary layers, their attributes, and formatting can 
-be found under the **Dataset Requirements** tab. There are two options for input data: 
-
-1. A demo dataset for the Dawson area in central Yukon, Canada, is included with the app.
-2. Users can upload their own data using one of the available upload options, as long as the data follows the required structure. This may include using an output GeoPackage from BEACONs Disturbance Explorer which provides an undisturbed areas or intactness layer.
-
+be found under the **Dataset Requirements** tab. A **demo dataset** is included with the app for the Dawson area in central Yukon, Canada. Users can upload their own Shapefiles or GeoPackage, provided the spatial layers follow the required structure. Please refer to the **Dataset Requirements** tab for details on the required spatial layers and associated attributes and formatting.
 
 ## Functionality
     
 The main functionality of the app consists of the following sections:
     
-
-#### - Set input parameters
+#### Set input parameters
 
   - Use the demo dataset or upload the required spatial layers. Layers can be uploaded either as Shapefiles, a GeoPackage or by 
   providing a csv with file pathways for each Shapefile layer. If a custom GeoPackageis uploaded, spatial layer names must match the expected names. 
@@ -34,23 +24,23 @@ The main functionality of the app consists of the following sections:
 📌 Note: All layers must have the same projection. Additionally, the catchments and stream segments must capture the full extent of the study area to ensure accurate analysis.
 
    
-#### - Add display elements (OPTIONAL)
+#### Add display elements (OPTIONAL)
 
 This section allows users to upload additional spatial layers for visualization. These layers must be vector data (points, lines, or polygons) and 
 cannot be rasters. A maximum of three additional spatial layers can be added. The file or layer names are automatically used as display names on 
 the map. Colors are assigned by the app and cannot be modified.
 
 
-#### - Select AOI
+#### Select AOI
 
 Define an area of interest (AOI) by either uploading a spatial layer or selecting a set of catchments found within the study area.
 
 
-#### - Generate upstream and downstream
+#### Generate upstream and downstream
 
 This section identifies the areas upstream and downstream of the AOI and displays intactness, hydrology, and wildfire statistics such as total area upstream and % area burned. 
 
-#### - Download results
+#### Download results
 
 Download a GeoPackage of the upstream and downstream areas created by the app, as well as the input spatial layers (e.g., study area, AOI, catchments, streams).
 
