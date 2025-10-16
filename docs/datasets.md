@@ -19,9 +19,9 @@ The following spatial layers are required:
     
   - **studyarea**: A single polygon outlining the boundary of the study area e.g., watershed, ecoregion or other user-defined area. The polygon is displayed as "Study area" in the map legend.
     
-  - **catchments**: A polygon layer of catchments for the study area. The catchments layer must include the following attributes. These attributes come with the catchment dataset provided by BEACONs or created using BEACONs QGIS plugin BEACONs Processing Provider: BASIN, ORDER1, ORDER2, ORDER3, SKELUID, STHRALER,  ... THIS LIST IS INCOMPLETE. In the **catchments** layer, catchment intactness is provided using decimal (0-1) and the identification of each catchment to either upstream, downstream and downstream stem is provided using binomial value. 
+  - **catchments**: A polygon layer of catchments for the study area. The catchments layer must include the following attributes. These attributes come with the catchment dataset provided by BEACONs or created using BEACONs QGIS plugin BEACONs Processing Provider: BASIN, ORDER1, ORDER2, ORDER3, SKELUID, STHRALER,  ... THIS LIST IS INCOMPLETE. If the dataset includes an attribute describing the proportion of the catchment undisturbed (0-1), the following **undisturbed areas** layer is not required. 
     
-  - **undisturbed areas (or intactness)**: This polygon layer is required if the catchment dataset (1) does not include an attribute that describes the proportion of the catchment undisturbed or (2) if a different set of undisturbed values is desired. This layer could be the output from BEACONs Disturbance Explorer, for example. The app uses this layer to calculate the proportion of the catchment undisturbed.
+  - **undisturbed areas (or intactness)**: This polygon layer is only required if the catchment dataset does not include an attribute that describes the proportion of the catchment undisturbed OR a different set of undisturbed values is desired. This layer could be the output from BEACONs Disturbance Explorer, for example. The app uses this layer to calculate the proportion of the catchment undisturbed.
     
   - **streams**: A polyline layer of streams. There are no attribute requirements for this layer. 
   
