@@ -21,7 +21,7 @@ The following spatial layers are required:
     
   - **catchments**: A polygon layer of catchments for the study area. The catchments layer must include the following attributes. These attributes come with the catchment dataset provided by BEACONs or created using BEACONs QGIS plugin BEACONs Processing Provider: BASIN, ORDER1, ORDER2, ORDER3, SKELUID, STHRALER,  ... THIS LIST IS INCOMPLETE. In the **catchments** layer, catchment intactness is provided using decimal (0-1) and the identification of each catchment to either upstream, downstream and downstream stem is provided using binomial value. 
     
-  - **undisturbed areas (or intactness)**: This polygon layer is required if the catchment dataset (1) does not include an attribute that describes the proportion of the catchment undisturbed or (2) if a different set of proportion undisturbed values is desired. This layer could be the output from BEACONs Disturbance Explorer, for example. The app uses this layer to calculate the proportion of the catchment undisturbed.
+  - **undisturbed areas (or intactness)**: This polygon layer is required if the catchment dataset (1) does not include an attribute that describes the proportion of the catchment undisturbed or (2) if a different set of undisturbed values is desired. This layer could be the output from BEACONs Disturbance Explorer, for example. The app uses this layer to calculate the proportion of the catchment undisturbed.
     
   - **streams**: A polyline layer of streams. There are no attribute requirements for this layer. 
   
