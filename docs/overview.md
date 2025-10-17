@@ -7,7 +7,7 @@ A built-in **User Guide** tab provides step-by-step instructions and function de
   
 ## Input data
 
-**BEACONs Hydrology Explorer** requires several key spatial layers such as a study area, catchments, and stream layers. Details on the necessary layers, their attributes, and formatting can 
+**BEACONs Hydrology Explorer** requires key spatial layers such as a study area, catchments, and stream layers. Details on the necessary layers, their attributes, and formatting can 
 be found under the **Dataset Requirements** tab. A **demo dataset** is included with the app for the Dawson area in central Yukon, Canada. Users can upload their own Shapefiles or GeoPackage, provided the spatial layers follow the required structure. Please refer to the **Dataset Requirements** tab for details on the required spatial layers and associated attributes and formatting.
 
 ## Functionality
