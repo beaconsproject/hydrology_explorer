@@ -10,7 +10,7 @@
 
 ## Functionality
     
-The functionality of the app consists of the following sections:
+The app consists of the following sections:
     
 #### Set input parameters
 
