@@ -1,4 +1,5 @@
 ui = dashboardPage(skin="black",
+                   title = "BEACONs Hydro Explorer",
                    dashboardHeader(title = tags$div(
                      tags$img(
                        src = "logoblanc.png",  # Replace with your logo file name
@@ -212,26 +213,13 @@ ui = dashboardPage(skin="black",
                    ),     
                    dashboardBody(
                      useShinyjs(),
-                     tags$head(
-                       # Link to custom CSS for the orange theme
+                     tags$head(tags$link(rel = "icon", type = "image/png", href = "logoblanc.png"),
                        tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css"),
                        tags$style(HTML("
-      .leaflet-container {
-        background: white;
-      }
-    ")),
-                       tags$style(HTML("
-    .main-sidebar {
-      overflow-y: auto;      /* enable vertical scroll */
-      overflow-x: hidden;    /* prevent horizontal scroll */
-      max-height: 100vh;     /* occupy full viewport height */
-      width: 300px !important; /* match your sidebar width */
-      position: fixed;       /* keep it fixed */
-    }
-    .content-wrapper, .right-side {
-      margin-left: 300px;    /* same as sidebar width */
-    }
-  "))
+  body {
+    font-size: 16px;
+  }
+"))
                      ),
                      tabItems(
                        tabItem(tabName="overview",
