@@ -3,19 +3,11 @@ format: md
 ---
 
 # User guide
-When studying or managing landscapes, it is important to recognize that the condition and function of an area of interest (AOI) 
-can be influenced not only by activities within its boundaries, but also by factors beyond them. Areas are vulnerable to external 
-pressures through edge effects as well as the movement of surface and groundwater. Because rivers and other aquatic systems are 
-highly connected, an AOI may be affected by human activities both upstream and downstream, including water diversion, pollution, 
-or the loss of natural inputs such as organic matter from riparian zones (Pringle 2001). To better understand and manage these influences, 
-it is valuable to consider the hydrologic connectivity of the AOI, and to identify the extent to which it is exposed to upstream and 
-downstream disturbances. This perspective helps quantify human impact and supports more informed decisions for conservation and long-term sustainability.
+When studying or managing landscapes, it is important to recognize that the condition and function of **an area of interest (AOI) such as a conservation area or management zone** can be influenced not only by activities within its boundaries, but also by factors beyond them. Areas are vulnerable to external pressures through edge effects as well as the movement of surface and groundwater. Because rivers and other aquatic systems are highly connected, an AOI may be affected by human activities both upstream and downstream, including water diversion, pollution, or the loss of natural inputs such as organic matter from riparian zones (Pringle 2001). **An AOI such as a mine site or dam** may be a source of pollutants or changes to water flow. To better understand and manage these influences, it is valuable to consider the hydrologic connectivity of the AOI and to identify the extent to which it is connected to upstream and downstream areas. This perspective helps quantify human impact and supports more informed decisions for stewardship, monitoring, and long-term sustainability.
 
-**BEACONs Hydrology Explorer** identify upstream and downstream areas of an area of interest and to provide hydrological metrics on them. 
-This page provides the step-by-step process for creating these maps
+**BEACONs Hydrology Explorer** identifies areas upstream and downstream of an AOI and associated hydrologic metrics. This page provides step-by-step instructions.
 
-The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and **Dataset Requirements** 
-which outlines the description, naming convention, and data structure of the required spatial layers used by the **BEACONs Hydology EXplorer** app. 
+The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and **Dataset Requirements** that outlines the description, naming convention, and data structure of the required spatial layers used by the **BEACONs Hydology Explorer** app. 
 <br><br>
 
 To get started, click 'Set input parameters' on the left-side panel. 
@@ -23,7 +15,7 @@ To get started, click 'Set input parameters' on the left-side panel.
 
 ### Set input parameters
 
-In this step, the user uploads spatial data into the BEACONs Hydrology Explorer.
+In this step, the user uploads the required spatial data into the BEACONs Hydrology Explorer.
 
 **Select source dataset** offers two options:
 
@@ -67,7 +59,7 @@ the map using their original names, and colors are assigned as indicated in the 
 Select your area of interest (AOI) on which you want to evaluated the upstream and downstream area. The app offers two options:
 
 1. **Upload an AOI**  - Can be either a ShapeFile or a GeoPackage. In order to generate upstream and downstream area, the uploaded polygon must completely overlay the study area. 
-Once uploaded, users can optionally edit the AOI boundary using the catchments layer. 
+Once uploaded, users can optionally edit the AOI boundary using the catchments layer. Add how the app assigns catchments to the AOI. If the user uploads an AOI can they modify the boundary by adding catchments?
 
 2. **Select a set of catchments on the map** - This option allows users to interactively select catchments by clicking directly on the map. 
 All selected catchments are then combined to form a new area of interest (AOI) for analysis.
