@@ -7,7 +7,7 @@ When studying or managing landscapes, it is important to recognize that the cond
 
 **BEACONs Hydrology Explorer** identifies areas upstream and downstream of an AOI and associated hydrologic metrics. This page provides step-by-step instructions.
 
-The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and **Dataset Requirements** that outlines the description, naming convention, and data structure of the required spatial layers used by the **BEACONs Hydology Explorer** app. 
+The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and the **Dataset Requirements** tab that describes the required spatial layers used by the **BEACONs Hydology Explorer** app.
 <br><br>
 
 To get started, click 'Set input parameters' on the left-side panel. 
@@ -15,33 +15,32 @@ To get started, click 'Set input parameters' on the left-side panel.
 
 ### Set input parameters
 
-In this step, the user uploads the required spatial data into the BEACONs Hydrology Explorer.
+In this step, the user uploads the required spatial data into Hydrology Explorer: study area, streams, and catchments. When uploaded, the layers will appear on the map and can be turned on and off using the legend in the top-right corner. For the map, there are two background options: ESRI World Topo Map and ESRI World Imagery. 
 
 **Select source dataset** offers two options:
 
 1. **Use demo dataset** - This dataset is embedded in the app and is located in the Dawson area in central Yukon, Canada. It includes all spatial layers required to run the app.
    
-2. **Upload spatial dataset** - If selected, the panel options will expand:
+2. **Upload spatial dataset** - If selected, the panel options will expand and provide three options for uploading data. For all options, the spatial data must satisfy the requirements described on the **Data Requirements** tab, including a consistent coordinate reference system. 
 
-   -- **Upload individual Shapefile layers**: User need to point on a study area, streams segments  and catchments dataset. Make sure the layers fullfil the datset requirements. 
+   i) **Upload individual Shapefile layers**: Browse to each shapefile and select all files associated with the shapefile. A shapefile consists of multiple files with the same name but different extensions (e.g., .shp, .shx, .dbf, .prj). All files associated with the shapefile must be uploaded. 
 
-   -- **Upload CSV with file paths**: Provide a CSV that defines the access paths for each shapefile layer. The CSV must have exactly two columns:
+   ii) **Upload CSV with file paths**: The spatial datasets can be uploaded using a csv file created in a text editor (e.g., Notepad). The csv file must have the following structure:
 
-   - Layers – must contain exactly the following three names: studyarea, catchments, streams
+      Layer,Path <br>
+      study area,C:/data/study_area.shp <br>
+      stream,C:/data/streams.shp<br>
+      catchments,C:/data/catchments.shp
 
-    - Access path – the full path to the corresponding shapefile for each layer.
+   iii) **Upload a Geopackage**: Browse to the GeoPackage. Users are responsible for ensuring that the study area, streams, and catchment spatial layers are in the GeoPackage.
 
-   -- **Upload a Geopackage**: Browse to the GeoPackage. Users are responsible for ensuring that all three required spatial layers (and associated attributes) are in
-  the Geopackage and that all layers share a consistent coordinate reference system.
-
-Press the **Preview study area** button to load the three spatial layers. Once loaded, the layers will appear on a map and can be turned on and off. From here, move on to **Set intactness**.
+Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner. From here, move on to **Set intactness**.
 
 **Set intactness** defines how the intactness of each catchment will be determined. The app offers two options:
 
-1. **Value in catchments dataset** - The catchments dataset includes a column containing the intactness values, ranging from 0 to 1.
+1. **Value in catchments dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact.
  
-2. **Upload intactness layer** -  Select a GeoPackage or Shapefile. If you choose a GeoPackage, you must also specify which layer contains the intactness data.
-
+2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
 <br><br>
