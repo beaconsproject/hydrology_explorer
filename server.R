@@ -530,7 +530,7 @@ server = function(input, output, session) {
   display1_sf <- eventReactive(input$confExtra,{
     req(input$confExtra)  
     i <- NULL
-    #browser()
+    
     if(input$extraupload == "extrashp"){
       if(!is.null(input$display1)){
         req(input$display1)
@@ -643,7 +643,15 @@ server = function(input, output, session) {
     req(!is.null(input$upload_aoi) || input$confAOI>0)
   })
   
-  aoi_sf <- eventReactive(toListen(), {
+  #aoi_sf <- eventReactive(toListen(), {
+  aoi_sf <- eventReactive({
+    list(
+      input$upload_aoi,
+      input$confAOI,
+      input$aoiLayer,
+      selected_catchments$catchnum
+    )
+  }, {
     # upload AOI
     if(!is.null(input$upload_aoi)){ 
       if(is.null(planreg_sf())){
@@ -753,7 +761,7 @@ server = function(input, output, session) {
         weighted_intact_area <- sum(aoi_catch_inter$area * (aoi_catch_inter[[intact_col]] / 100), na.rm = TRUE)
         total_aoi_area <- as.numeric(sf::st_area(merged_aoi))
         intactness_value <- (weighted_intact_area / total_aoi_area) * 100
-        merged_aoi[[intact_col]] <- intactness_value
+        merged_aoi$intact <- intactness_value
       }else { #intupload
         analysis_aoi <- aoi_sf()
         intact_intersection <- st_intersection(analysis_aoi, intactness_sf())
@@ -1267,6 +1275,7 @@ server = function(input, output, session) {
     map <- leafletProxy("map") %>%
       clearGroup('Catchments AOI') %>%
       clearGroup('AOI') %>%
+      clearGroup('Analysis AOI') %>%
       clearGroup('Selected') %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=analysis_aoi, fill = F, color="red", weight=4, group="Analysis AOI", options = leafletOptions(pane = "ground")) %>%
@@ -1372,7 +1381,6 @@ server = function(input, output, session) {
     x <- tibble(Variables=c("Study area"), 
                 Area_km2= NA_real_,
                 Percent = NA_real_)
-    
     x <- x %>% 
       mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(planreg_sf())/1000000,0))),
              Percent= case_when(Variables == "Study area" ~  100))
@@ -1655,7 +1663,13 @@ server = function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = function() { paste("Hydro_explorer_output-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
-      catch_att <- catch_att()[,c("CATCHNUM", "Area_land", "Area_water", "Area_total", "intact", "down", "stem", "up")]
+      
+      catchment_updated <- catchment_pr() |>
+        dplyr::left_join(st_drop_geometry(catch_up()) |> dplyr::select(CATCHNUM, up), by = "CATCHNUM") |>
+        dplyr::left_join(st_drop_geometry(catch_down()) |> dplyr::select(CATCHNUM, down), by = "CATCHNUM") |>
+        dplyr::left_join(st_drop_geometry(catch_stem()) |> dplyr::select(CATCHNUM, stem), by = "CATCHNUM")
+      
+      catchment_updated <- catchment_updated[,c("CATCHNUM", "Area_Land", "Area_Water", "Area_Total", "intact", "down", "stem", "up")]
       
       x <- data.frame(AOI_area = outtab1()[2,2],
                       AOI_intact  = outtab1()[3,3],
@@ -1681,28 +1695,13 @@ server = function(input, output, session) {
       ))
       
       aoi <- cbind(analysis_aoi, x)
-      st_write(basebnd(), dsn=file, layer='kdtt', append=TRUE)
-      st_write(basewtsh(), dsn=file, layer='watersheds', append=TRUE)
-      st_write(baseplanR(), dsn=file, layer='LFN_IPCA_planning_area', append=TRUE)
-      st_write(Ross(), dsn=file, layer='Ross_River', append=TRUE)
-      st_write(Dene(), dsn=file, layer='Dene_Keh_Kusan', append=TRUE)
-      st_write(TuCho(), dsn=file, layer='Tu_Cho_Frances_Lakes', append=TRUE)
-      st_write(TuBall(), dsn=file, layer='Tu_Ball', append=TRUE)
-      st_write(LR(), dsn=file, layer='Little_Rancheria', append=TRUE)
-      st_write(activeMines(), dsn=file, layer='YT_mining_claims', append=TRUE)
-      st_write(caribou(), dsn=file, layer='YT_caribou_herds', append=TRUE)
-      st_write(rivers(), dsn=file, layer='river_corridors', append=TRUE)
-      st_write(streams(), dsn=file, layer='streams', append=TRUE)
-      st_write(planreg_sf(), dsn=file, layer='Liard_river_bassin', append=TRUE)
-      st_write(aoi, dsn=file, layer='aoi', append=TRUE) 
-      st_write(foot_sf(), dsn=file, layer='footprint', append=TRUE)
-      st_write(intact_sf(), dsn=file, layer='intactness', append=TRUE)
-      st_write(catch_att(), dsn=file, layer='catchments', append=TRUE)
-      st_write(fires(), dsn=file, layer='fires', append=TRUE)
-      st_write(pas_sf(), dsn=file, layer='protected_areas', append=TRUE)
-      st_write(upstream_sf(), dsn=file, layer='upstream', append=TRUE)
-      st_write(downstream_sf(), dsn=file, layer='downstream', append=TRUE)
-      st_write(downstream_stem_sf(), dsn=file, layer='downstream_stem', append=TRUE)
+      st_write(stream_sf(), dsn=file, layer='streams', append=TRUE)
+      st_write(planreg_sf(), dsn=file, layer='studyarea', append=TRUE)
+      st_write(analysis_aoi(), dsn=file, layer='aoi', append=TRUE) 
+      st_write(catchment_updated, dsn=file, layer='catchments', append=TRUE)
+      st_write(catch_up()[,c("CATCHNUM", "Area_Land", "Area_Water", "Area_Total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
+      st_write(catch_down()[,c("CATCHNUM", "Area_Land", "Area_Water", "Area_Total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
+      st_write(catch_stem()[,c("CATCHNUM", "Area_Land", "Area_Water", "Area_Total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)
     }
   )
   

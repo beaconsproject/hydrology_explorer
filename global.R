@@ -36,10 +36,13 @@ MB <- 1024^2
 UPLOAD_SIZE_MB <- 5000
 options(shiny.maxRequestSize = UPLOAD_SIZE_MB*MB)
 
+
 # test prior to map that layer is not null, sf and has rows
 isMappable <- function(x) {
   !is.null(x) && inherits(x, "sf") && nrow(x) > 0
 }
+
+# Function to add a new group to group_names
 
 # read_shp_from_csv: read layer from path found in csv uploaded with fileInput
 #read_shp_from_csv <- function(csv_file, layer_name) {
