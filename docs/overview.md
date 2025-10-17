@@ -2,17 +2,15 @@
 ## Welcome to the BEACONs Hydrology Explorer
 
  **BEACONs Hydrology Explorer** uses the BEACONs catchment dataset as building blocks to identify areas upstream and downstream 
- of a user-defined area of interest (AOI) (e.g., conservation area, mine site, etc.) within a predefined study area, as well as associated hydrologic metrics. 
-A built-in **User Guide** tab provides step-by-step instructions and function descriptions, while the **Dataset Requirements** tab details data formats and spatial layers needed to run the app.
+ of a user-defined area of interest (AOI) (e.g., conservation area, mine site, etc.) within a predefined study area, as well as associated hydrologic metrics. A built-in **User Guide** tab provides step-by-step instructions and function descriptions, while the **Dataset Requirements** tab details data formats and spatial layers needed to run the app.
   
 ## Input data
 
-**BEACONs Hydrology Explorer** requires key spatial layers such as a study area, catchments, and stream layers. Details on the necessary layers, their attributes, and formatting can 
-be found under the **Dataset Requirements** tab. A **demo dataset** is included with the app for the Dawson area in central Yukon, Canada. Users can upload their own Shapefiles or GeoPackage, provided the spatial layers follow the required structure. Please refer to the **Dataset Requirements** tab for details on the required spatial layers and associated attributes and formatting.
+**BEACONs Hydrology Explorer** requires key spatial layers such as a study area, catchments, and stream layers. Details on the necessary layers, and their attributes and format can be found under the **Dataset Requirements** tab. A **demo dataset** is included with the app for the Dawson area in central Yukon, Canada. Users can upload their own Shapefiles or GeoPackage, provided the spatial layers follow the required structure. Please refer to the **Dataset Requirements** tab for details on the required spatial layers and associated attributes and formatting.
 
 ## Functionality
     
-The main functionality of the app consists of the following sections:
+The functionality of the app consists of the following sections:
     
 #### Set input parameters
 
