@@ -11,7 +11,7 @@ The user can upload their own data as long as the layer names, attributes and st
   
 ### Data format
 
-Spatial layers can be uploaded from a GeoPackage or as individual Shapefiles.
+In all cases, spatial layers can be uploaded from a GeoPackage or as individual Shapefiles.
 
 ### Required data layers
 
@@ -19,7 +19,7 @@ The following spatial layers are required:
     
   - **studyarea**: A single polygon outlining the boundary of the study area e.g., watershed, ecoregion or other user-defined area. The polygon is displayed as "Study area" in the map legend.
     
-  - **catchments**: A polygon layer of catchments for the study area. The catchments layer must include the following attributes. These attributes come with the catchment dataset provided by BEACONs or created using BEACONs QGIS plugin BEACONs Processing Provider: BASIN, ORDER1, ORDER2, ORDER3, SKELUID, STHRALER,  ... THIS LIST IS INCOMPLETE. If the dataset includes an attribute describing the proportion of the catchment undisturbed (0-1), the following **undisturbed areas** layer is not required. 
+  - **catchments**: A polygon layer of catchments for the study area. The catchments layer must include the following attributes. These attributes come with the catchment dataset provided by BEACONs or created using BEACONs QGIS plugin BEACONs Processing Provider: CATCHNUM, SKELUID, STHRALER, ORDER1, ORDER2, ORDER3, BASIN, Area_land, Area_water, Area_total, STRMLEN, ZONE, and Isolated. If the dataset includes an attribute describing the proportion of the catchment undisturbed (0-1), the following **undisturbed areas** layer is not required. This attribute does not have a name restriction.
     
   - **undisturbed areas (or intactness)**: This polygon layer is only required if the catchment dataset does not include an attribute that describes the proportion of the catchment undisturbed OR a different set of undisturbed values is desired. This layer could be the output from BEACONs Disturbance Explorer, for example. The app uses this layer to calculate the proportion of the catchment undisturbed.
     
@@ -27,4 +27,4 @@ The following spatial layers are required:
   
 ## Optional display elements
  
-Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name:
+Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name of each layer will be used to identify the layer in the map legend, so a short name is recommended.
