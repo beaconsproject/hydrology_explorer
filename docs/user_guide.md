@@ -21,7 +21,7 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
 
 **Select source dataset** offers two options:
 
-1. **Use demo dataset** - This dataset is embedded in the app and is located in the Dawson area in central Yukon, Canada. It includes all spatial layers required to run the app. If selected, study area, streams, and catchments will be added to the Mapview. **ADD THIS TO THE APP** -
+1. **Use demo dataset** - This dataset is embedded in the app and is located in the Dawson area in central Yukon, Canada. It includes all spatial layers required to run the app. If selected, study area, streams, and catchments will be added to the Mapview.
 
     📌 **ADD THIS TO THE APP** - While not required, the App will also add the following spatial layers to the map legend: undisturbed areas, fire, linear disturbance, areal disturbance, protected areas, Quartz claims, and Placer claims.
    
