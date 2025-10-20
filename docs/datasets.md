@@ -23,7 +23,9 @@ The following spatial layers are required:
     
   - **undisturbed areas (or intactness)**: This polygon layer is only required if the catchment dataset does not include an attribute that describes the proportion of the catchment undisturbed OR a different set of undisturbed values is desired. This layer could be the output from BEACONs Disturbance Explorer, for example. The app uses this layer to calculate the proportion of the catchment undisturbed.
     
-  - **streams**: A polyline layer of streams. There are no attribute requirements for this layer. 
+  - **streams**: A polyline layer of streams. There are no attribute requirements for this layer.
+    
+  - **fires**:  This polygonal layer is only required if wildfire-based statistics are desired: area and % area burned in the study area, AOI, and upstream and downstream areas. 
   
 ### Optional display elements
  
