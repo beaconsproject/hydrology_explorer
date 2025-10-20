@@ -13,8 +13,6 @@ The user can upload their own data as long as the layer names, attributes and st
 
 In all cases, spatial layers can be uploaded from a GeoPackage or as individual Shapefiles.
 
-📌 The App recognizes the spatial layers in the GeoPackage from Disturbance Explorer which can include the following spatial layers: intact, fire, protected areas, and mining claims. These layers will be automatically added to the map legend.
-
 ### Required data layers
 
 The following spatial layers are required:
@@ -27,6 +25,25 @@ The following spatial layers are required:
     
   - **streams**: A polyline layer of streams. There are no attribute requirements for this layer. 
   
-## Optional display elements
+### Optional display elements
  
-Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name of each layer will be used to identify the layer in the map legend, so a short name (≤25 characters) is recommended.
+These spatial layers are added to the App under **Add display elements (OPTIONAL)**. Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name of each layer will be used to identify the layer in the map legend, so a short name (≤25 characters) is recommended. 
+
+## Demo Dataset
+
+The App includes an embedded Demo dataset with the following spatial layers:
+
+- studyarea: boundary of the study area for the demo dataset located in Dawson region, Yukon, Canada
+- catchments: catchment dataset for the study area
+- streams: streams associated with the catchment dataset
+  
+A GeoPackage of the Demo Dataset is available for download on the GitHub site, where the following spatial layers are available for upload under **Add display elements (OPTIONAL)**: 
+
+- areal_disturbance: areal (or polygonal) disturbances such as mine sites, urban areas, cutblocks, etc.
+- linear_disturbance: linear disturbances such as highways and resource access roads
+- undisturbed: undisturbed (or intact) areas identified using Disturbance Explorer
+- disturbed: disturbed (or human footprint) areas identified using Disturbance Explorer
+- fires: polygons of wildfire
+- Placers_Claims: placer claims
+- Quartz_Claims: quartz claims
+- protected_areas: protected areas
