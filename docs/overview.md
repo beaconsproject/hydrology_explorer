@@ -1,8 +1,7 @@
 
 ## Welcome to the BEACONs Hydrology Explorer
 
- **BEACONs Hydrology Explorer** uses the BEACONs catchment dataset as building blocks to identify areas upstream and downstream 
- of a user-defined area of interest (AOI) (e.g., conservation area, mine site, etc.) within a predefined study area, as well as associated hydrologic metrics. A built-in **User Guide** tab provides step-by-step instructions and function descriptions, while the **Dataset Requirements** tab details data formats and spatial layers needed to run the app.
+ **BEACONs Hydrology Explorer** identifies areas upstream and downstream of an area of interest (AOI; e.g., conservation area, mine site, etc.) and associated hydrologic metrics, using the BEACONs catchment dataset as building blocks. A built-in **User Guide** tab provides step-by-step instructions and function descriptions, while the **Dataset Requirements** tab details data formats and spatial layers needed to run the app.
   
 ## Input data
 
