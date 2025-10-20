@@ -15,7 +15,7 @@ To get started, click **Set input parameters** on the left-side panel.
 
 ### Set input parameters
 
-In this step, the user uploads the required spatial data into Hydrology Explorer: study area, streams, and catchments. When uploaded, the layers will appear on the map and can be turned on and off using the legend in the top-right corner. For the map, there are two background options: ESRI World Topo Map and ESRI World Imagery. 
+In this step, the user uploads the required spatial data into Hydrology Explorer: study area, streams, catchments, and if required undisturbed (or intact) areas. When uploaded, the layers will appear on the map and can be turned on and off using the legend in the top-right corner. For the map, there are two background options: ESRI World Topo Map and ESRI World Imagery. 
 
 **Select source dataset** offers two options:
 
@@ -38,10 +38,10 @@ Press the **Preview study area** button to load the three spatial layers into th
 
 **Set intactness** defines how the intactness of each catchment will be determined. The app offers two options:
 
-1. **Value in catchments dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact. 
+1. **Value in catchment dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact. 
 
-   📌 **Select this option when using the embedded Demo dataset. The intactness attribute is called "intact".**
-   
+   📌 Select this option when using the embedded Demo dataset. The intactness attribute is called "intact".
+
 2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
