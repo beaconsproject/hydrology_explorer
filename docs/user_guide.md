@@ -38,8 +38,10 @@ Press the **Preview study area** button to load the three spatial layers into th
 
 **Set intactness** defines how the intactness of each catchment will be determined. The app offers two options:
 
-1. **Value in catchments dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact. **Select this option when using the embedded Demo dataset. The intactness attribute is called "Intact".**
- 
+1. **Value in catchments dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact. 
+
+   📌 **Select this option when using the embedded Demo dataset. The intactness attribute is called "intact".**
+   
 2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
