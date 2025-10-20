@@ -5,7 +5,7 @@ The user can upload their own data as long as the layer names, attributes and st
 
 📌 For the app to recognize the spatial layers, the layer names must exactly match the expected names shown below.
 
-📌 All spatial layers must have the same projection.
+📌 **All spatial layers must have the same projection.**
 
 📌 For accurate analysis, the study area must contain the full extent of disturbance layers.
   
@@ -37,13 +37,13 @@ The App includes an embedded Demo dataset with the following spatial layers:
 - catchments: catchment dataset for the study area
 - streams: streams associated with the catchment dataset
   
-A GeoPackage of the Demo Dataset is available for download on the GitHub site, where the following spatial layers are available for upload under **Add display elements (OPTIONAL)**: 
+A GeoPackage of the Demo Dataset can be downloaded from the Hydrology Explorer [GitHub site](https://github.com/beaconsproject/hydrology_explorer), where the following spatial layers are available for upload under **Add display elements (OPTIONAL)**: 
 
-- areal_disturbance: areal (or polygonal) disturbances such as mine sites, urban areas, cutblocks, etc.
-- linear_disturbance: linear disturbances such as highways and resource access roads
-- undisturbed: undisturbed (or intact) areas identified using Disturbance Explorer
-- disturbed: disturbed (or human footprint) areas identified using Disturbance Explorer
-- fires: polygons of wildfire
-- Placers_Claims: placer claims
-- Quartz_Claims: quartz claims
-- protected_areas: protected areas
+- areal_disturbance: areal (or polygonal) disturbances such as mine sites, urban areas, cutblocks, etc. from [GeoYukon](https://yukon.maps.arcgis.com/sharing/rest/content/items/128a5a44fb704016b48d00d7bc8582c5/info/metadata/metadata.xml?format=default&output=html)
+- linear_disturbance: linear disturbances such as highways and resource access roads fron [GeoYukon](https://yukon.maps.arcgis.com/sharing/rest/content/items/05c53de07b4a4b09a92f07ed7bc5ff64/info/metadata/metadata.xml?format=default&output=html)
+- undisturbed: undisturbed (or intact) areas identified using [BEACONs Disturbance Explorer](https://github.com/beaconsproject/disturbance_explorer)
+- disturbed: disturbed (or human footprint) areas identified using [BEACONs Disturbance Explorer](https://github.com/beaconsproject/disturbance_explorer)
+- fires: polygons of wildfire from [Canadian Wildland Fire Information Service]( https://cwfis.cfs.nrcan.gc.ca/datamart)
+- Placers_Claims: placer claims 1:50,000 from [GeoYukon](https://yukon.maps.arcgis.com/sharing/rest/content/items/a49e93e6430d4773b169ad1450e72bea/info/metadata/metadata.xml?format=default&output=html)
+- Quartz_Claims: quartz claims 1:50,000 from [GeoYukon](https://yukon.maps.arcgis.com/sharing/rest/content/items/871f84d5f97942bba49f9f8e66af76b8/info/metadata/metadata.xml?format=default&output=html)
+- protected_areas: protected areas from [Canadian Protected and Conserved Areas](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html) 
