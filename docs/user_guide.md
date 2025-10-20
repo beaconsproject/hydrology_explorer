@@ -7,7 +7,7 @@ When studying or managing landscapes, it is important to recognize that the cond
 
 **BEACONs Hydrology Explorer** identifies areas upstream and downstream of an AOI and associated hydrologic metrics. This page provides step-by-step instructions.
 
-The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and the **Dataset Requirements** tab that describes the required spatial layers used by the **BEACONs Hydology Explorer** app.
+The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and the **Dataset Requirements** tab that describes the required spatial layers used by the **BEACONs Hydrology Explorer** app.
 <br><br>
 
 To get started, click **Set input parameters** on the left-side panel. 
@@ -84,15 +84,18 @@ Here, the user launches the App to idenitify the areas upstream and downstream o
 
 ### Download results
 
-Results can then be downloaded as a GeoPackage which will include:
+Results can be downloaded as a GeoPackage that includes the following spatial layers: 
 
-      - Extent of the study area (studyarea)
-      - Extent of the area of interest with related statistics (aoi) 
-      - Catchments (catchments)
-      - Streams segments layer (streams)
-      - Intactness layer  (intactness) - if provided
-      - Upstream area (upstream)
-      - Downstream stem area (downstream stem)
-      - Downstream area (downstream)
+- **studyarea**: polygon of the study area
+- **aoi**: polygon of the area of interest
+- **catchments**: catchments dataset for the study area
+- **streams**: stream network associated with the catchment dataset
+- **upstream**: Upstream area (upstream)
+- **downstream stem**: Downstream stem area (downstream stem)
+- **downstream**: Downstream area (downstream)
+      
+If provided, the following layers will also be added to the GeoPackage: 
+- **intactness**:  
+- **fire**: 
 
 The GeoPackage can be further viewed and analysed in a GIS e.g., QGIS.  
