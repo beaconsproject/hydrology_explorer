@@ -13,6 +13,8 @@ The user can upload their own data as long as the layer names, attributes and st
 
 In all cases, spatial layers can be uploaded from a GeoPackage or as individual Shapefiles.
 
+📌 The App recognizes the spatial layers in the GeoPackage from Disturbance Explorer which can include the following spatial layers: intact, fire, protected areas, and mining claims. These layers will be automatically added to the map legend.
+
 ### Required data layers
 
 The following spatial layers are required:
@@ -27,4 +29,4 @@ The following spatial layers are required:
   
 ## Optional display elements
  
-Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name of each layer will be used to identify the layer in the map legend, so a short name is recommended.
+Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name of each layer will be used to identify the layer in the map legend, so a short name (≤25 characters) is recommended.
