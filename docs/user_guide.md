@@ -40,7 +40,9 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
 
    📌 **[ADD THIS TO THE APP]** If included in the GeoPackage, the App will recognize the following spatial layer names and add to the map legend: undisturbed, fire, linear_disturbance, areal_disturbance, protected_areas, Quartz_claims, Placer_claims, and mining_claims. These are spatial layers that may appear in the output GeoPackage from BEACONs Disturbance Explorer.
 
-Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner. From here, move on to **Set intactness**.
+Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner, and the statistics tables on the right will start to populate. 
+
+From here, move on to **Set intactness**.
 
 **Set intactness** defines how the intactness of each catchment will be determined. The app offers two options:
 
@@ -56,32 +58,29 @@ Press the **Confirm** button. If an intactness layer is provided, it will be dis
 
 ### Add display elements (OPTIONAL)
 
-This section allows users to add a maximum of three layers to the map for visualization purposes only. Additional layers can be uploaded as Shapefiles or as layers from a GeoPackage. Layers will appear on the map using their original names (max 25 characters).
+This section allows users to add a maximum of three layers to the map for visualization purposes only (e.g., salmon spawning sites, critical mineral potential). These layers can be uploaded as Shapefiles or as layers from a GeoPackage. Layers will appear on the map using their original names (maximum 25 characters).
 
 ### Select AOI
 
-Select your area of interest (AOI) on which you want to evaluated the upstream and downstream area. The app offers two options:
+The app offers two options for specifying the AOI (area of interest) for which upstream and downstream areas will be identified: 
 
-1. **Upload an AOI**  - Can be either a ShapeFile or a GeoPackage. In order to generate upstream and downstream area, the uploaded polygon must fall fully within the study area. **[Question - would it be worth adding a clip function here? clip AOI to the study area?]** 
-Once uploaded, users can edit the AOI boundary by selecting catchments. **Add how the app assigns catchments to the AOI.** 
+1. **Upload an AOI**  - The AOI can be uploaded as a ShapeFile or a GeoPackage. The AOI must fall fully within the study area. **[Question - would it be worth adding a clip function here? clip AOI to the study area?]** **Add how the app assigns catchments to the AOI.** 
+Once uploaded, users can edit the AOI boundary by selecting catchments. 
 
-2. **Select a set of catchments on the map** - This option allows users to interactively select catchments by clicking directly on the map. 
-All selected catchments are then combined to form a new area of interest (AOI) for analysis.
+2. **Select a set of catchments on the map** - This option allows users to idenity an AOI by selecting catchments on the map. The AOI may be comprised of non-neighbouring catchments such as geographically dispersed salmon spawning sites or mine sites. All selected catchments are combined to form a new area of interest (AOI) for analysis.
 
 Note: The upstream and downstream area will not be computed beyond the extent of the provided catchments layer. 
+
+The statistics table will update with additional statistics, including Dendritic Connectivity Index (DCI) for the AOI. DCI is a measure of longitudinal connectivity within the AOI, ranging from 0 (low connectivity) to 1 (high connectivity) **ADD REFERENCE - see KBA explorer**.
   
 
 ### Generate upstream and downstream
 
-Click on ***View upstream and downstream intactness*** in the left sidebar to display the upstream and downstream area and compute the statistics on intactness.
+Here, the user launches the App to idenitify the areas upstream and downstream of the AOI. To initiate, click on the **View upstream and downstream intactness** button on the left sidebar. When done, the following upstreamm and downstream areas will be added to the Mapview legend, and the statistics tables will update.  
 
-
-Once it is done, the map and legend will add three layers: 
-- an ***upstream area*** layer that represent upstream catchments of the area of interest, 
-- a ***downstream area*** layer for catchment that are downstream the area of interest and,
-- a ***downstream stem*** layer that represent the downstream flow. 
-
-The ***upstream and downstream statistics*** tab on the right sidebar will be updated in order to provide the numbers related to the area of interest selected.  
+- **upstream area**: area upstream of the AOI as defined by catchments 
+- **downstream stem**: area downstream of the AOI as defined by the main stream exiting the AOI and associated catchments
+- **downstream area**: area downstream of the AOI as defined by the downstream stem as well as all streams flowing into the stem
 
 ### Download results
 
@@ -95,7 +94,5 @@ Results can then be downloaded as a GeoPackage which will include:
       - Upstream area (upstream)
       - Downstream stem area (downstream stem)
       - Downstream area (downstream)
-
-  
 
 The GeoPackage can be further viewed and analysed in a GIS e.g., QGIS.  
