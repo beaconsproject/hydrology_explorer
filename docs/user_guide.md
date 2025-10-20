@@ -10,7 +10,7 @@ When studying or managing landscapes, it is important to recognize that the cond
 The **Welcome** section includes the **Overview** landing page that provides a concise introduction to the app and its functionality. It also includes this guide and the **Dataset Requirements** tab that describes the required spatial layers used by the **BEACONs Hydology Explorer** app.
 <br><br>
 
-To get started, click 'Set input parameters' on the left-side panel. 
+To get started, click **Set input parameters** on the left-side panel. 
 
 
 ### Set input parameters
@@ -19,7 +19,7 @@ In this step, the user uploads the required spatial data into Hydrology Explorer
 
 **Select source dataset** offers two options:
 
-1. **Use demo dataset** - This dataset is embedded in the app and is located in the Dawson area in central Yukon, Canada. It includes all spatial layers required to run the app.
+1. **Use demo dataset** - This dataset is embedded in the app and is located in the Dawson area in central Yukon, Canada. It includes all spatial layers required to run the app. If selected, study area, streams, and catchments will be added to the Mapview.
    
 2. **Upload spatial dataset** - If selected, the panel options will expand and provide three options for uploading data. For all options, the spatial data must satisfy the requirements described on the **Data Requirements** tab, including a consistent coordinate reference system. 
 
@@ -32,13 +32,13 @@ In this step, the user uploads the required spatial data into Hydrology Explorer
       stream,C:/data/streams.shp<br>
       catchments,C:/data/catchments.shp
 
-   iii) **Upload a Geopackage**: Browse to the GeoPackage. Users are responsible for ensuring that the study area, streams, and catchment spatial layers are in the GeoPackage.
+   iii) **Upload a Geopackage**: Browse to the GeoPackage containing study area, streams, and catchment spatial layers.
 
 Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner. From here, move on to **Set intactness**.
 
 **Set intactness** defines how the intactness of each catchment will be determined. The app offers two options:
 
-1. **Value in catchments dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact.
+1. **Value in catchments dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact. **Select this option when using the embedded Demo dataset. The intactness attribute is called "Intact".**
  
 2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
 
