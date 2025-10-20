@@ -27,7 +27,7 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
    
 2. **Upload spatial dataset** - If selected, the panel options will expand and provide three options for uploading data. For all options, the spatial data must satisfy the requirements described on the **Data Requirements** tab, including a consistent coordinate reference system. 
 
-   i) **Upload individual Shapefile layers**: Browse to each shapefile and select all files associated with the shapefile. A shapefile consists of multiple files with the same name but different extensions (e.g., .shp, .shx, .dbf, .prj). All files associated with the shapefile must be uploaded. 
+   i) **Upload individual Shapefile layers**: Browse to each shapefile, select all files associated with the shapefile, and click "Open". A shapefile consists of multiple files with the same name but different extensions (e.g., .shp, .shx, .dbf, .prj). All files associated with the shapefile must be uploaded. 
 
    ii) **Upload CSV with file paths**: The spatial datasets can be uploaded using a csv file created in a text editor (e.g., Notepad). The csv file must have the following structure:
 
@@ -48,7 +48,7 @@ Press the **Preview study area** button to load the three spatial layers into th
 
    📌 Select this option when using the embedded Demo dataset. The intactness attribute is called "intact".
 
-2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
+2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage **[confirm with Melina]**.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
 <br><br>
@@ -56,22 +56,19 @@ Press the **Confirm** button. If an intactness layer is provided, it will be dis
 
 ### Add display elements (OPTIONAL)
 
-This section allows users to add a maximum of three layers to the map for visualization purposes only. Additional layers can be 
-uploaded as Shapefiles or as layers from a GeoPackage. These layers will not be included in the analysis. Layers will appear on
-the map using their original names, and colors are assigned as indicated in the side panel.
-
+This section allows users to add a maximum of three layers to the map for visualization purposes only. Additional layers can be uploaded as Shapefiles or as layers from a GeoPackage. Layers will appear on the map using their original names (max 25 characters).
 
 ### Select AOI
 
 Select your area of interest (AOI) on which you want to evaluated the upstream and downstream area. The app offers two options:
 
-1. **Upload an AOI**  - Can be either a ShapeFile or a GeoPackage. In order to generate upstream and downstream area, the uploaded polygon must completely overlay the study area. 
-Once uploaded, users can optionally edit the AOI boundary using the catchments layer. Add how the app assigns catchments to the AOI. If the user uploads an AOI can they modify the boundary by adding catchments?
+1. **Upload an AOI**  - Can be either a ShapeFile or a GeoPackage. In order to generate upstream and downstream area, the uploaded polygon must fall fully within the study area. **[Question - would it be worth adding a clip function here? clip AOI to the study area?]** 
+Once uploaded, users can edit the AOI boundary by selecting catchments. **Add how the app assigns catchments to the AOI.** 
 
 2. **Select a set of catchments on the map** - This option allows users to interactively select catchments by clicking directly on the map. 
 All selected catchments are then combined to form a new area of interest (AOI) for analysis.
 
-Note: The upstream and downstream area won't be computed beyond the extent of the provided catchments layer. 
+Note: The upstream and downstream area will not be computed beyond the extent of the provided catchments layer. 
   
 
 ### Generate upstream and downstream
