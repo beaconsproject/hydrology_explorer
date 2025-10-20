@@ -53,7 +53,6 @@ From here, move on to **Set intactness**.
 2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage **[confirm with Melina]**.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
-<br><br>
 
 
 ### Add display elements (OPTIONAL)
