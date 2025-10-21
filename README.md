@@ -13,6 +13,8 @@ https://beaconsproject.shinyapps.io/hydrology_explorer/
 
 A demo dataset can be downloaded [here](./doc/demo.gpkg). This is the same dataset embedded in the App and includes additional spatial layers that can be added to the App, including fires, mining claims, undisturbed and disturbed areas, linear and areal disturbances, and protected areas. 
 
+To test out the **Optional Display Elements** step in the App, shapefiles of salmon spawning areas and critical mineral potential are available here: **Question: does hydrology explorer accept point data?"
+
 **Regional Apps**
 
 There are regional-specific versions for the Cree Nation Traditional Territory in Quebec and Kaska Dena Traditional Territory (KDTT) in the Yukon, BC, and NWT. These applications can be accessed using the links below:
