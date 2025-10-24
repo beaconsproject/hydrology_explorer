@@ -17,7 +17,7 @@ To test out the **Optional Display Elements** step in the App, shapefiles of sal
 
 **Regional Apps**
 
-There are regional-specific versions for the Cree Nation Traditional Territory in Quebec and Kaska Dena Traditional Territory (KDTT) in the Yukon, BC, and NWT. These applications can be accessed using the links below:
+There are regional versions for the Cree Nation Traditional Territory in Quebec and Kaska Dena Traditional Territory (KDTT) in the Yukon, BC, and NWT. These applications can be accessed using the links below:
 
   <a href="https://github.com/beaconsproject/beaconshydro_explorer_qc" target="_blank">Quebec hydrology explorer</a>
  
