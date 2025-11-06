@@ -41,6 +41,7 @@ ui = dashboardPage(skin="black",
                      sidebarMenu(id = "tabs",
                                  menuItem("Welcome", tabName = "overview", icon = icon("th")),
                                  menuItem("Set input parameters", tabName = "tabUpload", icon = icon("th"), startExpanded = FALSE),
+                                 menuItem("Set fires and intactness", tabName = "tabIntact", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
                                  menuItem("Add display elements (OPTIONAL)", tabName = "addLayers", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
                                  menuItem("Select AOI", tabName = "selectAOI", icon = icon(name = "fas fa-draw-polygon", lib = "font-awesome")),
                                  menuItem("Generate upstream and downstream", tabName = "upstream", icon = icon(name = "fas fa-map", lib = "font-awesome")),
@@ -81,7 +82,7 @@ ui = dashboardPage(skin="black",
                        # UPLOAD - GeoPackage
                        conditionalPanel(
                          condition = "input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
-                         fileInput("gpkg_file", "Upload GeoPackage (.gpkg)", accept = ".gpkg")
+                         fileInput("gpkg_file", "Upload source dataset (.gpkg)", accept = ".gpkg")
                        ),
                        conditionalPanel(
                          condition = "output.gpkgReady == true && input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
@@ -89,43 +90,15 @@ ui = dashboardPage(skin="black",
                          div(style = "margin-top: -20px;", selectInput("catch_layer", "Catchments", choices = NULL, multiple = FALSE)),
                          div(style = "margin-top: -20px;", selectInput("streams_layer", "Streams", choices = NULL,  multiple = FALSE))
                        ),
+                       fileInput("upload_gpkg", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
                        actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
-                       
-                       # UPLOAD - Intactness
-                       conditionalPanel(
-                         condition = "input.previewLayers > 0",
-                         div(style = "margin: 15px; font-size:15px; font-weight: bold", "Set intactness"),
-                         div(style = "margin-left: 12px; margin-top: -10px; font-size:12px;", "Intactness refers to natural areas that have not been subject to industrial-scale development or disturbance."),
-                         radioButtons("intactSource", "Select source for catchment intactness:",
-                                      choices = list("Value in catchment dataset" = "intcatch", 
-                                                     "Upload intactness layer" = "intupload"),
-                                      selected = character(0), 
-                                      inline = FALSE)
-                       ),
-                       conditionalPanel(
-                         condition = "input.intactSource == 'intcatch'",
-                         selectInput("intactColumnName", "Catchment dataset - select intactness attribute", choices = NULL, selected = "IntactPB")
-                       ),
-                       conditionalPanel(
-                         condition = "input.intactSource == 'intupload'",
-                         radioButtons("intactformat", "Select intactness file format:",
-                                      choices = list("Shapefile" = "intshp", 
-                                                     "GeoPackage" = "intgpkg"),
-                                      selected = character(0), 
-                                      inline = TRUE),
-                         fileInput("upload_intact", "Upload undisturbed layer", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))
-                       ), 
-                       conditionalPanel(
-                         condition = "input.intactSource == 'intupload' && input.intactformat == 'intgpkg'",
-                         div(style = "margin-top: -40px;", checkboxInput("distExplo", label = "Undisturbed layer is part of Disturbance Explorer output", value = F)),
-                         div(style = "margin-top: -20px;", selectInput("intactLayer", "Select intactness layer", choices = NULL,  multiple = FALSE))
-                       ),
-                       conditionalPanel(
-                         condition = "input.intactSource == 'intupload' || input.intactSource == 'intcatch'",
-                         actionButton("confIntact", "Confirm", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px")
-                       ),
-                       
                      ),
+                     # UPLOAD - Intactness
+                     conditionalPanel(
+                       condition = "input.tabs== 'tabIntact'",
+                       uiOutput("intactUI")
+                     ),
+                     
                      # EXTRA LAYERS
                      conditionalPanel(
                        condition="input.tabs=='addLayers'",
@@ -166,7 +139,7 @@ ui = dashboardPage(skin="black",
                                     choices = list("Upload an AOI" = "uploadAOI", 
                                                    "Select a set of catchments on the map" = "catchAOI"),
                                     selected = character(0), 
-                                    inline = FALSE),
+                                    inline = FALSE)
                      ),
                      conditionalPanel(
                        condition="input.tabs=='selectAOI' && input.typeAOI == 'uploadAOI'",
@@ -178,12 +151,13 @@ ui = dashboardPage(skin="black",
                      ),
                      # AOI upload
                      conditionalPanel(
-                       condition = "input.tabs=='selectAOI' && input.sourceAOI",
-                       div(style = "margin-top: -20px;", fileInput("upload_aoi", "", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg')))
+                       condition = "input.tabs=='selectAOI' && input.sourceAOI == 'shpAOI'",
+                       div(style = "margin-top: -20px;", fileInput("shp_aoi", "", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
                      ),
                      conditionalPanel(
                        condition = "input.tabs=='selectAOI' && input.sourceAOI == 'gpkgAOI'",
-                       div(style = "margin-top: -20px;", selectInput("aoiLayer", "Select AOI layer", choices = NULL,  multiple = FALSE))
+                       div(style = "margin-top: -20px;", fileInput("gpkg_aoi", "", multiple = FALSE, accept='.gpkg')),
+                       div(style = "margin-top: -20px;", selectInput("aoiLayer", "Select AOI layer", choices = "Select AOI layer",  multiple = FALSE))
                      ),
                      conditionalPanel(
                        condition = "input.tabs=='selectAOI' && input.sourceAOI",
@@ -214,8 +188,8 @@ ui = dashboardPage(skin="black",
                    dashboardBody(
                      useShinyjs(),
                      tags$head(tags$link(rel = "icon", type = "image/png", href = "logoblanc.png"),
-                       tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css"),
-                       tags$style(HTML("
+                               tags$link(rel = "stylesheet", type = "text/css", href = "green-theme.css"),
+                               tags$style(HTML("
   body {
     font-size: 16px;
   }
@@ -229,13 +203,13 @@ ui = dashboardPage(skin="black",
                                                tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
                                                tabPanel(HTML("User guide"), includeMarkdown("docs/user_guide.md")),
                                                tabPanel(HTML("Dataset requirements"), includeMarkdown("docs/datasets.md"))
-                                               )
-                               ),
-                               absolutePanel(
-                                 right = 0, top = 0, width = 250, height = "100%",
-                                 #style = "background-color: white; padding: 0px; overflow-y: auto; z-index: 1000;",
-                                 style = "background-color: white; padding: 0;margin: 0;border: none; right: 0;overflow: hidden;z-index: 1000;",
-                                 tags$img(src = "intact.jpg",width = "100%", style = "display: block;")
+                                        )
+                                 ),
+                                 absolutePanel(
+                                   right = 0, top = 0, width = 250, height = "100%",
+                                   #style = "background-color: white; padding: 0px; overflow-y: auto; z-index: 1000;",
+                                   style = "background-color: white; padding: 0;margin: 0;border: none; right: 0;overflow: hidden;z-index: 1000;",
+                                   tags$img(src = "intact.jpg",width = "100%", style = "display: block;")
                                  )
                                )
                        ),
@@ -267,7 +241,17 @@ ui = dashboardPage(skin="black",
                                                    condition = "input.tabs == 'download'",
                                                    includeMarkdown("./docs/download_doc.md")
                                                  )
-                                        )
+                                        ),
+                                        #tabPanel("Summary statistics",
+                                        #          tags$h4("Summary statistics"),
+                                        #          div(
+                                        #            style = "overflow-x: auto; white-space: nowrap; font-size: 12px;",
+                                        #            tableOutput("stat_tab")
+                                        #          ),
+                                        #          div(style = "display: flex; justify-content: center; margin-top: 10px;",
+                                        #              downloadButton("downloadStats", "Download statistics table", style='color: #000')
+                                        #          )
+                                        #)
                                  ),
                                  tabBox(id = "stat", width="4",
                                         tabsetPanel(id="tabset1",
