@@ -10,13 +10,11 @@ The app is located at: https://beaconsproject.shinyapps.io/hydrology_explorer/
 
 **Demo Dataset**
 
-A demo dataset can be downloaded [here](./doc/demo.gpkg). This is the same dataset embedded in the App and includes additional spatial layers that can be added to the App, including fires, mining claims, undisturbed and disturbed areas, linear and areal disturbances, and protected areas. 
-
-To test out the **Optional Display Elements** step in the App, shapefiles of salmon spawning areas and critical mineral potential are available here: 
+The App includes an embedded demo dataset.
 
 ## Regional Apps
 
-There are regional versions for the Cree Nation Traditional Territory in Quebec and Kaska Dena Traditional Territory (KDTT) in the Yukon, BC, and NWT. These applications can be accessed using the links below:
+There are regional versions for the Cree Nation Traditional Territory in Quebec and Kaska Dena Traditional Territory (KDTT) in the Yukon, BC, and NWT. These applications are presently private:
 
   <a href="https://github.com/beaconsproject/beaconshydro_explorer_qc" target="_blank">Quebec hydrology explorer</a>
  
