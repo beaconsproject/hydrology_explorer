@@ -61,7 +61,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
       # --- Intactness section ---
       div(style = "margin: 15px; margin-top: 20px; font-size:17px; font-weight: bold", "Select source of intactness"),
       div(style = "margin-left: 12px; margin-top: -10px; font-size:12px;",
-          "Intactness refers to natural areas that have not been subject to industrial-scale development or disturbance."
+          "Intactness identifies areas without a visible human footprint (e.g., road, mine site) and is used as a proxy to assess the overall ecological integrity of a catchment e.g., 0-100% intact or low-high ecological integrity."
       ),
       br(),
       
