@@ -1,17 +1,3 @@
-#required_packages <- c(
-#  "sf", "dplyr", "terra", "raster", "shiny", "shinydashboard",
-#  "leaflet", "shinyjs", "shinyWidgets", "leafem", "shinycssloaders", 
-#  "rhandsontable", "tibble", "markdown"
-#)
-
-# Install any missing packages
-#missing_packages <- required_packages[!(required_packages %in% installed.packages()[, "Package"])]
-#if (length(missing_packages) > 0) {
-#  install.packages(missing_packages)
-#}
-
-# Load the packages
-#invisible(lapply(required_packages, library, character.only = TRUE))
 library(shiny)
 library(shinydashboard)
 library(dplyr)
@@ -28,8 +14,7 @@ library(tibble)
 library(markdown)
 library(purrr)
 
-source("./R/beaconshydro.R")
-source("./R/utils.R")
+for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f)
 
 MB <- 1024^2
 

@@ -227,6 +227,10 @@ ui = dashboardPage(skin="black",
                                                      includeMarkdown("./docs/upload_doc.md")
                                                    ),
                                                    conditionalPanel(
+                                                     condition = "input.tabs == 'tabIntact'",
+                                                     includeMarkdown("./docs/setIntact_doc.md")
+                                                   ),
+                                                   conditionalPanel(
                                                      condition = "input.tabs == 'addLayers'",
                                                      includeMarkdown("./docs/addLayers_doc.md")
                                                    ),
