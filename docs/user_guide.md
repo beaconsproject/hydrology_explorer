@@ -23,8 +23,6 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
 
 1. **Use demo dataset** - This dataset is embedded in the app and is located in the Dawson area in central Yukon, Canada. It includes all spatial layers required to run the app. If selected, study area, streams, and catchments will be added to the Mapview.
 
-    📌 **ADD THIS TO THE APP** - While not required, the App will also add the following spatial layers to the map legend: undisturbed areas, fire, linear disturbance, areal disturbance, protected areas, Quartz claims, and Placer claims.
-   
 2. **Upload spatial dataset** - If selected, the panel options will expand and provide three options for uploading data. For all options, the spatial data must satisfy the requirements described on the **Data Requirements** tab, including a consistent coordinate reference system. 
 
    i) **Upload individual Shapefile layers**: Browse to each shapefile, select all files associated with the shapefile, and click "Open". A shapefile consists of multiple files with the same name but different extensions (e.g., .shp, .shx, .dbf, .prj). All files associated with the shapefile must be uploaded. 
@@ -38,8 +36,6 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
 
    iii) **Upload a Geopackage**: Browse to the GeoPackage containing study area, streams, and catchment spatial layers, select, and click "Open". Point to the spatial layers in the GeoPackage that correspond to Study Area, Catchments, and Streams.
 
-   📌 **[ADD THIS TO THE APP]** If included in the GeoPackage, the App will recognize the following spatial layer names and add to the map legend: undisturbed, fire, linear_disturbance, areal_disturbance, protected_areas, Quartz_claims, Placer_claims, and mining_claims. These are spatial layers that may appear in the output GeoPackage from BEACONs Disturbance Explorer.
-
 Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner, and the statistics tables on the right will start to populate. 
 
 From here, move on to **Set intactness**.
@@ -50,7 +46,7 @@ From here, move on to **Set intactness**.
 
    📌 Select this option when using the embedded Demo dataset. The intactness attribute is called "intact".
 
-2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage **[confirm with Melina]**.
+2. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
 
@@ -63,15 +59,14 @@ This section allows users to add a maximum of three layers to the map for visual
 
 The app offers two options for specifying the AOI (area of interest) for which upstream and downstream areas will be identified: 
 
-1. **Upload an AOI**  - The AOI can be uploaded as a ShapeFile or a GeoPackage. The AOI must fall fully within the study area. **[Question - would it be worth adding a clip function here? clip AOI to the study area?]** **Add how the app assigns catchments to the AOI.** 
-Once uploaded, users can edit the AOI boundary by selecting catchments. 
+1. **Upload an AOI**  - The AOI can be uploaded as a ShapeFile or a GeoPackage. The AOI must fall fully within the study area. Once uploaded, users can edit the AOI boundary by selecting catchments. 
 
 2. **Select a set of catchments on the map** - This option allows users to idenity an AOI by selecting catchments on the map. The AOI may be comprised of non-neighbouring catchments such as geographically dispersed salmon spawning sites or mine sites. All selected catchments are combined to form a new area of interest (AOI) for analysis.
 
 Note: The upstream and downstream area will not be computed beyond the extent of the provided catchments layer. 
 
-The statistics table will update with additional statistics, including Dendritic Connectivity Index (DCI) for the AOI. DCI is a measure of longitudinal connectivity within the AOI, ranging from 0 (low connectivity) to 1 (high connectivity) **ADD REFERENCE - see KBA explorer**.
-  
+The statistics table will update with additional statistics, including Dendritic Connectivity Index (DCI) for the AOI. DCI is a measure of longitudinal connectivity within the AOI, ranging from 0 (low connectivity) to 1 (high connectivity) (Cote et al. 2009).
+ 
 
 ### Generate upstream and downstream
 
@@ -94,7 +89,12 @@ Results can be downloaded as a GeoPackage that includes the following spatial la
 - **downstream**: downstream area identified for the AOI by the App
       
 If provided, the following layers will also be added to the GeoPackage: 
-- **intactness**:  
-- **fire**: 
+- **intactness**: spatial layer uploaded to calculate catchment intactness 
+- **fire**: spatial layer of wildfires used to calculate fire statistics
 
 The GeoPackage can be further viewed and analysed in a GIS e.g., QGIS.  
+
+
+### References
+
+Cote, D., Kehler, D.G., Bourne, C. et al. A new measure of longitudinal connectivity for stream networks. Landscape Ecol 24, 101–113 (2009). https://doi.org/10.1007/s10980-008-9283-y
