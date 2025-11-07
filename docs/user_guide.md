@@ -73,7 +73,7 @@ This section allows users to add a maximum of three layers to the map for visual
 
 The app offers two options for specifying the AOI (area of interest) for which upstream and downstream areas will be identified: 
 
-1. **Upload an AOI**  - The AOI can be uploaded as a ShapeFile or a GeoPackage. The AOI must fall fully within the study area. Once uploaded, users can edit the AOI boundary by selecting catchments. 
+1. **Upload an AOI**  - The AOI can be uploaded as a ShapeFile or a GeoPackage. The AOI will be clipped to the study area boundary. Users have the option to edit the AOI boundary by selecting catchments. 
 
 2. **Select a set of catchments on the map** - This option allows users to idenity an AOI by selecting catchments on the map. The AOI may be comprised of non-neighbouring catchments such as geographically dispersed salmon spawning sites or mine sites. All selected catchments are combined to form a new area of interest (AOI) for analysis.
 
