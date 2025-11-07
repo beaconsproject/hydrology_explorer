@@ -34,12 +34,44 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
         }
         
         check_shp(input$shp_aoi$datapath)
-        aoi <- read_shp_from_upload(input$shp_aoi) |>
-          dplyr::select(any_of(c("geometry", "geom"))) |>
-          st_transform(st_crs(rv$layers_rv$planreg_sf)) |>
-          st_union() |>
-          st_sf() |>
-          st_make_valid()
+        aoi <- read_shp_from_upload(input$shp_aoi) %>%
+          dplyr::select(any_of(c("geometry", "geom"))) %>%
+          st_transform(st_crs(rv$layers_rv$planreg_sf)) %>%
+          st_union() %>%
+          st_sf() %>%
+          st_make_valid() 
+        
+        # Check overlap between AOI and planreg_sf
+        overlap <- suppressWarnings(st_intersects(aoi, rv$layers_rv$planreg_sf, sparse = FALSE))
+        
+        if (!any(overlap)) {
+          showModal(modalDialog(
+            title = "Warning: AOI outside study area",
+            "The AOI you uploaded does not overlap with the planning region. Please upload a new AOI.",
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          ))
+          
+          rv$layers_rv$aoi <- NULL
+          return(NULL)
+        }
+        
+        # Calculate intersection area
+        clipped_aoi <- suppressWarnings(st_intersection(aoi, rv$layers_rv$planreg_sf))
+        
+        # Check if it was clipped (by comparing areas)
+        original_area <- sum(st_area(aoi))
+        clipped_area <- sum(st_area(clipped_aoi))
+        
+        if (clipped_area < original_area * 0.999) {  # allow tiny rounding differences
+          showModal(modalDialog(
+            title = "Notice: AOI clipped",
+            "Part of your AOI extended beyond the planning region and has been clipped.",
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          ))
+          aoi <- clipped_aoi
+        }
         
       # ------------------------------------------------------------------
       # 2. Upload AOI from GeoPackage
@@ -49,12 +81,45 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
         req(input$aoiLayer != "Select AOI layer")
         
         infile <- input$gpkg_aoi
-        aoi <- read_gpkg_from_upload(infile$datapath, input$aoiLayer) |>
-          dplyr::select(any_of(c("geometry", "geom"))) |>
-          st_transform(st_crs(rv$layers_rv$planreg_sf)) |>
-          st_union() |>
-          st_sf() |>
-          st_make_valid()
+        aoi <- read_gpkg_from_upload(infile$datapath, input$aoiLayer) %>%
+          dplyr::select(any_of(c("geometry", "geom"))) %>%
+          st_transform(st_crs(rv$layers_rv$planreg_sf)) %>%
+          st_union() %>%
+          st_sf() %>%
+          st_make_valid() %>%
+          st_intersection(rv$layers_rv$planreg_sf)
+        
+        # Check overlap between AOI and planreg_sf
+        overlap <- suppressWarnings(st_intersects(aoi, rv$layers_rv$planreg_sf, sparse = FALSE))
+        
+        if (!any(overlap)) {
+          showModal(modalDialog(
+            title = "Warning: AOI outside study area",
+            "The AOI you uploaded does not overlap with the planning region. Please upload a new AOI.",
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          ))
+          
+          rv$layers_rv$aoi <- NULL
+          return(NULL)
+        }
+        
+        # Calculate intersection area
+        clipped_aoi <- suppressWarnings(st_intersection(aoi, rv$layers_rv$planreg_sf))
+        
+        # Check if it was clipped (by comparing areas)
+        original_area <- sum(st_area(aoi))
+        clipped_area <- sum(st_area(clipped_aoi))
+        
+        if (clipped_area < original_area * 0.999) {  # allow tiny rounding differences
+          showModal(modalDialog(
+            title = "Notice: AOI clipped",
+            "Part of your AOI extended beyond the planning region and has been clipped.",
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          ))
+          aoi <- clipped_aoi
+        }
       } 
     # ------------------------------------------------------------------
     # 3. Build AOI from selected catchments
@@ -254,9 +319,9 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
   # Render AOI editing
   observeEvent(input$editAOI,{
     req(input$editAOI)
-    req(aoi_sf())
+    req(rv$layers_rv$aoi_sf)
     
-    aoi <- st_transform(aoi_sf(), 4326)
+    aoi <- st_transform(rv$layers_rv$aoi_sf, 4326)
     catch_aoi <- st_transform(catch_aoi(), 4326)
     
     map_bounds1 <- aoi %>% st_bbox() %>% as.character()
@@ -278,7 +343,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       easyClose = TRUE,
       footer = modalButton("OK")))
     
-    aoi <- st_transform(aoi_sf(), 4326)
+    aoi <- st_transform(rv$layers_rv$aoi_sf, 4326)
     analysis_aoi <- rv$layers_rv$analysis_aoi %>% 
       #st_union() %>% 
       st_buffer(dist = 20) %>% 
