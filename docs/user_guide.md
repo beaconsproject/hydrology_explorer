@@ -36,6 +36,8 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
 
    iii) **Upload a Geopackage**: Browse to the GeoPackage containing study area, streams, and catchment spatial layers, select, and click "Open". Point to the spatial layers in the GeoPackage that correspond to Study Area, Catchments, and Streams.
 
+**Upload GeoPackage from Disturbance Explorer (optional)**: This geopackage will include linear and/or areal disturbances and disturbed and undisturbed areas, and other spatial layers such as protected areas, wildfire, and mining claims. These layers will be added to the mapview and can be selected in the next step **Set Fires and Intactness**.
+
 Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner, and the statistics tables on the right will start to populate. 
 
 From here, move on to **Set intactness**.
