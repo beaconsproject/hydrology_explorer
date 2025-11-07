@@ -215,45 +215,49 @@ ui = dashboardPage(skin="black",
                        ),
                        tabItem(tabName="tabUpload",
                                fluidRow(
-                                 tabBox(id = "mapid", width="8",
-                                        tabPanel(HTML("<b>Mapview</b>"),
+                                 column(width = 8,
+                                        tabBox(id = "mapid", width=NULL,
+                                          tabPanel(HTML("<b>Mapview</b>"),
                                                  leafletOutput("map", height = 750) %>% withSpinner()
-                                        ),
-                                        tabPanel("User Guide",
-                                                 # Dynamically update the content of Guidance based on selected tab
-                                                 conditionalPanel(
-                                                   condition = "input.tabs == 'tabUpload'",
-                                                   includeMarkdown("./docs/upload_doc.md")
-                                                 ),
-                                                 conditionalPanel(
-                                                   condition = "input.tabs == 'addLayers'",
-                                                   includeMarkdown("./docs/addLayers_doc.md")
-                                                 ),
-                                                 conditionalPanel(
-                                                   condition = "input.tabs == 'selectAOI'",
-                                                   includeMarkdown("./docs/selectAOI_doc.md")
-                                                 ),
-                                                 conditionalPanel(
-                                                   condition = "input.tabs == 'upstream'",
-                                                   includeMarkdown("./docs/upstream_doc.md")
-                                                 ),
-                                                 conditionalPanel(
-                                                   condition = "input.tabs == 'download'",
-                                                   includeMarkdown("./docs/download_doc.md")
-                                                 )
-                                        ),
-                                        #tabPanel("Summary statistics",
-                                        #          tags$h4("Summary statistics"),
-                                        #          div(
-                                        #            style = "overflow-x: auto; white-space: nowrap; font-size: 12px;",
-                                        #            tableOutput("stat_tab")
-                                        #          ),
-                                        #          div(style = "display: flex; justify-content: center; margin-top: 10px;",
-                                        #              downloadButton("downloadStats", "Download statistics table", style='color: #000')
-                                        #          )
-                                        #)
-                                 ),
-                                 tabBox(id = "stat", width="4",
+                                          ),
+                                          tabPanel("User Guide",
+                                                   # Dynamically update the content of Guidance based on selected tab
+                                                   conditionalPanel(
+                                                     condition = "input.tabs == 'tabUpload'",
+                                                     includeMarkdown("./docs/upload_doc.md")
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.tabs == 'addLayers'",
+                                                     includeMarkdown("./docs/addLayers_doc.md")
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.tabs == 'selectAOI'",
+                                                     includeMarkdown("./docs/selectAOI_doc.md")
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.tabs == 'upstream'",
+                                                     includeMarkdown("./docs/upstream_doc.md")
+                                                   ),
+                                                   conditionalPanel(
+                                                     condition = "input.tabs == 'download'",
+                                                     includeMarkdown("./docs/download_doc.md")
+                                                   )
+                                          ),
+                                          tabPanel("Summary statistics",
+                                                   tags$h4("Summary statistics"),
+                                                   div(
+                                                     style = "overflow-x: auto; white-space: nowrap; font-size: 16px;",
+                                                     tableOutput("stat_tab")
+                                                   ),
+                                                   div(style = "display: flex; justify-content: center; margin-top: 10px;",
+                                                       downloadButton("downloadStats", "Download summary statistics table (.csv)", style='color: #000')
+                                                   )
+                                          )
+                                        
+                                 )
+                               ),
+                               column(width = 4,
+                                 tabBox(id = "stat", width=NULL,
                                         tabsetPanel(id="tabset1",
                                                     tabPanel(HTML("<h4>Area Intactness and Hydrology statistics</h4>"), tableOutput("tab1"),
                                                              "*Catchment Area Weighted Intactness",)
@@ -263,5 +267,6 @@ ui = dashboardPage(skin="black",
                                )
                        )
                      )
+                   )
                    )
 )

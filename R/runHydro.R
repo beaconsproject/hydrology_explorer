@@ -443,6 +443,27 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                                             TRUE ~ `Area_Burned_%`))
       }  
       rv$outfiretab(y)
+      
+      # Summary stats
+      z <- tibble(Variables=c("Fires within the study area", 
+                              "Fires within the Analysis AOI",
+                              "Fires within upstream area",
+                              "Fires within downstream stem area",
+                              "Fires within overall downstream area"), 
+                  Area_km2= y$Area_Burned_km2, 
+                  Percent = y$`Area_Burned_%`)
+      
+      space_out <- tibble(Variables=c(" "," "),
+                          Area_km2= c(" ", "Metric"), 
+                          Percent = c(" ","Rating"))
+      i <- rv$outputDCI()
+      
+      dci_out <- tibble(Variables= "DCI score", 
+                        Area_km2= i$Metric, 
+                        Percent = i$Rating)
+      out <-rbind(x, z, space_out, dci_out)
+      
+      rv$outputsumStats(out)
     } 
   })
 }

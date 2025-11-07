@@ -309,7 +309,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
   })
   
   ################################################################################################
-  # DCI
+  # Stats
   ################################################################################################
   observeEvent(input$confAOI, {
     req(rv$layers_rv$analysis_aoi)
@@ -364,11 +364,6 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     }
     
     ## DCI
-    ###################################
-    ###################################
-    # DCI
-    ###################################
-    ###################################
     aoi_sf <- rv$layers_rv$analysis_aoi %>%
       st_union() %>%
       st_as_sf("POLYGON") %>%
@@ -386,12 +381,27 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
                            aoi_var[,"DCI"]<0.7 ~ "Low"
     )
     
-    x <- tibble(Variable=c("DCI"), Metric=NA, Rating = NA)
-    x$Metric[x$Variable=="DCI"] <- aoi_var[,"DCI"]
-    x$Rating[x$Variable=="DCI"] <- DCI_score
-    colnames(x) <- c("", "Metric","Rating")
+    i <- tibble(Variable=c("DCI"), Metric=NA, Rating = NA)
+    i$Metric[i$Variable=="DCI"] <- aoi_var[,"DCI"]
+    i$Rating[i$Variable=="DCI"] <- DCI_score
+    colnames(i) <- c("", "Metric","Rating")
       
-    rv$outputDCI(x)
+    rv$outputDCI(i)
+    
+    # Summary stats
+    z <- tibble(Variables=c("Fires within the study area", "Fires within the Analysis AOI"), 
+                Area_km2= y$Area_Burned_km2, 
+                Percent = y$`Area_Burned_%`)
+    
+    space_out <- tibble(Variables=c(NA,NA),
+                      Area_km2= c(NA, "Metric"), 
+                      Percent = c(NA,"Rating"))
+    dci_out <- tibble(Variables= "DCI score", 
+                           Area_km2= i$Metric, 
+                           Percent = i$Rating)
+    out <-rbind(x, z, space_out, dci_out)
+    
+    rv$outputsumStats(out)
   })
 }
   

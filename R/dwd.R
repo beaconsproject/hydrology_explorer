@@ -53,7 +53,7 @@ dwdServer  <- function(input, output, session, project, map, rv){
   output$downloadStats <- downloadHandler(
     filename = function() { paste("disturbance_explorer_stats-", Sys.Date(), ".csv", sep="") },
     content = function(file) {
-      write.csv(summaryStats(), file, row.names = FALSE)
+      write.csv(rv$outputsumStats(), file, row.names = FALSE)
     }
   )
 }

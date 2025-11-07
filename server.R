@@ -37,6 +37,7 @@ server = function(input, output, session) {
                            outfiretab = reactiveVal(),
                            outtab1 = reactiveVal(),
                            outputDCI = reactiveVal(),
+                           outputsumStats = reactiveVal(),
                            selected_catchments = reactiveValues(catchnum = c())
   )
   
@@ -123,6 +124,10 @@ server = function(input, output, session) {
   
   output$tabDCI <- renderTable({
     reactiveValsList$outputDCI()
+  }, digits = 2)
+  
+  output$stat_tab <- renderTable({
+    reactiveValsList$outputsumStats()
   }, digits = 2)
   
 }

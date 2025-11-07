@@ -508,6 +508,15 @@ setParamsServer <- function(input, output, session, project, map, rv){
       )
     }
     rv$outfiretab(y)
+    
+    
+    #Summary stat
+    z <- tibble(Variables=c("Fires within the study area"), 
+                Area_km2= y$Area_Burned_km2, 
+                Percent = y$`Area_Burned_%`)
+    
+    out <-rbind(x,z)
+    rv$outputsumStats(out)
   })
   
   output$dynamicTabs <- renderUI({

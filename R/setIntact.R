@@ -288,27 +288,5 @@ setIntactServer <- function(input, output, session, project, map, rv){
     
     removeModal()
   })
-  
-  observeEvent(input$confIntact, {
-    #Fire stat
-    if(!is.null(rv$layers_rv$fires)){
-      y <- tibble(Variables=c("Within study area"), 
-                  Area_Burned_km2= NA_real_, 
-                  'Area_Burned_%' = NA_real_)
-      
-      y <- y %>% 
-        mutate(Area_Burned_km2 = case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/1000000,2))),
-               'Area_Burned_%'= case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/st_area(rv$layers_rv$planreg_sf))*100))
-        )
-    }else{
-      y <- tibble(
-        Variables = "No fire",
-        Area_Burned_km2 = NA_real_,
-        `Area_Burned_%` = NA_real_
-      )
-    }
-    rv$outfiretab(y)
-  })
-  
 }
   
