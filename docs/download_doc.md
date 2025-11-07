@@ -1,10 +1,10 @@
 ### Download results
 
-Results can be downloaded as a GeoPackage that includes the following spatial layers: **ADD csv download for the statistics tables**
+Results can be downloaded as a GeoPackage that includes the following spatial layers: 
 
 - **studyarea**: polygon of the study area
 - **aoi**: polygon of the area of interest
-- **catchments**: catchments dataset for the study area **Question: if calculated by the App, is proportion intact added to the dataset?**
+- **catchments**: catchments dataset for the study area 
 - **streams**: stream network associated with the catchment dataset
 - **upstream**: area upstream of the AOI identified by the App
 - **downstream stem**: downstream stem identified for the AOI by the App
