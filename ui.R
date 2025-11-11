@@ -266,7 +266,8 @@ ui = dashboardPage(skin="black",
                                                     tabPanel(HTML("<h4>Area Intactness and Hydrology statistics</h4>"), tableOutput("tab1"),
                                                              "*Catchment Area Weighted Intactness",)
                                         )
-                                 ),
+                                 )),
+                               column(width = 4,
                                  uiOutput("dynamicTabs")
                                )
                        )

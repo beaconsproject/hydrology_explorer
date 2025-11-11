@@ -518,21 +518,17 @@ setParamsServer <- function(input, output, session, project, map, rv){
     out <-rbind(x,z)
     rv$outputsumStats(out)
   })
-  
+ 
+   
   output$dynamicTabs <- renderUI({
-    # Fires
-    tabs <- list(
-      tabPanel(HTML("<h4>Fire statistics</h4>"), tableOutput("tabFires"))
-    )
-    # DCI
+    tabs <- list()
+    # Fire tab
+    tabs[[1]] <- tabPanel(HTML("<h4>Fire statistics</h4>"), tableOutput("tabFires"))
+    # DCI tab 
     if (!is.null(input$confAOI) && input$confAOI > 0) {
-      tabs <- append(
-        list(tabPanel(HTML("<h4>Dendritic Connectivity Index (DCI)</h4>"), tableOutput("tabDCI"))),
-        tabs,
-        after = 0  # Add DCI as the first tab
-      )
+      tabs[[length(tabs) + 1]] <- tabPanel(HTML("<h4>Dendritic Connectivity Index (DCI)</h4>"), tableOutput("tabDCI"))
     }
-    do.call(tabBox, c(list(id = "metric", width = 4), tabs))
+    do.call(tabBox, c(list(id = "metric", width = NULL), tabs))  
   })
   
 }
