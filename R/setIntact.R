@@ -20,8 +20,8 @@ setIntactServer <- function(input, output, session, project, map, rv){
         tagList(
           div(style = "margin-top: -20px;", 
               radioButtons("intactSource", "",
-                           choices = list("Use existing undisturbed layer" = "intIncluded", 
-                                          "Value in catchment dataset" = "intcatch",
+                           choices = list("Value in catchment dataset" = "intcatch",
+                                          "Use existing undisturbed layer" = "intIncluded", 
                                           "Upload intactness layer" = "intupload"),
                            selected = "intIncluded", 
                            inline = FALSE)
