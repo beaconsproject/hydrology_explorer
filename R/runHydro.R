@@ -55,7 +55,8 @@ runHydroServer  <- function(input, output, session, project, map, rv){
         title = "No upstream catchments found!",
         easyClose = TRUE,
         footer = modalButton("OK")))
-      data$catch_up(NULL)
+      rv$layers_rv$catch_up <- NULL
+      return()
     }else if (input$intactSource =='intcatch'){
       catch_up <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% upstream_list$AOI_1,]
       catch_up <- rbind(catch_up_bits, catch_up)
@@ -116,6 +117,8 @@ runHydroServer  <- function(input, output, session, project, map, rv){
             title = "No downstream stem catchments found!",
             easyClose = TRUE,
             footer = modalButton("OK")))
+          rv$layers_rv$catch_stem <- NULL
+          return()
         }else{
           #catch_stem <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% downstream_stem_list$AOI_1, drop = FALSE]
           aoi_stream <- st_filter(rv$layers_rv$stream_sf, rv$layers_rv$analysis_aoi, .predicate = st_intersects)
@@ -150,7 +153,8 @@ runHydroServer  <- function(input, output, session, project, map, rv){
         title = "No downstream catchments found!",
         easyClose = TRUE,
         footer = modalButton("OK")))
-      data$catch_stem(NULL)
+      rv$layers_rv$catch_stem <- NULL
+      return()
     }else if (input$intactSource =='intcatch'){
       catch_stem <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% downstream_stem_list$AOI_1,]
       catch_stem_all <- rbind(catch_stem_bits, catch_stem)
@@ -197,53 +201,58 @@ runHydroServer  <- function(input, output, session, project, map, rv){
   
   # DOWNSTREAM SECTION
   catch_down <- eventReactive(input$confAnalysis, {
-    # Extract downstream stem and upstream from downstream stem
-    req(catch_stem())
-    stem_sf <- rv$layers_rv$catch_stem %>% st_union() %>% st_as_sf() 
-    stem_sf$AOI_ID <- "AOI_1"
-    upstem_list <- get_upstream_catchments(stem_sf, "AOI_ID", rv$layers_rv$catchment_pr)
-
-    #Merge stem catchment with their related upstream catchments
-    catchList <- c()
-    catchList <- c(rv$layers_rv$catch_stem$CATCHNUM,upstem_list$AOI_1)
-    catchList <- catchList %>%
-      unique() %>%
-      subset(!. %in% rv$layers_rv$catch_up$CATCHNUM)  #drop catchments within the upstream
-    
-    if (input$intactSource =='intcatch'){
-      catch_down<- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% catchList, drop = FALSE]
-      catch_down <- catch_down %>%
-        st_difference(st_union(rv$layers_rv$analysis_aoi))
-    }else {
-      # subset catchments
-      catch_down <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% catchList, drop = FALSE]
-      # Remove AOI overlap and keep valid polygons
-      catch_down <- catch_down %>%
-        st_difference(st_union(rv$layers_rv$analysis_aoi)) %>%
-        st_cast("MULTIPOLYGON")
-      # Clip intactness layer to those catchments
-      intact <- st_intersection(rv$layers_rv$intactness_sf, catch_down)
-      # Compute intact area per catchment
-      intArea <- intact %>%
-        mutate(area = st_area(.) %>% as.numeric()) %>%
-        st_drop_geometry() %>%                           
-        dplyr::select(CATCHNUM, area) %>%            
-        group_by(CATCHNUM) %>%                           
-        summarise(area_int = sum(area, na.rm = TRUE)) %>% 
-        ungroup()
-      # Join results back to catchment polygons
-      catch_down <- catch_down %>%
-        left_join(intArea, by = "CATCHNUM") %>%
-        mutate(area_int = ifelse(is.na(area_int), 0, area_int))
-
+    if(!is.null(catch_stem())){
+      # Extract downstream stem and upstream from downstream stem
+      req(catch_stem())
+      stem_sf <- rv$layers_rv$catch_stem %>% st_union() %>% st_as_sf() 
+      stem_sf$AOI_ID <- "AOI_1"
+      upstem_list <- get_upstream_catchments(stem_sf, "AOI_ID", rv$layers_rv$catchment_pr)
       
-      # Compute intact ratio
+      #Merge stem catchment with their related upstream catchments
+      catchList <- c()
+      catchList <- c(rv$layers_rv$catch_stem$CATCHNUM,upstem_list$AOI_1)
+      catchList <- catchList %>%
+        unique() %>%
+        subset(!. %in% rv$layers_rv$catch_up$CATCHNUM)  #drop catchments within the upstream
+      
+      if (input$intactSource =='intcatch'){
+        catch_down<- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% catchList, drop = FALSE]
+        catch_down <- catch_down %>%
+          st_difference(st_union(rv$layers_rv$analysis_aoi))
+      }else {
+        # subset catchments
+        catch_down <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% catchList, drop = FALSE]
+        # Remove AOI overlap and keep valid polygons
+        catch_down <- catch_down %>%
+          st_difference(st_union(rv$layers_rv$analysis_aoi)) %>%
+          st_cast("MULTIPOLYGON")
+        # Clip intactness layer to those catchments
+        intact <- st_intersection(rv$layers_rv$intactness_sf, catch_down)
+        # Compute intact area per catchment
+        intArea <- intact %>%
+          mutate(area = st_area(.) %>% as.numeric()) %>%
+          st_drop_geometry() %>%                           
+          dplyr::select(CATCHNUM, area) %>%            
+          group_by(CATCHNUM) %>%                           
+          summarise(area_int = sum(area, na.rm = TRUE)) %>% 
+          ungroup()
+        # Join results back to catchment polygons
+        catch_down <- catch_down %>%
+          left_join(intArea, by = "CATCHNUM") %>%
+          mutate(area_int = ifelse(is.na(area_int), 0, area_int))
+        
+        
+        # Compute intact ratio
+        catch_down <- catch_down %>%
+          mutate(intact = round(area_int / Area_Total, 3))
+      }
       catch_down <- catch_down %>%
-        mutate(intact = round(area_int / Area_Total, 3))
+        mutate(down =1,
+               Area_Total = as.numeric(st_area(geom)))
+    }else{
+      catch_down <- NULL
     }
-    catch_down <- catch_down %>%
-      mutate(down =1,
-             Area_Total = as.numeric(st_area(geom)))
+    
     rv$layers_rv$catch_down <- catch_down
     return(catch_down)
   })
@@ -253,27 +262,15 @@ runHydroServer  <- function(input, output, session, project, map, rv){
   ####################################################################################################
   # Render Upstream / downstream
   observeEvent(input$confAnalysis, {
-    #req(input$confAnalysis)
-    
     # show pop-up ...
     showModal(modalDialog(
       title = "Generating upstream and downstream layers. This may take several minutes to display.",
       easyClose = TRUE,
       footer = modalButton("OK")))
-    
-    #catch_att <- st_transform(catch_att(), 4326)
-    
-    #catch_up <- catch_att %>% 
-    #  filter(up ==1) 
-    #upstream_sf(catch_up)
-    catch_up <- st_transform(catch_up(), 4326)
-    
-    catch_stem <- st_transform(catch_stem(), 4326)  
-    catch_down <- st_transform(catch_down(), 4326) 
-    
-    
-    all_values <- c(catch_stem$intact, catch_down$intact, catch_up$intact)
-    all_values <- all_values[!is.na(all_values)]
+    browser()
+    layers <- list(catch_up(), catch_stem(), catch_down())
+    layers <- layers[!sapply(layers, is.null)]
+    all_values <- unlist(lapply(layers, function(x) x$intact))
     
     ## Create bin palette function for percent
     bins <-c(1.0, 0.99, 0.9, 0.8, 0.7, 0)
@@ -283,8 +280,8 @@ runHydroServer  <- function(input, output, session, project, map, rv){
       bins = bins,
       na.color = "transparent"
     )
-    legend <- c("Downstream area", "Downstream stem")
-    rv$overlayHydro(legend)
+    
+    legend <- c()
     
     map_bounds1 <- rv$layers_rv$planreg_sf %>% st_transform(4326) %>% st_bbox() %>% as.character()
     map <- leafletProxy("map") %>%
@@ -293,28 +290,38 @@ runHydroServer  <- function(input, output, session, project, map, rv){
       clearGroup('Upstream area') %>%
       clearGroup('Selected') %>%
       clearControls() %>%
-      fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
-      addPolygons(data=catch_down, color=~pal(intact), stroke=F, fillOpacity=0.8, group='Downstream area', options = leafletOptions(pane = "ground")) %>%
-      addPolygons(data=catch_stem, color=~pal(intact), stroke=F, fillOpacity=0.8, group="Downstream stem", options = leafletOptions(pane = "ground")) %>%
+      fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4])
+      
+    if(!is.null(rv$layers_rv$catch_down)){
+      catch_down <- st_transform(rv$layers_rv$catch_down, 4326)
+      map <- leafletProxy("map") %>%
+        addPolygons(data=catch_down, color=~pal(intact), stroke=F, fillOpacity=0.8, group='Downstream area', options = leafletOptions(pane = "ground"))
+      legend <- c(legend, 'Downstream area')
+    }
+    if(!is.null(rv$layers_rv$catch_stem)){
+      catch_stem <- st_transform(rv$layers_rv$catch_stem, 4326)
+      map <- leafletProxy("map") %>%
+        addPolygons(data=catch_stem, color=~pal(intact), stroke=F, fillOpacity=0.8, group="Downstream stem", options = leafletOptions(pane = "ground"))
+      legend <- c(legend, 'Downstream stem')
+    }
+    if(!is.null(rv$layers_rv$catch_up)){
+      catch_up <- st_transform(rv$layers_rv$catch_up, 4326)
+      map <- leafletProxy("map") %>%
+        addPolygons(data=catch_up, color=~pal(intact), stroke=F, fillOpacity=0.8, group="Upstream area", options = leafletOptions(pane = "ground"))
+      legend <- c(legend, 'Upstream area')
+    }
+    
+    leafletProxy("map") %>%
       addLegend(position = "bottomleft", pal = pal, values = all_values, opacity = 1,
                 title = "Percent intactness", labFormat = labelFormat(
                   suffix = "%",
                   transform = function(x) 100 * x),
-                group = "Downstream catchment intactness") %>%
+                group = "Catchment intactness") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                       overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), rv$overlayHydro()),
+                       overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), legend),
                        options = layersControlOptions(collapsed = TRUE)) %>%
       hideGroup(c("Catchemnts","Downstream area", rv$group_names()))
-    if(nrow(catch_up)>0){
-      map <- leafletProxy("map") %>%
-        addPolygons(data=catch_up, color=~pal(intact), stroke=F, fillOpacity=0.8, group="Upstream area", options = leafletOptions(pane = "ground")) %>%
-        addLayersControl(position = "topright",
-                         baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
-                         overlayGroups = c(rv$overlayBase(), rv$group_names() , rv$grps(), rv$overlayHydro(), "Upstream area"),
-                         options = layersControlOptions(collapsed = TRUE)) %>%
-        hideGroup(c("Catchemnts", "Downstream area", rv$group_names()))
-    } 
   })
   
   #Update with Upstream/Downstream stats
@@ -337,7 +344,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     x <- x %>% dplyr::filter(!Variables %in% new_rows$Variables)
     x <- dplyr::bind_rows(x, new_rows)
     
-    if(nrow(upstream_area)>0){
+    if(!is.null(upstream_area)){
       x <- x %>% 
         mutate(Area_km2 = case_when(Variables == "Upstream area" ~  round(as.numeric(sum(st_area(st_make_valid(upstream_area)))/1000000,0)), 
                                     TRUE ~ Area_km2),
@@ -350,7 +357,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                Percent= case_when(Variables == "Upstream mean AWI*" ~ 0,
                                   TRUE ~ Percent))
     }
-    if(nrow(downstream_stem_int)>0){
+    if(!is.null(downstream_stem_int)){
       x <- x %>% 
         mutate(Area_km2 = case_when(Variables == "Downstream stem area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_stem_int)))/1000000,0)),
                                     TRUE ~ Area_km2),
@@ -364,7 +371,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                                   TRUE ~ Percent))
     }
     
-    if(nrow(downstream_int)>0){
+    if(!is.null(downstream_int)){
       x <- x %>% 
         mutate(Area_km2 = case_when(Variables == "Downstream area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_int)))/1000000,0)),
                                     TRUE ~ Area_km2),
@@ -381,17 +388,23 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     
     #FIRE
     if(!is.null(rv$layers_rv$fires)){
-      upstream_fire <- upstream_area %>%
-        st_union() %>%
-        st_intersection(rv$layers_rv$fires)
+      if(!is.null(upstream_area)){
+        upstream_fire <- upstream_area %>%
+          st_union() %>%
+          st_intersection(rv$layers_rv$fires)
+      } else {upstream_fire <- NULL}
       
-      downstream_stem_fire <- downstream_stem_int %>%
-        st_union() %>%
-        st_intersection(rv$layers_rv$fires)
+      if(!is.null(downstream_stem_int)){
+        downstream_stem_fire <- downstream_stem_int %>%
+          st_union() %>%
+          st_intersection(rv$layers_rv$fires)
+      } else {downstream_stem_fire <- NULL}
       
-      downstream_fire <- downstream_int %>%
+      if(!is.null(downstream_int)){
+        downstream_fire <- downstream_int %>%
         st_union() %>%
         st_intersection(rv$layers_rv$fires)
+      } else {downstream_fire <- NULL}
       
       y <- rv$outfiretab()
       new_rows  <- tibble(Variables=c("Within upstream area",
@@ -402,7 +415,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
       y <- y %>% dplyr::filter(!Variables %in% new_rows$Variables)
       y <- dplyr::bind_rows(y, new_rows)
       
-      if(length(upstream_fire)>0){
+      if(!is.null(upstream_fire)){
         y <- y %>%
           mutate(Area_Burned_km2 = case_when(Variables == "Within upstream area" ~ round(as.numeric(sum(st_area(st_make_valid(upstream_fire)))/1000000,2)),
                                              TRUE ~ Area_Burned_km2),
@@ -415,7 +428,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                  `Area_Burned_%`= case_when(Variables == "Within upstream area" ~   0,
                                             TRUE ~ `Area_Burned_%`))
       }
-      if(length(downstream_stem_fire)>0){
+      if(!is.null(downstream_stem_fire)){
         y <- y %>%
           mutate(Area_Burned_km2 = case_when(Variables == "Within downstream stem area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_stem_fire)))/1000000,2)),
                                              TRUE ~ Area_Burned_km2),
@@ -429,7 +442,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                                             TRUE ~ `Area_Burned_%`))
       }
       
-      if(length(downstream_fire)>0){
+      if(!is.null(downstream_fire)){
         y <- y %>%
           mutate(Area_Burned_km2 = case_when(Variables == "Within overall downstream area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_fire)))/1000000,2)),
                                              TRUE ~ Area_Burned_km2),
