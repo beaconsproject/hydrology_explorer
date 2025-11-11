@@ -343,7 +343,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       easyClose = TRUE,
       footer = modalButton("OK")))
     
-    aoi <- st_transform(rv$layers_rv$aoi_sf, 4326)
+    aoi <- st_transform(aoi_sf(), 4326)
     analysis_aoi <- rv$layers_rv$analysis_aoi %>% 
       #st_union() %>% 
       st_buffer(dist = 20) %>% 

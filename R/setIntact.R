@@ -9,62 +9,12 @@ setIntactServer <- function(input, output, session, project, map, rv){
     intact_exist <- !is.null(rv$layers_rv$undisturbed) && nrow(rv$layers_rv$undisturbed) > 0
     
     tagList(
-      # --- Fires section ---
-      if (fires_exist) {
-        # Show choice: use existing or upload
-        tagList(
-          div(style = "margin-top: -20px;",
-              radioButtons("firesSource", "Select source for fires:",
-                           choices = list("Use existing fire layer" = "fireIncluded", 
-                                          "Upload fires layer" = "fireupload"),
-                           selected = "fireIncluded", 
-                           inline = FALSE)
-          ),
-          conditionalPanel(
-            condition = "input.firesSource == 'fireupload'",
-            div(style = "margin-top: -20px;",
-                radioButtons("fireformat", "Select fire file format:",
-                             choices = list("Shapefile" = "fireshp", 
-                                            "GeoPackage" = "firegpkg"),
-                             selected = character(0), 
-                             inline = TRUE)),
-            div(style = "margin-top: -20px;",
-                fileInput("upload_fire", "Upload fire layer", multiple = TRUE,
-                          accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))),
-            conditionalPanel(
-              condition = "input.fireformat == 'firegpkg'",
-              div(style = "margin-top: -20px;",
-                  selectInput("fireLayer", "Select fire layer", choices = NULL, multiple = FALSE))
-            )
-          )
-        )
-      } else {
-        # Only show upload (no existing fires)
-        tagList(
-          div(style = "margin-top: -20px;",
-              radioButtons("fireformat", "Select fire file format:",
-                           choices = list("Shapefile" = "fireshp", 
-                                          "GeoPackage" = "firegpkg"),
-                           selected = character(0), 
-                           inline = TRUE)),
-          div(style = "margin-top: -20px;",
-              fileInput("upload_fire", "Upload fire layer", multiple = TRUE,
-                        accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg')) ),
-          conditionalPanel(
-            condition = "input.fireformat == 'firegpkg'",
-            div(style = "margin-top: -20px;",
-                selectInput("fireLayer", "Select fire layer", choices = NULL, multiple = FALSE))
-          )
-        )
-      },
-      
       # --- Intactness section ---
       div(style = "margin: 15px; margin-top: 20px; font-size:17px; font-weight: bold", "Select source of intactness"),
       div(style = "margin-left: 12px; margin-top: -10px; font-size:12px;",
           "Intactness identifies areas without a visible human footprint (e.g., road, mine site) and is used as a proxy to assess the overall ecological integrity of a catchment e.g., 0-100% intact or low-high ecological integrity."
       ),
-      br(),
-      
+  
       if (intact_exist) {
         # Show choice: use existing, value in catchments, or upload
         tagList(
@@ -130,6 +80,56 @@ setIntactServer <- function(input, output, session, project, map, rv){
               div(style = "margin-top: -20px;",
                   selectInput("intactLayer", "Select intactness layer", choices = NULL, multiple = FALSE))
             )
+          )
+        )
+      },
+      
+      br(),
+      # --- Fires section ---
+      if (fires_exist) {
+        # Show choice: use existing or upload
+        tagList(
+          div(style = "margin-top: -20px;",
+              radioButtons("firesSource", "Select source for fires:",
+                           choices = list("Use existing fire layer" = "fireIncluded", 
+                                          "Upload fires layer" = "fireupload"),
+                           selected = "fireIncluded", 
+                           inline = FALSE)
+          ),
+          conditionalPanel(
+            condition = "input.firesSource == 'fireupload'",
+            div(style = "margin-top: -20px;",
+                radioButtons("fireformat", "Select fire file format:",
+                             choices = list("Shapefile" = "fireshp", 
+                                            "GeoPackage" = "firegpkg"),
+                             selected = character(0), 
+                             inline = TRUE)),
+            div(style = "margin-top: -20px;",
+                fileInput("upload_fire", "Upload fire layer", multiple = TRUE,
+                          accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))),
+            conditionalPanel(
+              condition = "input.fireformat == 'firegpkg'",
+              div(style = "margin-top: -20px;",
+                  selectInput("fireLayer", "Select fire layer", choices = NULL, multiple = FALSE))
+            )
+          )
+        )
+      } else {
+        # Only show upload (no existing fires)
+        tagList(
+          div(style = "margin-top: -20px;",
+              radioButtons("fireformat", "Select fire file format:",
+                           choices = list("Shapefile" = "fireshp", 
+                                          "GeoPackage" = "firegpkg"),
+                           selected = character(0), 
+                           inline = TRUE)),
+          div(style = "margin-top: -20px;",
+              fileInput("upload_fire", "Upload fire layer", multiple = TRUE,
+                        accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg')) ),
+          conditionalPanel(
+            condition = "input.fireformat == 'firegpkg'",
+            div(style = "margin-top: -20px;",
+                selectInput("fireLayer", "Select fire layer", choices = NULL, multiple = FALSE))
           )
         )
       },
