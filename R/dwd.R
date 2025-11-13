@@ -6,11 +6,43 @@ dwdServer  <- function(input, output, session, project, map, rv){
   output$downloadData <- downloadHandler(
     filename = function() { paste("Hydro_explorer_output-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
-    
-      catchment_updated <- rv$layers_rv$catchment_pr %>%
-        dplyr::left_join(st_drop_geometry(rv$layers_rv$catch_up) %>% dplyr::select(CATCHNUM, up), by = "CATCHNUM") %>%
-        dplyr::left_join(st_drop_geometry(rv$layers_rv$catch_down) %>% dplyr::select(CATCHNUM, down), by = "CATCHNUM") %>%
-        dplyr::left_join(st_drop_geometry(rv$layers_rv$catch_stem) %>% dplyr::select(CATCHNUM, stem), by = "CATCHNUM")
+      browser()
+      catchment_updated <- rv$layers_rv$catchment_pr
+      
+      if (!is.null(rv$layers_rv$catch_up)) {
+        catchment_updated <- catchment_updated %>%
+          left_join(
+            st_drop_geometry(rv$layers_rv$catch_up) %>% dplyr::select(CATCHNUM, up),
+            by = "CATCHNUM"
+          )
+      }else{
+        catchment_updated$up <- 0
+      }
+      
+      if (!is.null(rv$layers_rv$catch_down)) {
+        catchment_updated <- catchment_updated %>%
+          left_join(
+            st_drop_geometry(rv$layers_rv$catch_down) %>% dplyr::select(CATCHNUM, down),
+            by = "CATCHNUM"
+          )
+      }else{
+        catchment_updated$down <- 0
+      }
+      
+      if (!is.null(rv$layers_rv$catch_stem)) {
+        catchment_updated <- catchment_updated %>%
+          left_join(
+            st_drop_geometry(rv$layers_rv$catch_stem) %>% dplyr::select(CATCHNUM, stem),
+            by = "CATCHNUM"
+          )
+      }else{
+        catchment_updated$stem <- 0
+      }
+      
+      #catchment_updated <- rv$layers_rv$catchment_pr %>%
+      #  dplyr::left_join(st_drop_geometry(rv$layers_rv$catch_up) %>% dplyr::select(CATCHNUM, up), by = "CATCHNUM") %>%
+      #  dplyr::left_join(st_drop_geometry(rv$layers_rv$catch_down) %>% dplyr::select(CATCHNUM, down), by = "CATCHNUM") %>%
+      #  dplyr::left_join(st_drop_geometry(rv$layers_rv$catch_stem) %>% dplyr::select(CATCHNUM, stem), by = "CATCHNUM")
       
       catchment_updated <- catchment_updated[,c("CATCHNUM", "Area_Land", "Area_Water", "Area_Total", "intact", "down", "stem", "up")]
       
@@ -41,9 +73,9 @@ dwdServer  <- function(input, output, session, project, map, rv){
       st_write(rv$layers_rv$planreg_sf, dsn=file, layer='studyarea', append=TRUE)
       st_write(rv$layers_rv$analysis_aoi, dsn=file, layer='aoi', append=TRUE) 
       st_write(catchment_updated, dsn=file, layer='catchments', append=TRUE)
-      st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_Total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
-      st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_Total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
-      st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_Total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)
+      if (!is.null(rv$layers_rv$catch_up)) st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_Total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
+      if (!is.null(rv$layers_rv$catch_down)) st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_Total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
+      if (!is.null(rv$layers_rv$catch_stem)) st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_Total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)
     }
   )
   
