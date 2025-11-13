@@ -264,7 +264,7 @@ ui = dashboardPage(skin="black",
                                  tabBox(id = "stat", width=NULL,
                                         tabsetPanel(id="tabset1",
                                                     tabPanel(HTML("<h4>Area Intactness and Hydrology statistics</h4>"), tableOutput("tab1"),
-                                                             "*Catchment Area Weighted Intactness",)
+                                                             "*Mean Area-Weighted Intactness of Catchment",)
                                         )
                                  )),
                                column(width = 4,
