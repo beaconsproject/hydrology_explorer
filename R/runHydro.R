@@ -318,7 +318,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                   transform = function(x) 100 * x),
                 group = "Catchment intactness") %>%
       addLayersControl(position = "topright",
-                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), legend),
                        options = layersControlOptions(collapsed = TRUE)) %>%
       hideGroup(c("Catchemnts","Downstream area", rv$group_names()))

@@ -452,7 +452,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
     
     leafletProxy("map") %>%
       addLayersControl(position = "topright",
-                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(legend, group_names_new),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c("Streams", "Catchments", group_names_new))

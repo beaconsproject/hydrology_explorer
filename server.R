@@ -89,8 +89,9 @@ server = function(input, output, session) {
       addMapPane(name = "over", zIndex=420) %>%
       addProviderTiles("Esri.WorldTopoMap", group="Esri.WorldTopoMap") %>% 
       addProviderTiles("Esri.WorldImagery", group="Esri.WorldImagery") %>%
+      addTiles(urlTemplate = "", group = "Blank Background") %>%
       addLayersControl(position = "topright",
-                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery"),
+                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery",  "Blank Background"),
                        options = layersControlOptions(collapsed = FALSE)) 
   })
   

@@ -166,7 +166,8 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       clearGroup('Selected') %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=aoi_sf, fill=F, color="red", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
-      addLayersControl(overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps()),
+      addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
+                       overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c(rv$group_names()))
   })
@@ -329,7 +330,8 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       clearGroup('AOI') %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=aoi, fill=F, color="black", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
-      addLayersControl(overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps()),
+      addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
+                       overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup(c(rv$group_names()))
   })
@@ -364,7 +366,8 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=analysis_aoi, fill = F, color="red", weight=4, group="Analysis AOI", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=aoi, fill=F, color="black", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
-      addLayersControl(overlayGroups = c(rv$overlayBase(),  rv$group_names(), rv$group_names(), rv$grps()),
+      addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
+                       overlayGroups = c(rv$overlayBase(),  rv$group_names(), rv$group_names(), rv$grps()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup( rv$group_names())
     showModal(modalDialog(
