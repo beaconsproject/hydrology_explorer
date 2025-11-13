@@ -287,6 +287,40 @@ setIntactServer <- function(input, output, session, project, map, rv){
       hideGroup(c("Streams", "Catchments", rv$group_names()))
     
     removeModal()
+    
+    
+    # Update stats
+    x <- tibble(Variables=c("Study area", 
+                            "Study area intactness"), 
+                Area_km2= NA_real_,
+                Percent = NA_real_)
+    
+    x <- x %>% 
+      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
+                                  Variables == "Study area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0)),
+             Percent= case_when(Variables == "Study area" ~  100,
+                                Variables == "Study area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2))
+      )
+    rv$outtab1(x)
+    
+    #Fire stat
+    if(!is.null(rv$layers_rv$fires)){
+      y <- tibble(Variables=c("Within study area"), 
+                  Area_Burned_km2= NA_real_, 
+                  'Area_Burned_%' = NA_real_)
+      
+      y <- y %>% 
+        mutate(Area_Burned_km2 = case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/1000000,2))),
+               'Area_Burned_%'= case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/st_area(rv$layers_rv$planreg_sf))*100))
+        )
+    }else{
+      y <- tibble(
+        Variables = "No fire",
+        Area_Burned_km2 = NA_real_,
+        `Area_Burned_%` = NA_real_
+      )
+    }
+    rv$outfiretab(y)
   })
 }
   

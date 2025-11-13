@@ -386,14 +386,17 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     }
     
     x <- tibble(Variables=c("Study area", 
+                            "Study area intactness",
                             "Analysis AOI", 
                             "Analysis AOI intactness"), 
                 Area_km2= NA_real_,
                 Percent = NA_real_)
     
     x <- x %>% 
-      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0))),
-             Percent= case_when(Variables == "Study area" ~  100),
+      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
+                                  Variables == "Study area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0)),
+             Percent= case_when(Variables == "Study area" ~  100,
+                                Variables == "Study area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2)),
              Area_km2 = case_when(Variables == "Analysis AOI" ~  round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/1000000,0)), 
                                   TRUE ~ Area_km2),
              Percent= case_when(Variables == "Analysis AOI" ~ round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/st_area(rv$layers_rv$planreg_sf)*100,2)),
