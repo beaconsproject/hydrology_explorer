@@ -93,7 +93,7 @@ ui = dashboardPage(skin="black",
                        fileInput("upload_gpkg", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
                        actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
                      ),
-                     # UPLOAD - Intactness
+                     # UPLOAD - Intactness and fire
                      conditionalPanel(
                        condition = "input.tabs== 'tabIntact'",
                        uiOutput("intactUI")

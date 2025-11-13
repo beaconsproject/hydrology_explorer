@@ -90,9 +90,9 @@ setIntactServer <- function(input, output, session, project, map, rv){
         # Show choice: use existing or upload
         tagList(
           div(style = "margin-top: -20px;",
-              radioButtons("firesSource", "Select source for fires:",
+              radioButtons("firesSource", "Select source for fire:",
                            choices = list("Use existing fire layer" = "fireIncluded", 
-                                          "Upload fires layer" = "fireupload"),
+                                          "Upload fire layer" = "fireupload"),
                            selected = "fireIncluded", 
                            inline = FALSE)
           ),

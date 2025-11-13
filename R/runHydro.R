@@ -267,7 +267,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
       title = "Generating upstream and downstream layers. This may take several minutes to display.",
       easyClose = TRUE,
       footer = modalButton("OK")))
-    browser()
+    
     layers <- list(catch_up(), catch_stem(), catch_down())
     layers <- layers[!sapply(layers, is.null)]
     all_values <- unlist(lapply(layers, function(x) x$intact))
