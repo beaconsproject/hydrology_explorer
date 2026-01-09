@@ -92,11 +92,11 @@ runHydroServer  <- function(input, output, session, project, map, rv){
       
       # Compute intact ratio
       catch_up <- catch_up |>
-        mutate(intact = round(area_int / Area_Total, 3))
+        mutate(intact = round(area_int / Area_total, 3))
     }
     catch_up <- catch_up %>%
       mutate(up =1,
-             Area_Total = as.numeric(st_area(geom)))
+             Area_total = as.numeric(st_area(geom)))
     # Return
     rv$layers_rv$catch_up <- catch_up
     return(catch_up)
@@ -194,7 +194,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     }
     catch_stem <- catch_stem %>%
       mutate(stem =1,
-             Area_Total = as.numeric(st_area(geom)))
+             Area_total = as.numeric(st_area(geom)))
     rv$layers_rv$catch_stem <- catch_stem
     return(catch_stem)
   })
@@ -244,11 +244,11 @@ runHydroServer  <- function(input, output, session, project, map, rv){
         
         # Compute intact ratio
         catch_down <- catch_down %>%
-          mutate(intact = round(area_int / Area_Total, 3))
+          mutate(intact = round(area_int / Area_total, 3))
       }
       catch_down <- catch_down %>%
         mutate(down =1,
-               Area_Total = as.numeric(st_area(geom)))
+               Area_total = as.numeric(st_area(geom)))
     }else{
       catch_down <- NULL
     }
