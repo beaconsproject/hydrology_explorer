@@ -35,7 +35,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
       
       # ---- Fire section  ----
       radioButtons("firesSource", "Select source for fire (optional):", choices = if(is.null(rv$layers_rv$undisturbed)) {c("Upload fire layer" = "fireupload",
-                                                                                                                           "No fire" = "not fire")
+                                                                                                                           "No fire" = "nofire")
                                                                                   } else {c("Upload fire layer" = "fireupload",
                                                                                             "Use existing fire layer" = "fireIncluded")
                                                                                   }, selected = "nofire"),
