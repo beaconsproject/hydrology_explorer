@@ -39,7 +39,7 @@ dwdServer  <- function(input, output, session, project, map, rv){
         catchment_updated$stem <- 0
       }
       
-      catchment_updated <- catchment_updated[,c("CATCHNUM", "Area_Land", "Area_Water", "Area_Total", "intact", "down", "stem", "up")]
+      catchment_updated <- catchment_updated[,c("CATCHNUM", "Area_land", "Area_water", "Area_total", "intact", "down", "stem", "up")]
       sa_stats <- data.frame(area_km2 = rv$outtab1()[1,2],
                               area_intact_km2  = rv$outtab1()[2,2],
                               area_intact_per  = rv$outtab1()[2,3],
@@ -81,9 +81,9 @@ dwdServer  <- function(input, output, session, project, map, rv){
       st_write(studyarea, dsn=file, layer='studyarea', append=TRUE)
       st_write(aoi, dsn=file, layer='aoi', append=TRUE) 
       st_write(catchment_updated, dsn=file, layer='catchments', append=TRUE)
-      if (!is.null(rv$layers_rv$catch_up)) st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_Total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
-      if (!is.null(rv$layers_rv$catch_down)) st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_Total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
-      if (!is.null(rv$layers_rv$catch_stem)) st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_Total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)
+      if (!is.null(rv$layers_rv$catch_up)) st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
+      if (!is.null(rv$layers_rv$catch_down)) st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
+      if (!is.null(rv$layers_rv$catch_stem)) st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)
     }
   )
   
