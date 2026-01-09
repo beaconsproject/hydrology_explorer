@@ -4,6 +4,16 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
   # Set AOI
   ################################################################################################
   ################################################################################################
+  observe({
+    req(input$typeAOI == 'uploadAOI')
+    req(input$sourceAOI == 'gpkgAOI')
+    req(input$gpkg_aoi)
+    file <- input$gpkg_aoi$datapath
+    layers <- st_layers(file)$name
+    updateSelectInput(session = getDefaultReactiveDomain(), "aoiLayer", choices = c("Select AOI layer", layers))
+  })
+  
+  
   aoi_sf <- eventReactive({
     list(
       input$shp_aoi,
