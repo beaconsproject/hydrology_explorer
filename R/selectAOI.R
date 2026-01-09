@@ -468,18 +468,27 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     rv$outputDCI(i)
     
     # Summary stats
-    z <- tibble(Variables=c("Fires within the study area", "Fires within the Analysis AOI"), 
+    if(!is.null(rv$layers_rv$fires)){
+      z <- tibble(Variables=c("Fires within the study area", "Fires within the Analysis AOI"), 
                 Area_km2= y$Area_Burned_km2, 
                 Percent = y$`Area_Burned_%`)
     
-    space_out <- tibble(Variables=c(NA,NA),
+      space_out <- tibble(Variables=c(NA,NA),
                       Area_km2= c(NA, "Metric"), 
                       Percent = c(NA,"Rating"))
-    dci_out <- tibble(Variables= "DCI score", 
+      dci_out <- tibble(Variables= "DCI score", 
                            Area_km2= i$Metric, 
                            Percent = i$Rating)
-    out <-rbind(x, z, space_out, dci_out)
-    
+      out <-rbind(x, z, space_out, dci_out)
+    } else{
+      space_out <- tibble(Variables=c(NA,NA),
+                          Area_km2= c(NA, "Metric"), 
+                          Percent = c(NA,"Rating"))
+      dci_out <- tibble(Variables= "DCI score", 
+                        Area_km2= i$Metric, 
+                        Percent = i$Rating)
+      out <-rbind(x, space_out, dci_out)
+    }
     rv$outputsumStats(out)
   })
 }
