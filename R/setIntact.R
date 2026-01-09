@@ -1,148 +1,68 @@
 setIntactServer <- function(input, output, session, project, map, rv){
   
-  output$intactUI <- renderUI({
-    req(input$tabs)
-    if (input$tabs != "tabIntact") return(NULL)
-    
-    # Check if layers exist
-    fires_exist  <- !is.null(rv$layers_rv$fires) && nrow(rv$layers_rv$fires) > 0
-    intact_exist <- !is.null(rv$layers_rv$undisturbed) && nrow(rv$layers_rv$undisturbed) > 0
-    
+  intactUI_static <- function() {
     tagList(
-      # --- Intactness section ---
-      div(style = "margin: 15px; margin-top: 20px; font-size:17px; font-weight: bold", "Select source of intactness"),
-      div(style = "margin-left: 12px; margin-top: -10px; font-size:12px;",
-          "Intactness identifies areas without a visible human footprint (e.g., road, mine site) and is used as a proxy to assess the overall ecological integrity of a catchment e.g., 0-100% intact or low-high ecological integrity."
+      
+      # ---- Intactness header ----
+      div(style = "margin: 15px; font-size:17px; font-weight:bold",
+          "Select source of intactness"),
+      
+      div(style = "margin-left:12px; font-size:12px;",
+          "Intactness identifies areas without a visible human footprint (e.g., road, mine site) and is used as a proxy to assess the overall ecological integrity of a catchment e.g., 0-100% intact or low-high ecological integrity."),
+      
+      # ---- Intact source (always shown) ----
+      radioButtons("intactSource", "",  choices = if(is.null(rv$layers_rv$undisturbed)) {c("Value in catchment dataset" = "intcatch",
+                                                                                           "Upload intactness layer" = "intupload")
+                                                  } else {c("Value in catchment dataset" = "intcatch",
+                                                            "Use existing undisturbed layer" = "intIncluded",
+                                                            "Upload intactness layer" = "intupload")
+                                                  }, selected = "intcatch"),
+      
+      conditionalPanel("input.intactSource == 'intcatch'",
+        selectInput("intactColumnName",  "Catchment dataset – select intactness attribute", choices = NULL)
       ),
-  
-      if (intact_exist) {
-        # Show choice: use existing, value in catchments, or upload
-        tagList(
-          div(style = "margin-top: -20px;", 
-              radioButtons("intactSource", "",
-                           choices = list("Value in catchment dataset" = "intcatch",
-                                          "Use existing undisturbed layer" = "intIncluded", 
-                                          "Upload intactness layer" = "intupload"),
-                           selected = "intIncluded", 
-                           inline = FALSE)
-          ),
-          conditionalPanel(
-            condition = "input.intactSource == 'intcatch'",
-            selectInput("intactColumnName", "Catchment dataset - select intactness attribute",
-                        choices = NULL, selected = "IntactPB")
-          ),
-          conditionalPanel(
-            condition = "input.intactSource == 'intupload'",
-            div(style = "margin-top: -20px;",
-                radioButtons("intactformat", "Select intactness file format:",
-                             choices = list("Shapefile" = "intshp", 
-                                            "GeoPackage" = "intgpkg"),
-                             selected = character(0), inline = TRUE)),
-            div(style = "margin-top: -20px;",
-                fileInput("upload_intact", "Upload undisturbed layer", multiple = TRUE,
-                          accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))
-            ),
-            conditionalPanel(
-              condition = "input.intactformat == 'intgpkg' && input.intactSource == 'intupload'",
-              div(style = "margin-top: -20px;",
-                  selectInput("intactLayer", "Select intactness layer", choices = NULL, multiple = FALSE))
-            )
-          )
-        )
-      } else {
-        # Only show upload intactness
-        tagList(
-          div(style = "margin-top: -20px;", 
-              radioButtons("intactSource", "",
-                           choices = list("Value in catchment dataset" = "intcatch",
-                                          "Upload intactness layer" = "intupload"),
-                           selected = "intIncluded", 
-                           inline = FALSE)
-          ),
-          conditionalPanel(
-            condition = "input.intactSource == 'intcatch'",
-            selectInput("intactColumnName", "Catchment dataset - select intactness attribute",
-                        choices = NULL, selected = "IntactPB")
-          ),
-          conditionalPanel(
-            condition = "input.intactSource == 'intupload'",
-            div(style = "margin-top: -20px;",
-                radioButtons("intactformat", "Select intactness file format:",
-                             choices = list("Shapefile" = "intshp", 
-                                            "GeoPackage" = "intgpkg"),
-                             selected = character(0), inline = TRUE)),
-            div(style = "margin-top: -20px;",
-                fileInput("upload_intact", "Upload undisturbed layer", multiple = TRUE,
-                          accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))
-            ),
-            conditionalPanel(
-              condition = "input.intactformat == 'intgpkg' && input.intactSource == 'intupload'",
-              div(style = "margin-top: -20px;",
-                  selectInput("intactLayer", "Select intactness layer", choices = NULL, multiple = FALSE))
-            )
-          )
-        )
-      },
       
+      conditionalPanel("input.intactSource == 'intupload'",
+        radioButtons("intactformat", "Select intactness file format:", choices = c("Shapefile" = "intshp", 
+                                                                                   "GeoPackage" = "intgpkg"), selected = character(0), inline = TRUE),
+        fileInput("upload_intact", "Upload undisturbed layer", multiple = TRUE, accept = c(".shp",".dbf",".shx",".prj",".cpg",".gpkg")),
+        
+        conditionalPanel("input.intactformat == 'intgpkg'",
+          selectInput("intactLayer", "Select intactness layer", choices = NULL)
+        )
+      ),
+      tags$hr(),
+      
+      # ---- Fire section  ----
+      radioButtons("firesSource", "Select source for fire (optional):", choices = if(is.null(rv$layers_rv$undisturbed)) {c("Upload fire layer" = "fireupload",
+                                                                                                                           "No fire" = "not fire")
+                                                                                  } else {c("Upload fire layer" = "fireupload",
+                                                                                            "Use existing fire layer" = "fireIncluded")
+                                                                                  }, selected = "nofire"),
+      
+      conditionalPanel("input.firesSource == 'fireupload'",
+        radioButtons("fireformat", "Select fire file format:", choices = c("Shapefile" = "fireshp", 
+                                                                           "GeoPackage" = "firegpkg"), selected = character(0), inline = TRUE),
+        fileInput("upload_fire", "Upload fire layer", multiple = TRUE, accept = c(".shp",".dbf",".shx",".prj",".cpg",".gpkg")),
+        
+        conditionalPanel("input.fireformat == 'firegpkg'",
+          selectInput("fireLayer", "Select fire layer", choices = NULL))
+      ),
       br(),
-      # --- Fires section ---
-      if (fires_exist) {
-        # Show choice: use existing or upload
-        tagList(
-          div(style = "margin-top: -20px;",
-              radioButtons("firesSource", "Select source for fire:",
-                           choices = list("Use existing fire layer" = "fireIncluded", 
-                                          "Upload fire layer" = "fireupload"),
-                           selected = "fireIncluded", 
-                           inline = FALSE)
-          ),
-          conditionalPanel(
-            condition = "input.firesSource == 'fireupload'",
-            div(style = "margin-top: -20px;",
-                radioButtons("fireformat", "Select fire file format:",
-                             choices = list("Shapefile" = "fireshp", 
-                                            "GeoPackage" = "firegpkg"),
-                             selected = character(0), 
-                             inline = TRUE)),
-            div(style = "margin-top: -20px;",
-                fileInput("upload_fire", "Upload fire layer", multiple = TRUE,
-                          accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg'))),
-            conditionalPanel(
-              condition = "input.fireformat == 'firegpkg'",
-              div(style = "margin-top: -20px;",
-                  selectInput("fireLayer", "Select fire layer", choices = NULL, multiple = FALSE))
-            )
-          )
-        )
-      } else {
-        # Only show upload (no existing fires)
-        tagList(
-          div(style = "margin-top: -20px;",
-              radioButtons("fireformat", "Select fire file format:",
-                           choices = list("Shapefile" = "fireshp", 
-                                          "GeoPackage" = "firegpkg"),
-                           selected = character(0), 
-                           inline = TRUE)),
-          div(style = "margin-top: -20px;",
-              fileInput("upload_fire", "Upload fire layer", multiple = TRUE,
-                        accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg', '.gpkg')) ),
-          conditionalPanel(
-            condition = "input.fireformat == 'firegpkg'",
-            div(style = "margin-top: -20px;",
-                selectInput("fireLayer", "Select fire layer", choices = NULL, multiple = FALSE))
-          )
-        )
-      },
-      
-      # Confirm button
-      actionButton("confIntact", "Confirm", icon = icon(name = "map-location-dot", lib = "font-awesome"),
-                   class = "btn-warning", style="width:250px")
+      actionButton("confIntact","Confirm", icon = icon("map-location-dot", lib = "font-awesome"),  class = "btn-warning", style = "width:250px")
     )
+  }
+  
+  observeEvent(input$tabs, {
+    if (input$tabs == "tabIntact") {
+      output$intactUI <- renderUI({
+        intactUI_static()
+      })
+    }
   })
   
   observe({
     req(input$intactSource == 'intcatch')
-    #browser()
     updateSelectInput(session = getDefaultReactiveDomain(), "intactColumnName", choices = colnames(rv$layers_rv$catchments), selected= colnames(rv$layers_rv$catchments)[1])
   })
   
@@ -153,6 +73,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
     layers <- st_layers(file)$name
     updateSelectInput(session = getDefaultReactiveDomain(), "intactLayer", choices = c("Select a layer", layers))
   })
+  
   observe({
     req(input$upload_fire)
     req(input$fireformat == 'firegpkg')
@@ -197,8 +118,11 @@ setIntactServer <- function(input, output, session, project, map, rv){
     if(input$intactSource =='intcatch'){
       req(input$intactColumnName)  # Ensure the textInput value is available
       intact_column <- input$intactColumnName  # Get the column name from the text input
-      catchment <- rv$layers_rv$catchments
+      catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
+      catchment <- rv$layers_rv$catchments[catch_int,]
+      #catchment <- rv$layers_rv$catchments
       catchment$intact <- catchment[[intact_column]]  # Dynamically access the specified column
+      catchment$area_intact <- catchment$Area_total * catchment$intact
     }else{
       catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
       catchments <- rv$layers_rv$catchments[catch_int,]
@@ -232,12 +156,30 @@ setIntactServer <- function(input, output, session, project, map, rv){
         req(input$fireLayer)
         if(input$fireLayer != "Select fire layer"){
           f <- read_gpkg_from_upload(infile$datapath, input$fireLayer) %>%
-            dplyr::select(any_of(c("geometry", "geom")))
+            dplyr::select(any_of(c("geometry", "geom"))) %>%
+            suppressWarnings() %>%
+            st_cast('MULTIPOLYGON') %>% 
+            st_zm(drop = TRUE, what = "ZM")  %>%
+            mutate(area_ha = as.numeric(st_area(geom)/10000))
+          current_groups <- rv$group_names()  
+          if (!("Fires" %in% current_groups)) {  
+            updated_groups <- c(current_groups, "Fires")  
+            rv$group_names(updated_groups)  
+          }
         }
       }else{
         check_shp(infile$datapath)
         f <- read_shp_from_upload(infile) %>%
-          dplyr::select(any_of(c("geometry", "geom")))
+          dplyr::select(any_of(c("geometry", "geom"))) %>%
+          suppressWarnings() %>%
+          st_cast('MULTIPOLYGON') %>% 
+          st_zm(drop = TRUE, what = "ZM")  %>%
+          mutate(area_ha = as.numeric(st_area(geom)/10000))
+        current_groups <- rv$group_names()  
+        if (!("Fires" %in% current_groups)) {  
+          updated_groups <- c(current_groups, "Fires")  
+          rv$group_names(updated_groups)  
+        }
       }
     }else{
       return(NULL)
@@ -250,7 +192,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
   # Map viewer - fires and intactness
   ####################################################################################################
   observeEvent(input$confIntact,{ 
-    
+    #browser()
     showModal(modalDialog(
       title = "Mapping fires and intactness",
       easyClose = TRUE,
@@ -262,7 +204,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
       clearGroup('Fires') 
     
     catch <- rv$layers_rv$catchment_pr %>% st_transform(4326)
-    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_Total/1000000,1), "<br>Intactness (%):", intact*100 )
+    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Intactness (%):", intact*100 )
     if (isMappable(rv$layers_rv$intactness_sf)) { 
       intact <- st_transform(rv$layers_rv$intactness_sf, 4326)
       leafletProxy("map") %>% addPolygons(data=intact, color='blue', fill = T, fillOpacity = 0.2, weight=0, group='Intactness', options = leafletOptions(pane = "ground"))
@@ -270,10 +212,10 @@ setIntactServer <- function(input, output, session, project, map, rv){
       overlay <- c(rv$overlayBase(), "Intactness")
       rv$overlayBase(overlay)
     } else {
-      leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = ~popup_text, group="Catchments", options = leafletOptions(pane = "over"))
+      leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = pop, group="Catchments", options = leafletOptions(pane = "over"))
     }
     
-    fires <- isolate(rv$layers_rv$fires)
+    fires <- isolate(fire_sf())
     if(!is.null(fires)){
       fires <- st_transform(fires, 4326)
       leafletProxy("map") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group="Fires", options = leafletOptions(pane = "ground")) 
@@ -295,12 +237,24 @@ setIntactServer <- function(input, output, session, project, map, rv){
                 Area_km2= NA_real_,
                 Percent = NA_real_)
     
-    x <- x %>% 
-      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
-                                  Variables == "Study area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0)),
-             Percent= case_when(Variables == "Study area" ~  100,
-                                Variables == "Study area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2))
-      )
+    if(!is.null(rv$layers_rv$intactness_sf)){
+      x <- x %>% 
+        mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
+                                    Variables == "Study area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0)),
+               Percent= case_when(Variables == "Study area" ~  100,
+                                  Variables == "Study area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2))
+        ) 
+    } else {
+      x <- x %>% 
+        mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
+                                    Variables == "Study area intactness" ~ round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/1000000,0))),
+               Percent= case_when(Variables == "Study area" ~  100,
+                                  Variables == "Study area intactness" ~  round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/as.numeric(st_area(rv$layers_rv$planreg_sf)))*100,2))
+        ) 
+    }
+    
+    
+    
     rv$outtab1(x)
     
     #Fire stat
