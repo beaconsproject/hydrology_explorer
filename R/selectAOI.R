@@ -288,7 +288,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
 
     data_selected <- catchments[catchments$CATCHNUM %in% rv$selected_catchments$catchnum,]
     data_select <- st_transform(data_selected, 4326)
-    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_Total/1000000,1), "<br>Intactness (%):", intact*100 )
+    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Intactness (%):", intact*100 )
     
     if(nrow(data_select)>0){
       leafletProxy("map") %>%
@@ -367,7 +367,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       addPolygons(data=analysis_aoi, fill = F, color="red", weight=4, group="Analysis AOI", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=aoi, fill=F, color="black", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
       addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
-                       overlayGroups = c(rv$overlayBase(),  rv$group_names(), rv$group_names(), rv$grps()),
+                       overlayGroups = c(rv$overlayBase(),  rv$group_names(), rv$grps()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
       hideGroup( rv$group_names())
     showModal(modalDialog(
@@ -385,23 +385,21 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       return()
     }
     
-    x <- tibble(Variables=c("Study area", 
-                            "Study area intactness",
-                            "Analysis AOI", 
-                            "Analysis AOI intactness"), 
-                Area_km2= NA_real_,
-                Percent = NA_real_)
+    x <- rv$outtab1()
+    
+    new_rows <- tibble(Variables=c("Analysis AOI"), 
+                       Area_km2= NA_real_,
+                       Percent = NA_real_)
+    
+    x <- x %>% dplyr::filter(!Variables %in% new_rows$Variables)
+    x <- dplyr::bind_rows(x, new_rows)
     
     x <- x %>% 
-      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
-                                  Variables == "Study area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0)),
-             Percent= case_when(Variables == "Study area" ~  100,
-                                Variables == "Study area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2)),
-             Area_km2 = case_when(Variables == "Analysis AOI" ~  round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/1000000,0)), 
-                                  TRUE ~ Area_km2),
+      mutate(Area_km2 = case_when(Variables == "Analysis AOI" ~  round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/1000000,0)), 
+                                  TRUE ~ NA_real_),
              Percent= case_when(Variables == "Analysis AOI" ~ round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/st_area(rv$layers_rv$planreg_sf)*100,2)),
                                 Variables == "Analysis AOI intactness" ~ round(as.numeric(sum(rv$layers_rv$analysis_aoi$intact*st_area(rv$layers_rv$analysis_aoi)))/as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi)))*100,2),
-                                TRUE ~ Percent)
+                                TRUE ~ NA_real_)
       )
     rv$outtab1(x)
     
