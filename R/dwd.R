@@ -77,7 +77,7 @@ dwdServer  <- function(input, output, session, project, map, rv){
       ))
       aoi <- cbind(analysis_aoi, aoi_stats)
       
-      st_write(rv$layers_rv$stream_sf, dsn=file, layer='streams', append=TRUE)
+      st_write(rv$layers_rv$streams_sf, dsn=file, layer='streams', append=TRUE)
       st_write(studyarea, dsn=file, layer='studyarea', append=TRUE)
       st_write(aoi, dsn=file, layer='aoi', append=TRUE) 
       st_write(catchment_updated, dsn=file, layer='catchments', append=TRUE)
