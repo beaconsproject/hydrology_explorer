@@ -15,7 +15,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     if(input$typeAOI == "uploadAOI"){
       if(isFALSE(input$editAOI)){
         # Upload AOI as it is
-        aoi_stream <- st_filter(rv$layers_rv$stream_sf, rv$layers_rv$analysis_aoi, .predicate = st_intersects)
+        aoi_stream <- st_filter(rv$layers_rv$streams_sf, rv$layers_rv$analysis_aoi, .predicate = st_intersects)
         catch_stream <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$SKELUID %in% aoi_stream$SKELUID,]
         #browser()
         start_points <- st_as_sf(
@@ -121,7 +121,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
           return()
         }else{
           #catch_stem <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$CATCHNUM %in% downstream_stem_list$AOI_1, drop = FALSE]
-          aoi_stream <- st_filter(rv$layers_rv$stream_sf, rv$layers_rv$analysis_aoi, .predicate = st_intersects)
+          aoi_stream <- st_filter(rv$layers_rv$streams_sf, rv$layers_rv$analysis_aoi, .predicate = st_intersects)
           catch_stream <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$SKELUID %in% aoi_stream$SKELUID,]
           start_points <- st_as_sf(
             st_drop_geometry(aoi_stream), 
@@ -331,7 +331,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     downstream_stem_int  <- catch_stem()
     downstream_int <- catch_down()
     
-    x <- rv$outtab1()
+    x <- rv$outAOI()
     new_rows  <- tibble(Variables=c("Upstream area",
                                     "Downstream stem area",
                                     "Downstream area",
@@ -476,7 +476,18 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                         Percent = i$Rating)
       out <-rbind(x, z, space_out, dci_out)
       
-      rv$outputsumStats(out)
+      
+    } else {
+      space_out <- tibble(Variables=c(NA,NA),
+                          Area_km2= c(NA, "Metric"), 
+                          Percent = c(NA,"Rating"))
+      i <- rv$outputDCI()
+      
+      dci_out <- tibble(Variables= "DCI score", 
+                        Area_km2= i$Metric, 
+                        Percent = i$Rating)
+      out <-rbind(x, space_out, dci_out)
     } 
+    rv$outputsumStats(out)
   })
 }

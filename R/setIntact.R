@@ -53,16 +53,13 @@ setIntactServer <- function(input, output, session, project, map, rv){
     )
   }
   
-  observeEvent(input$tabs, {
-    if (input$tabs == "tabIntact") {
-      output$intactUI <- renderUI({
-        intactUI_static()
-      })
-    }
+  output$intactUI <- renderUI({
+    intactUI_static()
   })
-  
+
   observe({
     req(input$intactSource == 'intcatch')
+    req(rv$layers_rv$catchments)
     updateSelectInput(session = getDefaultReactiveDomain(), "intactColumnName", choices = colnames(rv$layers_rv$catchments), selected= colnames(rv$layers_rv$catchments)[1])
   })
   
@@ -255,8 +252,8 @@ setIntactServer <- function(input, output, session, project, map, rv){
     
     
     
+    rv$outAOI(x)
     rv$outtab1(x)
-    
     #Fire stat
     if(!is.null(rv$layers_rv$fires)){
       y <- tibble(Variables=c("Within study area"), 

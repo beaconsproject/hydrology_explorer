@@ -373,6 +373,9 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       clearGroup('AOI') %>%
       clearGroup('Analysis AOI') %>%
       clearGroup('Selected') %>%
+      clearGroup('Downstream area') %>%
+      clearGroup('Downstream stem') %>%
+      clearGroup('Upstream area') %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=analysis_aoi, fill = F, color="red", weight=4, group="Analysis AOI", options = leafletOptions(pane = "ground")) %>%
       addPolygons(data=aoi, fill=F, color="black", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
@@ -395,9 +398,9 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       return()
     }
     
-    x <- rv$outtab1()
+    x <- rv$outAOI()
     
-    new_rows <- tibble(Variables=c("Analysis AOI"), 
+    new_rows <- tibble(Variables=c("Analysis AOI", "Analysis AOI intactness"), 
                        Area_km2= NA_real_,
                        Percent = NA_real_)
     
@@ -406,11 +409,12 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     
     x <- x %>% 
       mutate(Area_km2 = case_when(Variables == "Analysis AOI" ~  round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/1000000,0)), 
-                                  TRUE ~ NA_real_),
+                                  TRUE ~ Area_km2),
              Percent= case_when(Variables == "Analysis AOI" ~ round(as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi))/st_area(rv$layers_rv$planreg_sf)*100,2)),
                                 Variables == "Analysis AOI intactness" ~ round(as.numeric(sum(rv$layers_rv$analysis_aoi$intact*st_area(rv$layers_rv$analysis_aoi)))/as.numeric(st_area(st_union(rv$layers_rv$analysis_aoi)))*100,2),
-                                TRUE ~ NA_real_)
+                                TRUE ~ Percent)
       )
+    rv$outAOI(x)
     rv$outtab1(x)
     
     #Fire
@@ -449,7 +453,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       mutate(network = "AOI_1") %>%
       rename(geometry = x)
       
-    aoi_sf$DCI <- round(calc_dci(aoi_sf, rv$layers_rv$stream_sf),2)
+    aoi_sf$DCI <- round(calc_dci(aoi_sf, rv$layers_rv$streams_sf),2)
     aoi_var <- aoi_sf %>%
       st_drop_geometry() %>%
       dplyr::select(network, DCI)

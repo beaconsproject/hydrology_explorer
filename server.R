@@ -36,6 +36,7 @@ server = function(input, output, session) {
                            ),
                            outfiretab = reactiveVal(),
                            outtab1 = reactiveVal(),
+                           outAOI = reactiveVal(),
                            outputDCI = reactiveVal(),
                            outputsumStats = reactiveVal(),
                            selected_catchments = reactiveValues(catchnum = c())

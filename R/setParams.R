@@ -110,8 +110,13 @@ setParamsServer <- function(input, output, session, project, map, rv){
   observe({
     req(input$tabs == "tabIntact")  # Trigger when "Set intactness" 
     
-    # Check if input is unset or NULL
-    if (input$previewLayers == 0) {
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments)
+    )
+    
+    if (missing_inputs) {# Check if input is unset or NULL
       showModal(modalDialog(
         title = "Missing input parameters",
         "Please set input parameters prior to set intactness and fires.",
@@ -124,8 +129,13 @@ setParamsServer <- function(input, output, session, project, map, rv){
   observe({
     req(input$tabs == "addLayers")  # Trigger when "Select AOI" is active
     
-    # Check if intactSource is unset or NULL
-    if (input$previewLayers == 0) {
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments)
+    )
+    
+    if (missing_inputs) {# Check if intactSource is unset or NULL
       showModal(modalDialog(
         title = "Missing input parameters",
         "Please set input parameters prior to upload additional elements.",
@@ -152,8 +162,14 @@ setParamsServer <- function(input, output, session, project, map, rv){
   observe({
     req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
     
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments),
+      is.null(rv$layers_rv$analysis_aoi)
+    )
     # Check if intactSource is unset or NULL
-    if (input$confAOI ==0 || input$confIntact ==0 || input$previewLayers == 0) {
+    if (missing_inputs) {
       showModal(modalDialog(
         title = "Missing input parameters",
         "Please confirm input parameters and Area of Interest (AOI) in previous step.",
@@ -232,7 +248,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
       coords_df <- get_start_end(stream$geometry)
       stream <- bind_cols(stream, coords_df)
     }
-    rv$layers_rv$stream_sf <- stream
+    rv$layers_rv$streams_sf <- stream
     return(stream)
   })
   
@@ -488,6 +504,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
     x <- x %>% 
       mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0))),
              Percent= case_when(Variables == "Study area" ~  100))
+    rv$outAOI(x)
     rv$outtab1(x)
     
     #Fire stat
