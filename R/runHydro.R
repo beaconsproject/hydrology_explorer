@@ -17,7 +17,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
         # Upload AOI as it is
         aoi_stream <- st_filter(rv$layers_rv$streams_sf, rv$layers_rv$analysis_aoi, .predicate = st_intersects)
         catch_stream <- rv$layers_rv$catchment_pr[rv$layers_rv$catchment_pr$SKELUID %in% aoi_stream$SKELUID,]
-        #browser()
+        
         start_points <- st_as_sf(
           st_drop_geometry(aoi_stream), 
           coords = c("start_x", "start_y"), 
@@ -105,7 +105,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
   ####################################################################################################
   # DOWNSTREAM STEM SECTION
   catch_stem <- eventReactive(input$confAnalysis, {
-    #browser()
+    
     if(input$typeAOI == "uploadAOI"){
       if(isFALSE(input$editAOI)){
         # downstream stem polygon

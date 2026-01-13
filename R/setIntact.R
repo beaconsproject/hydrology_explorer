@@ -196,7 +196,6 @@ setIntactServer <- function(input, output, session, project, map, rv){
   # Map viewer - fires and intactness
   ####################################################################################################
   observeEvent(input$confIntact,{ 
-    #browser()
     showModal(modalDialog(
       title = "Mapping fires and intactness",
       easyClose = TRUE,
