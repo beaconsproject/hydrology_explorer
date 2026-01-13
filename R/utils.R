@@ -49,7 +49,12 @@ read_shp_from_csv <- function(csv_file, layer_name) {
   if (layer_name %in% csv_data$Layer) {
     path <- csv_data$Path[csv_data$Layer == layer_name]
     if (file.exists(path)) {
-      return(sf::st_read(path))
+      shp <- sf::st_read(path, quiet = TRUE)
+      # Remove fid column if it exists
+      if ("fid" %in% colnames(shp)) {
+        shp <- shp %>% dplyr::select(-fid)
+        return(shp)
+      }
     } else {
       stop(paste("The path for", layer_name, "in the CSV does not exist."))
     }
@@ -69,7 +74,12 @@ read_shp_from_upload <- function(upload_input) {
     purrr::walk2(infile$datapath, outfiles, ~file.rename(.x, .y))
     shp_path <- file.path(dir, paste0(name, ".shp"))
     if (file.exists(shp_path)) {
-      return(sf::st_read(shp_path))
+      shp <- sf::st_read(shp_path, quiet = TRUE)
+      # Remove fid column if it exists
+      if ("fid" %in% colnames(shp)) {
+        shp <- shp %>% dplyr::select(-fid)
+        return(shp)
+      }
     } else {
       stop("Shapefile (.shp) is missing.")
     }

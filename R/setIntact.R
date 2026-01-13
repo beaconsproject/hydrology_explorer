@@ -142,17 +142,17 @@ setIntactServer <- function(input, output, session, project, map, rv){
   
   # Set fire
   fire_sf <- eventReactive(input$confIntact,{
-    f <- NULL
+    i <- NULL
     
     if(input$firesSource == 'fireIncluded'){
-      f <- rv$layers_rv$fires
+      i <- rv$layers_rv$fires
     }else if (input$firesSource == "fireupload"){
       req(input$fireformat)
       infile <- input$upload_fire
       if(input$fireformat == 'firegpkg'){
         req(input$fireLayer)
         if(input$fireLayer != "Select fire layer"){
-          f <- read_gpkg_from_upload(infile$datapath, input$fireLayer) %>%
+          i <- read_gpkg_from_upload(infile$datapath, input$fireLayer) %>%
             dplyr::select(any_of(c("geometry", "geom"))) %>%
             suppressWarnings() %>%
             st_cast('MULTIPOLYGON') %>% 
@@ -166,12 +166,16 @@ setIntactServer <- function(input, output, session, project, map, rv){
         }
       }else{
         check_shp(infile$datapath)
-        f <- read_shp_from_upload(infile) %>%
+        
+        i <- read_shp_from_upload(input$upload_fire) %>%
           dplyr::select(any_of(c("geometry", "geom"))) %>%
           suppressWarnings() %>%
           st_cast('MULTIPOLYGON') %>% 
           st_zm(drop = TRUE, what = "ZM")  %>%
-          mutate(area_ha = as.numeric(st_area(geom)/10000))
+          { 
+            geom_col <- attr(., "sf_column")   # get current geometry column name
+            mutate(., area_ha = as.numeric(st_area(.data[[geom_col]]) / 10000))
+          }
         current_groups <- rv$group_names()  
         if (!("Fires" %in% current_groups)) {  
           updated_groups <- c(current_groups, "Fires")  
@@ -181,8 +185,11 @@ setIntactServer <- function(input, output, session, project, map, rv){
     }else{
       return(NULL)
     }
-    rv$layers_rv$fires <- f
-    return(f)
+    geom_idx <- which(names(i) == attr(i, "sf_column"))
+    names(i)[geom_idx] <- "geom"
+    st_geometry(i) <- "geom"
+    rv$layers_rv$fires <- i
+    return(i)
   })
   
   ####################################################################################################

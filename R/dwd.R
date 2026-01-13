@@ -6,7 +6,7 @@ dwdServer  <- function(input, output, session, project, map, rv){
   output$downloadData <- downloadHandler(
     filename = function() { paste("Hydro_explorer_output-", Sys.Date(), ".gpkg", sep="") },
     content = function(file) {
-      
+      browser()
       catchment_updated <- rv$layers_rv$catchment_pr
       
       if (!is.null(rv$layers_rv$catch_up)) {

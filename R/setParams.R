@@ -165,20 +165,31 @@ setParamsServer <- function(input, output, session, project, map, rv){
     missing_inputs <- any(
       is.null(rv$layers_rv$planreg_sf),
       is.null(rv$layers_rv$streams_sf),
-      is.null(rv$layers_rv$catchments),
-      is.null(rv$layers_rv$analysis_aoi)
+      is.null(rv$layers_rv$catchments)
     )
-    # Check if intactSource is unset or NULL
+
     if (missing_inputs) {
       showModal(modalDialog(
         title = "Missing input parameters",
-        "Please confirm input parameters and Area of Interest (AOI) in previous step.",
+        "Please confirm input parameters in previous step.",
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
     }
   })
-  
+
+  observe({
+    req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
+
+    if (is.null(rv$layers_rv$analysis_aoi)) {
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please confirm Area of Interest (AOI) in previous step.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })  
   ####################################################################################################
   # READ SPATIAL DATA
   # Set studyarea
@@ -221,6 +232,9 @@ setParamsServer <- function(input, output, session, project, map, rv){
     }else {
       i <- NULL
     }
+    geom_idx <- which(names(i) == attr(i, "sf_column"))
+    names(i)[geom_idx] <- "geom"
+    st_geometry(i) <- "geom"
     rv$layers_rv$catchments <- i
     return(i)
   })
