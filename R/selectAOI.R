@@ -174,6 +174,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     map_bounds1 <- aoi_sf %>% st_bbox() %>% as.character()
     leafletProxy("map") %>%
       clearGroup('Selected') %>%
+      clearGroup('AOI') %>%
       fitBounds(map_bounds1[1], map_bounds1[2], map_bounds1[3], map_bounds1[4]) %>%
       addPolygons(data=aoi_sf, fill=F, color="red", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
       addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
@@ -343,7 +344,8 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c(rv$group_names()))
+      hideGroup(c(rv$group_names())) %>%
+      showGroup("Catchments")
   })
   
   # Render AOI confirmed
@@ -426,7 +428,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
                              Area_Burned_km2= NA_real_,
                              `Area_Burned_%` = NA_real_)
       
-      y <- y %>% dplyr::filter(!Variables %in% new_firerows$Variables)
+      y <- y %>% dplyr::filter(!Variables %in% c("Within Analysis AOI", "Within upstream area", "Within downstream stem area", "Within overall downstream area"))
       y <- dplyr::bind_rows(y, new_firerows)
       
       if(nrow(fire_aoi)>0){
