@@ -79,6 +79,8 @@ read_shp_from_upload <- function(upload_input) {
       if ("fid" %in% colnames(shp)) {
         shp <- shp %>% dplyr::select(-fid)
         return(shp)
+      }else{
+        return(shp) 
       }
     } else {
       stop("Shapefile (.shp) is missing.")
