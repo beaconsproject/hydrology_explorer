@@ -177,6 +177,6 @@ addDisplayServer <- function(input, output, session, project, map, rv){
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c("Streams", "Catchments", rv$grps(), rv$group_names()))
+      hideGroup(c("Streams", "Catchments", rv$group_names()))
   }) 
 }
