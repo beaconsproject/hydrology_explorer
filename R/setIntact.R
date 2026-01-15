@@ -108,6 +108,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
   
   # Add intact to catchments
   observe({
+    req(input$confIntact)
     req(rv$layers_rv$planreg_sf)
     req(rv$layers_rv$catchments)
     req(input$intactSource)
@@ -118,9 +119,31 @@ setIntactServer <- function(input, output, session, project, map, rv){
       catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
       catchment <- rv$layers_rv$catchments[catch_int,]
       #catchment <- rv$layers_rv$catchments
+      # Test on Column type 
+      if (!is.numeric(catchment[[intact_column]])) {
+        showModal(modalDialog(
+          title = "Invalid intactness attribute type",
+          paste0("The column '", intact_column, "' must be numeric."),
+          easyClose = FALSE,
+          footer = modalButton("OK")
+        ))
+        return(NULL)
+      }
+      
+      # Test on Value range 
+      if (!all(catchment[[intact_column]] >= 0 & catchment[[intact_column]] <= 1)) {
+        showModal(modalDialog(
+          title = "Intactness is out of range.",
+          paste0("All values in column '", intact_column, "' must be between 0 and 1."),
+          easyClose = FALSE,
+          footer = modalButton("OK")
+        ))
+        return(NULL)
+      }
       catchment$intact <- catchment[[intact_column]]  # Dynamically access the specified column
       catchment$area_intact <- catchment$Area_total * catchment$intact
     }else{
+      req(intactness_sf())
       catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
       catchments <- rv$layers_rv$catchments[catch_int,]
       intact <- st_intersection(intactness_sf(), catchments)
@@ -204,6 +227,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
   # Map viewer - fires and intactness
   ####################################################################################################
   observeEvent(input$confIntact,{ 
+    req(rv$layers_rv$catchment_pr)
     showModal(modalDialog(
       title = "Mapping fires and intactness",
       easyClose = TRUE,
