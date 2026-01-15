@@ -143,26 +143,34 @@ setIntactServer <- function(input, output, session, project, map, rv){
   # Set fire
   fire_sf <- eventReactive(input$confIntact,{
     i <- NULL
-    
     if(input$firesSource == 'fireIncluded'){
       i <- rv$layers_rv$fires
     }else if (input$firesSource == "fireupload"){
       req(input$fireformat)
       infile <- input$upload_fire
       if(input$fireformat == 'firegpkg'){
-        req(input$fireLayer)
-        if(input$fireLayer != "Select fire layer"){
-          i <- read_gpkg_from_upload(infile$datapath, input$fireLayer) %>%
-            dplyr::select(any_of(c("geometry", "geom"))) %>%
-            suppressWarnings() %>%
-            st_cast('MULTIPOLYGON') %>% 
-            st_zm(drop = TRUE, what = "ZM")  %>%
-            mutate(area_ha = as.numeric(st_area(geom)/10000))
-          current_groups <- rv$group_names()  
-          if (!("Fires" %in% current_groups)) {  
-            updated_groups <- c(current_groups, "Fires")  
-            rv$group_names(updated_groups)  
-          }
+        if (input$fireLayer == "Select a layer") {
+          showModal(modalDialog(
+            title = "Missing input parameters",
+            "Please confirm feature layer.",
+            easyClose = FALSE,
+            footer = modalButton("OK")
+          ))
+        }
+        
+        validate(
+          need(input$fireLayer != "Select a layer", "")
+        )
+        i <- read_gpkg_from_upload(infile$datapath, input$fireLayer) %>%
+          dplyr::select(any_of(c("geometry", "geom"))) %>%
+          suppressWarnings() %>%
+          st_cast('MULTIPOLYGON') %>% 
+          st_zm(drop = TRUE, what = "ZM")  %>%
+          mutate(area_ha = as.numeric(st_area(geom)/10000))
+        current_groups <- rv$group_names()  
+        if (!("Fires" %in% current_groups)) {  
+          updated_groups <- c(current_groups, "Fires")  
+          rv$group_names(updated_groups)  
         }
       }else{
         check_shp(infile$datapath)
