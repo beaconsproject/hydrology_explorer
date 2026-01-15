@@ -1,7 +1,7 @@
 server = function(input, output, session) {
   
   reactiveValsList <- list(outtab1 = reactiveVal(),
-                           outfiretab = reactiveVal(),
+                           outfeaturetab = reactiveVal(),
                            overlayBase = reactiveVal(c()),
                            grps = reactiveVal(c()),
                            group_names = reactiveVal(c()),
@@ -12,6 +12,7 @@ server = function(input, output, session) {
                            display1_name = reactiveVal(),
                            display2_name = reactiveVal(),
                            display3_name = reactiveVal(),
+                           trackfeat_name = reactiveVal(NULL),
                            layers_rv = reactiveValues(streams_sf = NULL, 
                                                       planreg_sf = NULL,
                                                       ifl2000 = NULL,
@@ -32,7 +33,8 @@ server = function(input, output, session) {
                                                       display2_sf = NULL,
                                                       display3_sf = NULL, 
                                                       aoi_sf = NULL,
-                                                      analysis_aoi = NULL
+                                                      analysis_aoi = NULL,
+                                                      trackFeat = NULL
                            ),
                            outfiretab = reactiveVal(),
                            outtab1 = reactiveVal(),
@@ -98,15 +100,18 @@ server = function(input, output, session) {
   
   myMap <- leafletProxy("map", session)
   
-  #Set input parameters
+  # Set input parameters
   setParamsServer(input, output, session, project, myMap, reactiveValsList)
   
-  # set firest and intactness
+  # Set intactness
   setIntactServer(input, output, session, project, myMap, reactiveValsList)
   
   # Add display layers
   addDisplayServer(input, output, session, project, myMap, reactiveValsList)
   
+  # Set feature to track
+  trackFeatureServer(input, output, session, project, myMap, reactiveValsList)
+
   # Select AOI
   selectAOIServer(input, output, session, project, myMap, reactiveValsList)
   
@@ -120,8 +125,8 @@ server = function(input, output, session) {
     reactiveValsList$outtab1()
   }, digits = 1)
   
-  output$tabFires <- renderTable({
-    reactiveValsList$outfiretab()
+  output$tabFeature <- renderTable({
+    reactiveValsList$outfeaturetab()
   }, digits = 2)
   
   output$tabDCI <- renderTable({

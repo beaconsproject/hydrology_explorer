@@ -41,8 +41,9 @@ ui = dashboardPage(skin="black",
                      sidebarMenu(id = "tabs",
                                  menuItem("Welcome", tabName = "overview", icon = icon("th")),
                                  menuItem("Set input parameters", tabName = "tabUpload", icon = icon("th"), startExpanded = FALSE),
-                                 menuItem("Set intactness and fire", tabName = "tabIntact", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
-                                 menuItem("Add display elements (OPTIONAL)", tabName = "addLayers", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
+                                 menuItem("Set intactness", tabName = "tabIntact", icon = icon(name = "fas fa-plus", lib = "font-awesome")),                
+                                 menuItem("Add display elements (OPTIONAL)", tabName = "addLayers", icon = icon(name = "fas fa-plus", lib = "font-awesome")), 
+                                 menuItem("Set feature to track (OPTIONAL)", tabName = "trackFeature", icon = icon(name = "fas fa-plus", lib = "font-awesome")), 
                                  menuItem("Select AOI", tabName = "selectAOI", icon = icon(name = "fas fa-draw-polygon", lib = "font-awesome")),
                                  menuItem("Generate upstream and downstream", tabName = "upstream", icon = icon(name = "fas fa-map", lib = "font-awesome")),
                                  menuItem("Download results", tabName = "download", icon = icon(name = "fas fa-download", lib = "font-awesome")),
@@ -93,10 +94,16 @@ ui = dashboardPage(skin="black",
                        fileInput("upload_gpkg", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
                        actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
                      ),
-                     # UPLOAD - Intactness and fire
+                     # UPLOAD - Intactness
                      conditionalPanel(
                        condition = "input.tabs== 'tabIntact'",
                        uiOutput("intactUI")
+                     ),
+                     
+                     # UPLOAD - Feature to track
+                     conditionalPanel(
+                       condition = "input.tabs== 'trackFeature'",
+                       uiOutput("trackUI")
                      ),
                      
                      # EXTRA LAYERS

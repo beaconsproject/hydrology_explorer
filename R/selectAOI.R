@@ -383,8 +383,8 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
       addPolygons(data=aoi, fill=F, color="black", weight=3, group="AOI", options = leafletOptions(pane = "ground")) %>%
       addLayersControl(baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(),  rv$group_names(), rv$grps()),
-                       options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup( rv$group_names())
+                       options = layersControlOptions(collapsed = FALSE)) #%>%
+      #hideGroup( rv$group_names())
     showModal(modalDialog(
       title = "Analysis AOI displayed.",
       easyClose = TRUE,
@@ -419,33 +419,33 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     rv$outAOI(x)
     rv$outtab1(x)
     
-    #Fire
-    if(!is.null(rv$layers_rv$fires)){
-      fire_aoi <-st_intersection(rv$layers_rv$analysis_aoi, rv$layers_rv$fires)
-      y <- rv$outfiretab()
+    #Feature
+    if(!is.null(rv$layers_rv$trackFeat)){
+      feat_aoi <-st_intersection(rv$layers_rv$analysis_aoi, rv$layers_rv$trackFeat)
+      y <- rv$outfeaturetab()
       
-      new_firerows <- tibble(Variables=c("Within Analysis AOI"), 
-                             Area_Burned_km2= NA_real_,
-                             `Area_Burned_%` = NA_real_)
+      new_featrows <- tibble(Variables=c("Within Analysis AOI"), 
+                             Area_km2= NA_real_,
+                             Percent = NA_real_)
       
       y <- y %>% dplyr::filter(!Variables %in% c("Within Analysis AOI", "Within upstream area", "Within downstream stem area", "Within overall downstream area"))
-      y <- dplyr::bind_rows(y, new_firerows)
+      y <- dplyr::bind_rows(y, new_featrows)
       
-      if(nrow(fire_aoi)>0){
+      if(nrow(feat_aoi)>0){
         y <- y %>% 
-          mutate(Area_Burned_km2 = case_when(Variables == "Within Analysis AOI" ~  round(as.numeric(sum(st_area(fire_aoi))/1000000,2)), 
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within Analysis AOI" ~ round(as.numeric(sum(st_area(fire_aoi))/sum(st_area(rv$layers_rv$analysis_aoi)))*100,2),
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within Analysis AOI" ~  round(as.numeric(sum(st_area(feat_aoi))/1000000,2)), 
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within Analysis AOI" ~ round(as.numeric(sum(st_area(feat_aoi))/sum(st_area(rv$layers_rv$analysis_aoi)))*100,2),
+                                            TRUE ~ Percent))
       }else{
         y <- y %>% 
-          mutate(Area_Burned_km2 = case_when(Variables == "Within Analysis AOI" ~  0, 
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within Analysis AOI" ~  0, 
-                                            TRUE ~ `Area_Burned_%`)
+          mutate(Area_km2 = case_when(Variables == "Within Analysis AOI" ~  0, 
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within Analysis AOI" ~  0, 
+                                            TRUE ~ Percent)
           )
       }
-      rv$outfiretab(y)
+      rv$outfeaturetab(y)
     }
     
     ## DCI
@@ -474,10 +474,10 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     rv$outputDCI(i)
     
     # Summary stats
-    if(!is.null(rv$layers_rv$fires)){
-      z <- tibble(Variables=c("Fires within the study area", "Fires within the Analysis AOI"), 
-                Area_km2= y$Area_Burned_km2, 
-                Percent = y$`Area_Burned_%`)
+    if(!is.null(rv$layers_rv$trackFeat)){
+      z <- tibble(Variables=c("Feature within the study area", "Feature within the Analysis AOI"), 
+                Area_km2= y$Area_km2, 
+                Percent = y$Percent)
     
       space_out <- tibble(Variables=c(NA,NA),
                       Area_km2= c(NA, "Metric"), 

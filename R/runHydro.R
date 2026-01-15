@@ -319,7 +319,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                 group = "Catchment intactness") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
-                       overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), legend),
+                       overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), rv$trackfeat_name(), legend),
                        options = layersControlOptions(collapsed = TRUE)) %>%
       hideGroup(c("Catchemnts","Downstream area", rv$group_names()))
   })
@@ -386,85 +386,94 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     }  
     rv$outtab1(x)
     
-    #FIRE
-    if(!is.null(rv$layers_rv$fires)){
+    #TRACK FEATURE
+    if(!is.null(rv$layers_rv$trackFeat)){
       if(!is.null(upstream_area)){
-        upstream_fire <- upstream_area %>%
+        upstream_feat <- upstream_area %>%
           st_union() %>%
-          st_intersection(rv$layers_rv$fires)
+          st_intersection(rv$layers_rv$trackFeat)
       } else {upstream_fire <- NULL}
       
       if(!is.null(downstream_stem_int)){
-        downstream_stem_fire <- downstream_stem_int %>%
+        downstream_stem_feat <- downstream_stem_int %>%
           st_union() %>%
-          st_intersection(rv$layers_rv$fires)
-      } else {downstream_stem_fire <- NULL}
+          st_intersection(rv$layers_rv$trackFeat)
+      } else {downstream_stem_feat <- NULL}
       
       if(!is.null(downstream_int)){
-        downstream_fire <- downstream_int %>%
+        downstream_feat <- downstream_int %>%
         st_union() %>%
-        st_intersection(rv$layers_rv$fires)
-      } else {downstream_fire <- NULL}
+        st_intersection(rv$layers_rv$trackFeat)
+      } else {downstream_feat <- NULL}
       
-      y <- rv$outfiretab()
-      new_rows  <- tibble(Variables=c("Within upstream area",
+      y <- rv$outfeaturetab()
+      new_rows  <- tibble(Variables=c("Within Analysis AOI",
+                                      "Within upstream area",
                                       "Within downstream stem area",
                                       "Within overall downstream area"), 
-                          Area_Burned_km2= NA_real_,
-                          `Area_Burned_%` = NA_real_)
+                          Area_km2= NA_real_,
+                          Percent = NA_real_)
       y <- y %>% dplyr::filter(!Variables %in% new_rows$Variables)
       y <- dplyr::bind_rows(y, new_rows)
       
-      if(!is.null(upstream_fire)){
+      
+      feat_aoi <-st_intersection(rv$layers_rv$analysis_aoi, rv$layers_rv$trackFeat)
+      y <- y %>% 
+        mutate(Area_km2 = case_when(Variables == "Within Analysis AOI" ~  round(as.numeric(sum(st_area(feat_aoi))/1000000,2)), 
+                                    TRUE ~ Area_km2),
+                Percent= case_when(Variables == "Within Analysis AOI" ~ round(as.numeric(sum(st_area(feat_aoi))/sum(st_area(rv$layers_rv$analysis_aoi)))*100,2),
+                                  TRUE ~ Percent))
+      
+      if(!is.null(upstream_feat)){
         y <- y %>%
-          mutate(Area_Burned_km2 = case_when(Variables == "Within upstream area" ~ round(as.numeric(sum(st_area(st_make_valid(upstream_fire)))/1000000,2)),
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within upstream area" ~   round(as.numeric(sum(st_area(st_make_valid(upstream_fire)))/sum(st_area(upstream_area)))*100,2),
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within upstream area" ~ round(as.numeric(sum(st_area(st_make_valid(upstream_feat)))/1000000,2)),
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within upstream area" ~   round(as.numeric(sum(st_area(st_make_valid(upstream_feat)))/sum(st_area(upstream_area)))*100,2),
+                                            TRUE ~ Percent))
       }else{
         y <- y %>%
-          mutate(Area_Burned_km2 = case_when(Variables == "Within upstream area" ~ 0,
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within upstream area" ~   0,
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within upstream area" ~ 0,
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within upstream area" ~   0,
+                                            TRUE ~ Percent))
       }
-      if(!is.null(downstream_stem_fire)){
+      if(!is.null(downstream_stem_feat)){
         y <- y %>%
-          mutate(Area_Burned_km2 = case_when(Variables == "Within downstream stem area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_stem_fire)))/1000000,2)),
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within downstream stem area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_stem_fire)))/sum(st_area(downstream_stem_int)))*100,2),
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within downstream stem area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_stem_feat)))/1000000,2)),
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within downstream stem area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_stem_feat)))/sum(st_area(downstream_stem_int)))*100,2),
+                                            TRUE ~ Percent))
       }else{
         y <- y %>%
-          mutate(Area_Burned_km2 = case_when(Variables == "Within downstream stem area" ~ 0,
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within downstream stem area" ~   0,
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within downstream stem area" ~ 0,
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within downstream stem area" ~   0,
+                                            TRUE ~ Percent))
       }
       
-      if(!is.null(downstream_fire)){
+      if(!is.null(downstream_feat)){
         y <- y %>%
-          mutate(Area_Burned_km2 = case_when(Variables == "Within overall downstream area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_fire)))/1000000,2)),
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within overall downstream area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_fire)))/sum(st_area(downstream_int)))*100,2),
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within overall downstream area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_feat)))/1000000,2)),
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within overall downstream area" ~ round(as.numeric(sum(st_area(st_make_valid(downstream_feat)))/sum(st_area(downstream_int)))*100,2),
+                                            TRUE ~ Percent))
       }else{
         y <- y %>%
-          mutate(Area_Burned_km2 = case_when(Variables == "Within overall downstream area" ~ 0,
-                                             TRUE ~ Area_Burned_km2),
-                 `Area_Burned_%`= case_when(Variables == "Within overall downstream area" ~   0,
-                                            TRUE ~ `Area_Burned_%`))
+          mutate(Area_km2 = case_when(Variables == "Within overall downstream area" ~ 0,
+                                             TRUE ~ Area_km2),
+                 Percent= case_when(Variables == "Within overall downstream area" ~   0,
+                                            TRUE ~ Percent))
       }  
-      rv$outfiretab(y)
+      rv$outfeaturetab(y)
       
       # Summary stats
-      z <- tibble(Variables=c("Fires within the study area", 
-                              "Fires within the Analysis AOI",
-                              "Fires within upstream area",
-                              "Fires within downstream stem area",
-                              "Fires within overall downstream area"), 
-                  Area_km2= y$Area_Burned_km2, 
-                  Percent = y$`Area_Burned_%`)
+      z <- tibble(Variables=c("Feature within the study area", 
+                              "Feature within the Analysis AOI",
+                              "Feature within upstream area",
+                              "Feature within downstream stem area",
+                              "Feature within overall downstream area"), 
+                  Area_km2= y$Area_km2, 
+                  Percent = y$Percent)
       
       space_out <- tibble(Variables=c(" "," "),
                           Area_km2= c(" ", "Metric"), 

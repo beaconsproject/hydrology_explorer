@@ -119,7 +119,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
     if (missing_inputs) {# Check if input is unset or NULL
       showModal(modalDialog(
         title = "Missing input parameters",
-        "Please set input parameters prior to set intactness and fires.",
+        "Please set input parameters prior to set intactness.",
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
@@ -139,6 +139,25 @@ setParamsServer <- function(input, output, session, project, map, rv){
       showModal(modalDialog(
         title = "Missing input parameters",
         "Please set input parameters prior to upload additional elements.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
+  observe({
+    req(input$tabs == "trackFeature")  
+    
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments)
+    )
+    
+    if (missing_inputs) {# Check if input is unset or NULL
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please set input parameters prior to set intactness.",
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
@@ -521,45 +540,25 @@ setParamsServer <- function(input, output, session, project, map, rv){
     rv$outAOI(x)
     rv$outtab1(x)
     
-    #Fire stat
-    if(!is.null(rv$layers_rv$fires)){
-      y <- tibble(Variables=c("Within study area"), 
-                  Area_Burned_km2= NA_real_, 
-                  'Area_Burned_%' = NA_real_)
-      
-      y <- y %>% 
-        mutate(Area_Burned_km2 = case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/1000000,2))),
-               'Area_Burned_%'= case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/st_area(rv$layers_rv$planreg_sf))*100))
-        )
-    }else{
-      y <- tibble(
-        Variables = "No fire",
-        Area_Burned_km2 = NA_real_,
-        `Area_Burned_%` = NA_real_
-      )
-    }
-    rv$outfiretab(y)
+    rv$outputsumStats(x)
     
+    y <- tibble(
+      Variables = "No feature",
+      Area_km2 = NA_real_,
+      Percent = NA_real_
+    )
     
-    #Summary stat
-    z <- tibble(Variables=c("Fires within the study area"), 
-                Area_km2= y$Area_Burned_km2, 
-                Percent = y$`Area_Burned_%`)
-    
-    out <-rbind(x,z)
-    rv$outputsumStats(out)
+    rv$outfeaturetab(y)
   })
- 
-   
+  
   output$dynamicTabs <- renderUI({
     tabs <- list()
-    # Fire tab
-    tabs[[1]] <- tabPanel(HTML("<h4>Fire statistics</h4>"), tableOutput("tabFires"))
+    # Feature tab
+    tabs[[1]] <- tabPanel(HTML("<h4>Feature statistics</h4>"), textOutput("featureNameTxt"), tableOutput("tabFeature"))
     # DCI tab 
     if (!is.null(input$confAOI) && input$confAOI > 0) {
       tabs[[length(tabs) + 1]] <- tabPanel(HTML("<h4>Dendritic Connectivity Index (DCI)</h4>"), tableOutput("tabDCI"))
     }
     do.call(tabBox, c(list(id = "metric", width = NULL), tabs))  
   })
-  
 }

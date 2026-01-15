@@ -31,23 +31,6 @@ setIntactServer <- function(input, output, session, project, map, rv){
           selectInput("intactLayer", "Select intactness layer", choices = NULL)
         )
       ),
-      tags$hr(),
-      
-      # ---- Fire section  ----
-      radioButtons("firesSource", "Select source for fire (optional):", choices = if(is.null(rv$layers_rv$undisturbed)) {c("Upload fire layer" = "fireupload",
-                                                                                                                           "No fire" = "nofire")
-                                                                                  } else {c("Upload fire layer" = "fireupload",
-                                                                                            "Use existing fire layer" = "fireIncluded")
-                                                                                  }, selected = "nofire"),
-      
-      conditionalPanel("input.firesSource == 'fireupload'",
-        radioButtons("fireformat", "Select fire file format:", choices = c("Shapefile" = "fireshp", 
-                                                                           "GeoPackage" = "firegpkg"), selected = character(0), inline = TRUE),
-        fileInput("upload_fire", "Upload fire layer", multiple = TRUE, accept = c(".shp",".dbf",".shx",".prj",".cpg",".gpkg")),
-        
-        conditionalPanel("input.fireformat == 'firegpkg'",
-          selectInput("fireLayer", "Select fire layer", choices = NULL))
-      ),
       br(),
       actionButton("confIntact","Confirm", icon = icon("map-location-dot", lib = "font-awesome"),  class = "btn-warning", style = "width:250px")
     )
@@ -71,14 +54,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
     updateSelectInput(session = getDefaultReactiveDomain(), "intactLayer", choices = c("Select a layer", layers))
   })
   
-  observe({
-    req(input$upload_fire)
-    req(input$fireformat == 'firegpkg')
-    file <- input$upload_fire$datapath
-    layers <- st_layers(file)$name
-    updateSelectInput(session = getDefaultReactiveDomain(), "fireLayer", choices = c("Select a layer", layers))
-  })
-  
+
   # Set intactness
   intactness_sf <- reactive({
     i <- NULL
@@ -163,81 +139,21 @@ setIntactServer <- function(input, output, session, project, map, rv){
     rv$layers_rv$catchment_pr <- catchment
   }) 
   
-  # Set fire
-  fire_sf <- eventReactive(input$confIntact,{
-    i <- NULL
-    if(input$firesSource == 'fireIncluded'){
-      i <- rv$layers_rv$fires
-    }else if (input$firesSource == "fireupload"){
-      req(input$fireformat)
-      infile <- input$upload_fire
-      if(input$fireformat == 'firegpkg'){
-        if (input$fireLayer == "Select a layer") {
-          showModal(modalDialog(
-            title = "Missing input parameters",
-            "Please confirm feature layer.",
-            easyClose = FALSE,
-            footer = modalButton("OK")
-          ))
-        }
-        
-        validate(
-          need(input$fireLayer != "Select a layer", "")
-        )
-        i <- read_gpkg_from_upload(infile$datapath, input$fireLayer) %>%
-          dplyr::select(any_of(c("geometry", "geom"))) %>%
-          suppressWarnings() %>%
-          st_cast('MULTIPOLYGON') %>% 
-          st_zm(drop = TRUE, what = "ZM")  %>%
-          mutate(area_ha = as.numeric(st_area(geom)/10000))
-        current_groups <- rv$group_names()  
-        if (!("Fires" %in% current_groups)) {  
-          updated_groups <- c(current_groups, "Fires")  
-          rv$group_names(updated_groups)  
-        }
-      }else{
-        check_shp(infile$datapath)
-        
-        i <- read_shp_from_upload(input$upload_fire) %>%
-          dplyr::select(any_of(c("geometry", "geom"))) %>%
-          suppressWarnings() %>%
-          st_cast('MULTIPOLYGON') %>% 
-          st_zm(drop = TRUE, what = "ZM")  %>%
-          { 
-            geom_col <- attr(., "sf_column")   # get current geometry column name
-            mutate(., area_ha = as.numeric(st_area(.data[[geom_col]]) / 10000))
-          }
-        current_groups <- rv$group_names()  
-        if (!("Fires" %in% current_groups)) {  
-          updated_groups <- c(current_groups, "Fires")  
-          rv$group_names(updated_groups)  
-        }
-      }
-    }else{
-      return(NULL)
-    }
-    geom_idx <- which(names(i) == attr(i, "sf_column"))
-    names(i)[geom_idx] <- "geom"
-    st_geometry(i) <- "geom"
-    rv$layers_rv$fires <- i
-    return(i)
-  })
-  
   ####################################################################################################
   # Map viewer - fires and intactness
   ####################################################################################################
   observeEvent(input$confIntact,{ 
     req(rv$layers_rv$catchment_pr)
+    
     showModal(modalDialog(
-      title = "Mapping fires and intactness",
+      title = "Mapping intactness",
       easyClose = TRUE,
       footer = modalButton("OK")))
     
     leafletProxy("map") %>%
       clearGroup('Catchments') %>%
-      clearGroup('Intactness') %>%
-      clearGroup('Fires') 
-    
+      clearGroup('Intactness')
+
     catch <- rv$layers_rv$catchment_pr %>% st_transform(4326)
     pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Intactness (%):", intact*100 )
     if (isMappable(rv$layers_rv$intactness_sf)) { 
@@ -248,12 +164,6 @@ setIntactServer <- function(input, output, session, project, map, rv){
       rv$overlayBase(overlay)
     } else {
       leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = pop, group="Catchments", options = leafletOptions(pane = "over"))
-    }
-    
-    fires <- isolate(fire_sf())
-    if(!is.null(fires)){
-      fires <- st_transform(fires, 4326)
-      leafletProxy("map") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group="Fires", options = leafletOptions(pane = "ground")) 
     }
     
     leafletProxy("map") %>%
@@ -292,24 +202,6 @@ setIntactServer <- function(input, output, session, project, map, rv){
     
     rv$outAOI(x)
     rv$outtab1(x)
-    #Fire stat
-    if(!is.null(rv$layers_rv$fires)){
-      y <- tibble(Variables=c("Within study area"), 
-                  Area_Burned_km2= NA_real_, 
-                  'Area_Burned_%' = NA_real_)
-      
-      y <- y %>% 
-        mutate(Area_Burned_km2 = case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/1000000,2))),
-               'Area_Burned_%'= case_when(Variables == "Within study area" ~  round(as.numeric(sum(st_area(rv$layers_rv$fires))/st_area(rv$layers_rv$planreg_sf))*100))
-        )
-    }else{
-      y <- tibble(
-        Variables = "No fire",
-        Area_Burned_km2 = NA_real_,
-        `Area_Burned_%` = NA_real_
-      )
-    }
-    rv$outfiretab(y)
   })
 }
   
