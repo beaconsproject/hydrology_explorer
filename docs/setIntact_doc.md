@@ -1,14 +1,6 @@
-### Set fires and intactness
+### Set intactness
 
-In this step, the user specifies the source for (1) fire spatial layer used to calculate the fire statistics and (2) intactness value or spatial layer used to specify or calculate catchment intactness (0-1 or 0-100% intact). 
-
-**Select source for fires** offers two options: 
-
-1. **Use existing fire layer** - If a Disturbance Explorer GeoPackage was uploaded in the previous step, it may include a fire layer. 
-   
-3. **Upload fire layer** - If selected, the user can upload a shapefile or GeoPackage of the fire spatial layer.
-
-If a fire layer is not uploaded, the **Fire statistics** table will not populate.
+In this step, the user specifies the source for intactness value or spatial layer used to specify or calculate catchment intactness (0-1 or 0-100% intact). 
 
 **Select source for intactness** offers three options: 
 

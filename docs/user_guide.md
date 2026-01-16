@@ -40,17 +40,9 @@ For the map, there are two background options: ESRI World Topo Map and ESRI Worl
 
 Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and can be turned on and off using the legend in the top-right corner, and the statistics tables on the right will start to populate. 
 
-### Set fires and intactness
+### Set intactness
 
-In this step, the user specifies the source for (1) fire spatial layer used to calculate the fire statistics and (2) intactness value or spatial layer used to specify or calculate catchment intactness (0-1 or 0-100% intact). 
-
-**Select source for fires** offers two options: 
-
-1. **Use existing fire layer** - If a Disturbance Explorer GeoPackage was uploaded in the previous step, it may include a fire layer. 
-   
-3. **Upload fire layer** - If selected, the user can upload a shapefile or GeoPackage of the fire spatial layer.
-
-If a fire layer is not uploaded, the **Fire statistics** table will not populate.
+In this step, the user specifies the source for intactness value or spatial layer used to specify or calculate catchment intactness (0-1 or 0-100% intact). 
 
 **Select source for intactness** offers three options: 
 
@@ -63,6 +55,19 @@ If a fire layer is not uploaded, the **Fire statistics** table will not populate
 3. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
 
 Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
+
+
+### Set feature to track (OPTIONAL)
+
+This section allows users to select a feature to track in the landscape add a maximum of three layers to the map for visualization purposes only (e.g., salmon spawning sites, critical mineral potential). These layers can be uploaded as Shapefiles or as layers from a GeoPackage. Layers will appear on the map using their original names (maximum 25 characters).
+
+**Set feature to track** offers three options: 
+
+1. **Use existing fire layer** - If a Disturbance Explorer GeoPackage was uploaded in the previous step, it may include a fire layer. 
+   
+2. **Upload feature layer** - If selected, the user can upload a shapefile or GeoPackage of the fire spatial layer.
+
+3. **No feature** - If selected, no feature will be tracked. **Feature statistics** table will not populate.
 
 
 ### Add display elements (OPTIONAL)
