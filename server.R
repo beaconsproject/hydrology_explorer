@@ -13,6 +13,7 @@ server = function(input, output, session) {
                            display2_name = reactiveVal(),
                            display3_name = reactiveVal(),
                            trackfeat_name = reactiveVal(NULL),
+                           oldtrackfeat_name = reactiveVal(NULL),
                            layers_rv = reactiveValues(streams_sf = NULL, 
                                                       planreg_sf = NULL,
                                                       ifl2000 = NULL,

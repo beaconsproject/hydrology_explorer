@@ -91,7 +91,7 @@ ui = dashboardPage(skin="black",
                          div(style = "margin-top: -20px;", selectInput("catch_layer", "Catchments", choices = NULL, multiple = FALSE)),
                          div(style = "margin-top: -20px;", selectInput("streams_layer", "Streams", choices = NULL,  multiple = FALSE))
                        ),
-                       fileInput("upload_gpkg", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
+                       fileInput("upload_distExplo", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
                        actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
                      ),
                      # UPLOAD - Intactness
@@ -228,30 +228,37 @@ ui = dashboardPage(skin="black",
                                                  leafletOutput("map", height = 750) %>% withSpinner()
                                           ),
                                           tabPanel("User Guide",
-                                                   # Dynamically update the content of Guidance based on selected tab
-                                                   conditionalPanel(
-                                                     condition = "input.tabs == 'tabUpload'",
-                                                     includeMarkdown("./docs/upload_doc.md")
-                                                   ),
-                                                   conditionalPanel(
-                                                     condition = "input.tabs == 'tabIntact'",
-                                                     includeMarkdown("./docs/setIntact_doc.md")
-                                                   ),
-                                                   conditionalPanel(
-                                                     condition = "input.tabs == 'addLayers'",
-                                                     includeMarkdown("./docs/addLayers_doc.md")
-                                                   ),
-                                                   conditionalPanel(
-                                                     condition = "input.tabs == 'selectAOI'",
-                                                     includeMarkdown("./docs/selectAOI_doc.md")
-                                                   ),
-                                                   conditionalPanel(
-                                                     condition = "input.tabs == 'upstream'",
-                                                     includeMarkdown("./docs/upstream_doc.md")
-                                                   ),
-                                                   conditionalPanel(
-                                                     condition = "input.tabs == 'download'",
-                                                     includeMarkdown("./docs/download_doc.md")
+                                                   div(
+                                                     style = "height: 600px; overflow-y: auto; padding-right: 10px;",
+                                                     # Dynamically update the content of Guidance based on selected tab
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'tabUpload'",
+                                                       includeMarkdown("./docs/upload_doc.md")
+                                                     ),
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'tabIntact'",
+                                                       includeMarkdown("./docs/setIntact_doc.md")
+                                                     ),
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'addLayers'",
+                                                       includeMarkdown("./docs/addLayers_doc.md")
+                                                     ),
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'trackFeature'",
+                                                       includeMarkdown("./docs/trackFeature_doc.md")
+                                                     ),
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'selectAOI'",
+                                                       includeMarkdown("./docs/selectAOI_doc.md")
+                                                     ),
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'upstream'",
+                                                       includeMarkdown("./docs/upstream_doc.md")
+                                                     ),
+                                                     conditionalPanel(
+                                                       condition = "input.tabs == 'download'",
+                                                       includeMarkdown("./docs/download_doc.md")
+                                                     )
                                                    )
                                           ),
                                           tabPanel("Summary statistics",

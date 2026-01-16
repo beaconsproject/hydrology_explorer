@@ -49,8 +49,8 @@ setParamsServer <- function(input, output, session, project, map, rv){
   lyr_names <- eventReactive(input$selectsource, {
     if (input$selectsource == "usedemo"){
       file <- 'www/demo.gpkg'
-    }else if (!is.null(input$upload_gpkg)) {
-      file <- input$upload_gpkg$datapath
+    }else if (!is.null(input$upload_distExplo)) {
+      file <- input$upload_distExplo$datapath
       ext <- tools::file_ext(file)
       if (ext == "gpkg") {
         layers <- st_layers(file)$name
@@ -301,10 +301,11 @@ setParamsServer <- function(input, output, session, project, map, rv){
     if(input$selectsource == 'usedemo'){
       gpkg_path <- 'www/demo.gpkg'
     }else{
-      req(input$upload_gpkg)
-      gpkg_path <- file.path(tempdir(), paste0("uploaded_", input$upload_gpkg$name))
-      file.copy(input$upload_gpkg$datapath, gpkg_path, overwrite = TRUE)
+      req(input$upload_distExplo)
+      gpkg_path <- file.path(tempdir(), paste0("uploaded_", input$upload_distExplo$name))
+      file.copy(input$upload_distExplo$datapath, gpkg_path, overwrite = TRUE)
     }
+    
     if ("fires" %in% lyr_names()) {
       fi <-st_read(gpkg_path, 'fires', quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
@@ -314,7 +315,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_cast('MULTIPOLYGON') %>% 
         st_zm(drop = TRUE, what = "ZM")  %>%
         mutate(area_ha = as.numeric(st_area(geom)/10000))
-      addGroup("Fires")
+      addGroup("fires")
       rv$layers_rv$fires <- fi
     }
     if ("undisturbed" %in% lyr_names()) {
@@ -322,7 +323,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "undisturbed", quiet = TRUE))))
-      addGroup("Undisturbed areas")
+      addGroup("undisturbed")
       rv$layers_rv$undisturbed <- la
     }
     if ("Intact_FL_2000" %in% lyr_names()) {
@@ -330,7 +331,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "Intact_FL_2000", quiet = TRUE))))      
-      addGroup("Intact FL 2000")
+      addGroup("Intact_FL_2000")
       rv$layers_rv$ifl2000 <- la
     }
     if ("Intact_FL_2020" %in% lyr_names()) {
@@ -338,7 +339,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "Intact_FL_2020", quiet = TRUE)))) 
-      addGroup("Intact FL 2020")
+      addGroup("Intact_FL_2020")
       rv$layers_rv$ifl2020 <- la
     }
     if ("protected_areas" %in% lyr_names()) {
@@ -346,13 +347,13 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "protected_areas", quiet = TRUE)))) 
-      addGroup("Protected areas")
+      addGroup("protected_areas")
       rv$layers_rv$pa2021 <- la
     }
     if ("Caribou_Herds" %in% lyr_names()) {
       la <-st_read(gpkg_path, 'Caribou_Herds', quiet = TRUE) %>%
         st_transform(st_crs(planreg_sf()))   
-      addGroup("Caribou Herds")
+      addGroup("Caribou_Herds")
       rv$layers_rv$herds <- la
     }
     if ("Placer_Claims" %in% lyr_names()) {
@@ -360,7 +361,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "Placer_Claims", quiet = TRUE)))) 
-      addGroup("Placer claims")
+      addGroup("Placer_Claims")
       rv$layers_rv$placers <- la
     }
     if ("Quartz_Claims" %in% lyr_names()) {
@@ -368,7 +369,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "Quartz_Claims", quiet = TRUE)))) 
-      addGroup("Quartz claims")
+      addGroup("Quartz_Claims")
       rv$layers_rv$quartz <- la
     }
     if ("Mining_Claims" %in% lyr_names()) {
@@ -376,7 +377,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) %>%
         dplyr::select(all_of(names(st_read(gpkg_path, "Mining_Claims", quiet = TRUE))))
-      addGroup("Mining claims")
+      addGroup("Mining_Claims")
       rv$layers_rv$mines <- la
     } 
     if ("disturbed" %in% lyr_names()) {
@@ -386,7 +387,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_zm(drop = TRUE, what = "ZM")  %>%
         st_make_valid() %>%
         mutate(area_ha = as.numeric(st_area(geom)/10000))
-      addGroup("Disturbed areas")
+      addGroup("disturbed")
       rv$layers_rv$disturbed <- la
     }
   }, ignoreInit = TRUE)
@@ -418,15 +419,16 @@ setParamsServer <- function(input, output, session, project, map, rv){
       clearGroup('Study area') %>%
       clearGroup('Catchments') %>%
       clearGroup('Streams') %>%
-      clearGroup('Intactness') %>%
-      clearGroup("Intact FL 2000") %>%
-      clearGroup("Intact FL 2020") %>%
-      clearGroup('Fires') %>%
-      clearGroup('Placer claims') %>%
-      clearGroup('Quartz claims') %>%
-      clearGroup('Protected areas') %>%
-      clearGroup('Disturbed areas') %>%
-      clearGroup('Herds') %>%
+      clearGroup('undisturbed') %>%
+      clearGroup("Intact_FL_2000") %>%
+      clearGroup("Intact_FL_2020") %>%
+      clearGroup('fires') %>%
+      clearGroup('Placer_Claims') %>%
+      clearGroup('Quartz_Claims') %>%
+      clearGroup('protected_areas') %>%
+      clearGroup('disturbed') %>%
+      clearGroup('Mining_Claims') %>%
+      clearGroup('Caribou_Herds') %>%
       clearGroup(rv$display1_name) %>%
       clearGroup(rv$display2_name) %>%
       clearGroup(rv$display3_name) %>%
@@ -440,63 +442,63 @@ setParamsServer <- function(input, output, session, project, map, rv){
     disturbed <- isolate(rv$layers_rv$disturbed)
     if(!is.null(disturbed)){
       disturbed <- st_transform(disturbed, 4326)
-      leafletProxy("map") %>% addPolygons(data=disturbed, color='black', stroke=F, fillOpacity=0.5, group="Disturbed areas", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Disturbed areas")
+      leafletProxy("map") %>% addPolygons(data=disturbed, color='black', stroke=F, fillOpacity=0.5, group="disturbed", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "disturbed")
     }
     undisturbed <- isolate(rv$layers_rv$undisturbed)
     if(!is.null(disturbed)){
       undisturbed <- st_transform(undisturbed, 4326)
-      leafletProxy("map") %>% addPolygons(data=undisturbed, color='#336633', stroke=F, fillOpacity=0.5, group="Undisturbed areas", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Undisturbed areas")
+      leafletProxy("map") %>% addPolygons(data=undisturbed, color='#336633', stroke=F, fillOpacity=0.5, group="undisturbed", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "undisturbed")
     }
     
     fires <- isolate(rv$layers_rv$fires)
     if(!is.null(fires)){
       fires <- st_transform(fires, 4326)
-      leafletProxy("map") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group="Fires", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Fires")
+      leafletProxy("map") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group="fires", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "fires")
     }
     ifl2000 <- isolate(rv$layers_rv$ifl2000)
     if(!is.null(ifl2000)){
       ifl2000 <- st_transform(ifl2000, 4326)
-      leafletProxy("map") %>% addPolygons(data=ifl2000, fill=T, stroke=F, fillColor='#3366FF', fillOpacity=0.5, group="Intact FL 2000", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Intact FL 2000")
+      leafletProxy("map") %>% addPolygons(data=ifl2000, fill=T, stroke=F, fillColor='#3366FF', fillOpacity=0.5, group="Intact_FL_2000", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Intact_FL_2000")
     }
     ifl2020 <- isolate(rv$layers_rv$ifl2020)
     if(!is.null(ifl2020)){
       ifl2020 <- st_transform(ifl2020, 4326)
-      leafletProxy("map") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2020", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Intact FL 2020")
+      leafletProxy("map") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact_FL_2020", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Intact_FL_2020")
     }
     pa2021 <- isolate(rv$layers_rv$pa2021)
     if(!is.null(pa2021)){
       pa2021 <- st_transform(pa2021, 4326)
-      leafletProxy("map") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Protected areas")
+      leafletProxy("map") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="protected_areas", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "protected_areas")
     }
     herds <- isolate(rv$layers_rv$herds)
     if(!is.null(herds)){
       herds <- st_transform(herds, 4326)
-      leafletProxy("map") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Caribou Herds", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Caribou Herds")
+      leafletProxy("map") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Caribou_Herds", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Caribou_Herds")
     }
     placers <- isolate(rv$layers_rv$placers)
     if(!is.null(placers)){
       placers <- st_transform(placers, 4326)
-      leafletProxy("map") %>% addPolygons(data=placers, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Placer claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Placer claims")
+      leafletProxy("map") %>% addPolygons(data=placers, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Placer_Claims", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Placer_Claims")
     }
     quartz <- isolate(rv$layers_rv$quartz)
     if(!is.null(quartz)){
       quartz <- st_transform(quartz, 4326)
-      leafletProxy("map") %>% addPolygons(data=quartz, color = '#CCCCCC', fill=T, fillColor='#CCCCCC', weight=1, fillOpacity = 1, group="Quartz claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Quartz claims")
+      leafletProxy("map") %>% addPolygons(data=quartz, color = '#CCCCCC', fill=T, fillColor='#CCCCCC', weight=1, fillOpacity = 1, group="Quartz_Claims", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Quartz_Claims")
     }
     mines <- isolate(rv$layers_rv$mines)
     if(!is.null(mines)){
       mines <- st_transform(mines, 4326)
-      leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Mining claims")
+      leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining_Claims", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Mining_Claims")
     } 
     
     leafletProxy("map") %>%

@@ -4,13 +4,14 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
     tagList(
       
       # ---- Fire section  ----
-      radioButtons("featSource", "Select source for feature to track (optional):", choices = if(is.null(rv$layers_rv$undisturbed)) {c("Upload feature layer" = "featupload",
+      radioButtons("featSource", "Select source for feature to track (optional):", choices = if(is.null(input$upload_distExplo)) {c("Upload feature layer" = "featupload",
                                                                                                                            "No feature" = "nofeature")
-                                                                                  } else {c("Upload feature layer" = "featupload",
-                                                                                            "Use existing fire layer" = "fireIncluded",
+                                                                                  } else {c("Use uploaded feature" = "featureIncluded",
+                                                                                            "Upload new feature" = "featupload",
                                                                                             "No feature" = "nofeature")
                                                                                   }, selected = "nofeature"),
-      
+      conditionalPanel("input.featSource == 'featureIncluded'",
+                       selectInput("distexploLayer", "Select feature layer", choices = NULL)),
       conditionalPanel("input.featSource == 'featupload'",
         radioButtons("featformat", "Select fire file format:", choices = c("Shapefile" = "featshp", 
                                                                            "GeoPackage" = "featgpkg"), selected = character(0), inline = TRUE),
@@ -39,13 +40,28 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
     updateSelectInput(session = getDefaultReactiveDomain(), "featLayer", choices = c("Select a layer", layers))
   })
   
-
-  # Set fire
+  observe({
+    req(input$upload_distExplo)
+    req(input$featSource == 'featureIncluded')
+    file <- input$upload_distExplo$datapath
+    layers <- st_layers(file)$name
+    updateSelectInput(session = getDefaultReactiveDomain(), "distexploLayer", choices = c("Select a layer", layers))
+  })
+  
+  # Set feature to track
   feat_sf <- eventReactive(input$confFeat,{
     i <- NULL
-    if(input$featSource == 'fireIncluded'){
-      i <- rv$layers_rv$fires
-      rv$trackfeat_name('Fires')
+    if(input$featSource == 'featureIncluded'){
+      req(input$upload_distExplo)
+      req(input$distexploLayer != "Select a layer")
+      infile <- input$upload_distExplo
+      i <- read_gpkg_from_upload(infile$datapath, input$distexploLayer) %>%
+        dplyr::select(any_of(c("geometry", "geom"))) %>%
+        suppressWarnings() %>%
+        st_cast('MULTIPOLYGON') %>% 
+        st_zm(drop = TRUE, what = "ZM")  %>%
+        mutate(area_ha = as.numeric(st_area(geom)/10000))
+      rv$trackfeat_name(input$distexploLayer)
     }else if (input$featSource == "featupload"){
       req(input$featformat)
       if(input$featformat == 'featgpkg'){
@@ -98,15 +114,19 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
   ####################################################################################################
   observeEvent(input$confFeat,{ 
     req(rv$layers_rv$catchment_pr)
+    
     showModal(modalDialog(
       title = "Mapping feature to track",
       easyClose = TRUE,
       footer = modalButton("OK")))
     
-    leafletProxy("map") %>%
-#      clearGroup('Catchments') %>%
-      clearGroup(rv$trackfeat_name()) 
-    
+    if(input$featSource == 'featureIncluded'){
+      leafletProxy("map") %>%
+        hideGroup(rv$oldtrackfeat_name()) 
+    } else if (input$featSource == "featupload"){
+      leafletProxy("map") %>%
+        clearGroup(rv$oldtrackfeat_name()) 
+    }
 #    catch <- rv$layers_rv$catchment_pr %>% st_transform(4326)
 #    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Intactness (%):", intact*100 )
 #    leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = pop, group="Catchments", options = leafletOptions(pane = "over"))
@@ -114,7 +134,8 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
     track_sf <- isolate(feat_sf())
     if(!is.null(track_sf)){
       track_sf <- st_transform(track_sf, 4326)
-      leafletProxy("map") %>% addPolygons(data=track_sf, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group=rv$trackfeat_name(), options = leafletOptions(pane = "ground")) 
+      leafletProxy("map") %>% addPolygons(data=track_sf, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group=rv$trackfeat_name(), options = leafletOptions(pane = "ground"))
+      rv$oldtrackfeat_name(rv$trackfeat_name())  
     }
     
     leafletProxy("map") %>%
@@ -122,7 +143,8 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), rv$trackfeat_name()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c("Streams", "Catchments"))
+      hideGroup(c("Streams", "Catchments")) %>%
+      showGroup(rv$trackfeat_name())
     
     removeModal()
     

@@ -16,7 +16,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
                                                   } else {c("Value in catchment dataset" = "intcatch",
                                                             "Use existing undisturbed layer" = "intIncluded",
                                                             "Upload intactness layer" = "intupload")
-                                                  }, selected = "intcatch"),
+                                                  }, selected = "intIncluded"),
       
       conditionalPanel("input.intactSource == 'intcatch'",
         selectInput("intactColumnName",  "Catchment dataset – select intactness attribute", choices = NULL)
