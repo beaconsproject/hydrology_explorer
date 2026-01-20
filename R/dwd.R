@@ -80,6 +80,7 @@ dwdServer  <- function(input, output, session, project, map, rv){
       st_write(aoi, dsn=file, layer='aoi', append=TRUE) 
       st_write(catchment_updated, dsn=file, layer='catchments', append=TRUE)
       if (!is.null(rv$layers_rv$trackFeat)) st_write(rv$layers_rv$trackFeat, dsn=file, layer=input$featLayer, append=TRUE)
+      if (!is.null(rv$layers_rv$undisturbed)) st_write(rv$layers_rv$undisturbed, dsn=file, layer='intactness', append=TRUE)
       if (!is.null(rv$layers_rv$catch_up)) st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
       if (!is.null(rv$layers_rv$catch_down)) st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
       if (!is.null(rv$layers_rv$catch_stem)) st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)

@@ -12,7 +12,7 @@ Results can be downloaded as a GeoPackage that includes the following spatial la
       
 If provided, the following layers will also be added to the GeoPackage: 
 - **intactness**: spatial layer uploaded to calculate catchment intactness 
-- **fire**: spatial layer of wildfires used to calculate fire statistics
+- **feature to track**: A spatial layer representing a user-defined feature of interest (e.g., wildfires, mining claims, or other disturbances) used to calculate feature-specific statistics. The GeoPackage layer name will be preserved from the uploaded feature.
 
 The GeoPackage can be further viewed and analysed in a GIS e.g., QGIS.  
 

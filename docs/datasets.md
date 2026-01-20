@@ -25,11 +25,14 @@ The following spatial layers are required:
     
   - **streams**: A polyline layer of streams. This layer must include the attribute SKELUID, which must match the corresponding SKELUID values in the catchments layer.
     
-  - **fires**:  This polygonal layer is only required if wildfire-based statistics are desired: area and % area burned in the study area, AOI, and upstream and downstream areas. 
   
 ### Optional display elements
  
 These spatial layers are added to the App under **Add display elements (OPTIONAL)**. Up to three additional spatial layers can be uploaded for display purposes only in the Mapview tab. The name of each layer will be used to identify the layer in the map legend, so a short name (≤25 characters) is recommended. 
+
+### Optional tracking feature
+
+  - **Feature to track**:  An optional polygon layer representing features of interest, such as mining claims, fire perimeters, or other disturbances. This layer is used to calculate statistics including area and percentage of area affected within the study area, the area of interest (AOI), and upstream and downstream areas.
 
 ## Demo Dataset
 
