@@ -295,6 +295,19 @@ setParamsServer <- function(input, output, session, project, map, rv){
       coords_df <- get_start_end(stream$geometry)
       stream <- bind_cols(stream, coords_df)
     }
+    req(stream)
+    required_col <- check_colnames(stream, c("SKELUID"))
+    if(!is.na(required_col)){
+      showModal(modalDialog(
+        title = "Missing required column",
+        paste0("In the stream layers, column ", required_col, " is missing."),
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      return(FALSE)
+    }
+    req(is.na(required_col))
+    
     rv$layers_rv$streams_sf <- stream
     return(stream)
   })
