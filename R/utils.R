@@ -116,3 +116,12 @@ get_start_end <- function(geom){
   
   return(start_end)
 }
+
+check_colnames <- function(x, cols){
+   i <- setdiff(cols, colnames(x))
+   if(length(i)>0){
+     return(i)
+   } else{
+     return(NA)
+   }
+}

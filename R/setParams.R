@@ -251,9 +251,23 @@ setParamsServer <- function(input, output, session, project, map, rv){
     }else {
       i <- NULL
     }
+    
+    required_col <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
+    if(!is.na(required_col)){
+      showModal(modalDialog(
+        title = "Missing required column",
+        paste0("In the catchments layers, column(s) ", required_col, " is/are missing."),
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      return(FALSE)
+    }
+    req(is.na(required_col))
     geom_idx <- which(names(i) == attr(i, "sf_column"))
     names(i)[geom_idx] <- "geom"
     st_geometry(i) <- "geom"
+    
+  
     rv$layers_rv$catchments <- i
     return(i)
   })
@@ -398,6 +412,8 @@ setParamsServer <- function(input, output, session, project, map, rv){
   # Render planning region
   observeEvent(input$previewLayers, {
     req(planreg_sf())
+    req(catchments())
+    req(stream_sf())
     # show pop-up ...
     showModal(modalDialog(
       title = "Please wait.", " Layers are being uploaded.",
