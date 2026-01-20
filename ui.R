@@ -207,7 +207,8 @@ ui = dashboardPage(skin="black",
                                fluidRow(
                                  column(width = 10,  # Adjusted from 6 to 8 for better alignment
                                         tabBox(id = "one", width="8",
-                                               tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
+                                               #tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
+                                               tabPanel(HTML("Overview"), htmlOutput("overviewMD")),
                                                tabPanel(HTML("User guide"), includeMarkdown("docs/user_guide.md")),
                                                tabPanel(HTML("Dataset requirements"), includeMarkdown("docs/datasets.md"))
                                         )

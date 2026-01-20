@@ -27,6 +27,21 @@ isMappable <- function(x) {
   !is.null(x) && inherits(x, "sf") && nrow(x) > 0
 }
 
+# Define the last update date (deployment date)
+last_update <- Sys.Date()  # or use Sys.time() for full timestamp
+
+# Read the Markdown file
+overview_md <- readLines("docs/overview.md")
+
+# Replace placeholder in the Markdown
+overview_md <- c(
+  paste0('<div style="text-align: right; font-size:0.9em; color: gray;">Last update: ', last_update, '</div>'),
+  overview_md
+)
+
+# Convert to a single string for rendering
+overview_md_text <- paste(overview_md, collapse = "\n")
+
 # Function to add a new group to group_names
 
 # read_shp_from_csv: read layer from path found in csv uploaded with fileInput

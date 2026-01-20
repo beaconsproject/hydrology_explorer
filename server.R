@@ -46,8 +46,8 @@ server = function(input, output, session) {
   )
   
   
-  output$help <- renderText({
-    includeMarkdown("docs/upstream.md")
+  output$overviewMD <- renderUI({
+    HTML(markdown::markdownToHTML(text = overview_md_text, fragment.only = TRUE))
   })
   
   ################################################################################################
