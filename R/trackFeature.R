@@ -60,8 +60,10 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
         suppressWarnings() %>%
         st_cast('MULTIPOLYGON') %>% 
         st_zm(drop = TRUE, what = "ZM")  %>%
-        mutate(area_ha = as.numeric(st_area(geom)/10000))
-      rv$trackfeat_name(input$distexploLayer)
+        st_union() %>%                    
+        st_as_sf() %>%           
+        mutate(area_ha = as.numeric(st_area(.)/10000))
+      rv$trackfeat_name(input$distexploLayer) 
     }else if (input$featSource == "featupload"){
       req(input$featformat)
       if(input$featformat == 'featgpkg'){
@@ -83,7 +85,9 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
           suppressWarnings() %>%
           st_cast('MULTIPOLYGON') %>% 
           st_zm(drop = TRUE, what = "ZM")  %>%
-          mutate(area_ha = as.numeric(st_area(geom)/10000))
+          st_union() %>%                    
+          st_as_sf() %>%
+          mutate(area_ha = as.numeric(st_area(.)/10000))
         rv$trackfeat_name(input$featLayer)
       }else{
         infile <- input$upload_shpfeat
@@ -93,6 +97,8 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
           suppressWarnings() %>%
           st_cast('MULTIPOLYGON') %>% 
           st_zm(drop = TRUE, what = "ZM")  %>%
+          st_union() %>%                    
+          st_as_sf() %>%
           { 
             geom_col <- attr(., "sf_column")   # get current geometry column name
             mutate(., area_ha = as.numeric(st_area(.data[[geom_col]]) / 10000))
