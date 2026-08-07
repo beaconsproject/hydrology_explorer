@@ -1,4 +1,19 @@
 selectAOIServer  <- function(input, output, session, project, map, rv){
+  
+  observe({
+    req(input$tabs == "selectAOI")  # Trigger when "Select AOI" is active
+    
+    # Check if intactSource is unset or NULL
+    if (is.null(input$intactSource) || input$intactSource == "") {
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please set the Intactness Source before selecting an Area of Interest (AOI).",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
   ################################################################################################
   ################################################################################################
   # Set AOI
@@ -13,7 +28,7 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
     updateSelectInput(session = getDefaultReactiveDomain(), "aoiLayer", choices = c("Select AOI layer", layers))
   })
   
-  
+
   aoi_sf <- eventReactive({
     list(
       input$shp_aoi,

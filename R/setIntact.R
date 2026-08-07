@@ -1,5 +1,24 @@
 setIntactServer <- function(input, output, session, project, map, rv){
   
+  observe({
+    req(input$tabs == "tabIntact")  # Trigger when "Set intactness" 
+    
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments)
+    )
+    
+    if (missing_inputs) {# Check if input is unset or NULL
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please set input parameters prior to set intactness.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
   intactUI_static <- function() {
     tagList(
       
@@ -58,10 +77,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
   # Set intactness
   intactness_sf <- reactive({
     i <- NULL
-    if(input$intactSource == 'intIncluded'){
-      i <- rv$layers_rv$undisturbed %>%
-        dplyr::select(any_of(c("geometry", "geom")))
-    }else if (input$intactSource == 'intupload'){
+    if (input$intactSource == 'intupload'){
       req(input$intactformat)
       infile <- input$upload_intact
       if(input$intactformat == 'intgpkg'){
@@ -75,9 +91,19 @@ setIntactServer <- function(input, output, session, project, map, rv){
         i <- read_shp_from_upload(infile) %>%
           dplyr::select(any_of(c("geometry", "geom")))
       }
-    }else{
+    }else if(!is.null(rv$layers_rv$undisturbed)){
+      i <- rv$layers_rv$undisturbed %>%
+        dplyr::select(any_of(c("geometry", "geom")))
+    }else {
       return(NULL)
     }
+    
+    if(!is.null(i)){
+      if (st_crs(i) != st_crs(rv$layers_rv$planreg_sf)) {
+        i <- st_transform(i, st_crs(rv$layers_rv$planreg_sf))
+      }
+    }
+    i <- st_make_valid(i)
     rv$layers_rv$intactness_sf <- i
     return(i)
   })
@@ -88,13 +114,18 @@ setIntactServer <- function(input, output, session, project, map, rv){
     req(rv$layers_rv$planreg_sf)
     req(rv$layers_rv$catchments)
     req(input$intactSource)
+    req(intactness_sf())
     
     if(input$intactSource =='intcatch'){
       req(input$intactColumnName)  # Ensure the textInput value is available
       intact_column <- input$intactColumnName  # Get the column name from the text input
-      catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
-      catchment <- rv$layers_rv$catchments[catch_int,]
-      #catchment <- rv$layers_rv$catchments
+      #catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
+      #catchment <- rv$layers_rv$catchments[catch_int,]
+      catchment <- st_intersection(rv$layers_rv$catchments, rv$layers_rv$planreg_sf) |>
+        st_make_valid() |>
+        st_collection_extract("POLYGON") |>
+        st_cast("MULTIPOLYGON")
+      
       # Test on Column type 
       if (!is.numeric(catchment[[intact_column]])) {
         showModal(modalDialog(
@@ -117,9 +148,8 @@ setIntactServer <- function(input, output, session, project, map, rv){
         return(NULL)
       }
       catchment$intact <- catchment[[intact_column]]  # Dynamically access the specified column
-      catchment$area_intact <- catchment$Area_total * catchment$intact
+      catchment$area_intact <- st_area(catchment) * catchment$intact
     }else{
-      req(intactness_sf())
       catch_int <- st_intersects(st_centroid(rv$layers_rv$catchments), rv$layers_rv$planreg_sf, sparse = FALSE)
       catchments <- rv$layers_rv$catchments[catch_int,]
       intact <- st_intersection(intactness_sf(), catchments)
@@ -146,26 +176,25 @@ setIntactServer <- function(input, output, session, project, map, rv){
     req(rv$layers_rv$catchment_pr)
     
     showModal(modalDialog(
-      title = "Mapping intactness",
+      title = "Mapping undisturbed areas",
       easyClose = TRUE,
       footer = modalButton("OK")))
     
     leafletProxy("map") %>%
       clearGroup('Catchments') %>%
-      clearGroup('Intactness')
-
+      clearGroup('Undisturbed')
+    
     catch <- rv$layers_rv$catchment_pr %>% st_transform(4326)
-    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Intactness (%):", intact*100 )
+    pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Undisturbed (%):", intact*100 )
     if (isMappable(rv$layers_rv$intactness_sf)) { 
       intact <- st_transform(rv$layers_rv$intactness_sf, 4326)
-      leafletProxy("map") %>% addPolygons(data=intact, color='blue', fill = T, fillOpacity = 0.2, weight=0, group='Intactness', options = leafletOptions(pane = "ground"))
+      leafletProxy("map") %>% addPolygons(data=intact, color='blue', fill = T, fillOpacity = 0.2, weight=0, group='Undisturbed', options = leafletOptions(pane = "ground"))
       leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = pop, group="Catchments", options = leafletOptions(pane = "over"))
-      overlay <- c(rv$overlayBase(), "Intactness")
+      overlay <- c(rv$overlayBase(), "Undisturbed")
       rv$overlayBase(overlay)
     } else {
       leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = pop, group="Catchments", options = leafletOptions(pane = "over"))
     }
-    
     leafletProxy("map") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
@@ -176,29 +205,33 @@ setIntactServer <- function(input, output, session, project, map, rv){
     removeModal()
     
     
+    ####################################################################################################
     # Update stats
-    x <- tibble(Variables=c("Study area", 
-                            "Study area intactness"), 
-                Area_km2= NA_real_,
-                Percent = NA_real_)
+    ####################################################################################################
+    x <- rv$outAOI()
     
-    if(!is.null(rv$layers_rv$intactness_sf)){
+    new_rows  <- tibble(Variables="Analysis area intactness", 
+                        Area_km2= NA_real_,
+                        Percent = NA_real_)
+    
+    x <- x %>% dplyr::filter(!Variables %in% new_rows$Variables)
+    x <- dplyr::bind_rows(x, new_rows)
+    
+    if(input$intactSource == "intcatch"){
       x <- x %>% 
-        mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
-                                    Variables == "Study area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0)),
-               Percent= case_when(Variables == "Study area" ~  100,
-                                  Variables == "Study area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2))
+        mutate(Area_km2 = case_when(Variables == "Analysis area intactness" ~ round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/1000000,0)),
+                                    TRUE ~ Area_km2),
+               Percent= case_when(Variables == "Analysis area intactness" ~  round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/as.numeric(st_area(rv$layers_rv$planreg_sf)))*100,2),
+                                  TRUE ~ Percent)
         ) 
     } else {
       x <- x %>% 
-        mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
-                                    Variables == "Study area intactness" ~ round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/1000000,0))),
-               Percent= case_when(Variables == "Study area" ~  100,
-                                  Variables == "Study area intactness" ~  round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/as.numeric(st_area(rv$layers_rv$planreg_sf)))*100,2))
+        mutate(Area_km2 = case_when(Variables == "Analysis area intactness" ~ round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/1000000,0), 
+                                    TRUE ~ Area_km2),
+               Percent= case_when(Variables == "Analysis area intactness" ~  round(as.numeric(st_area(st_union(rv$layers_rv$intactness_sf)))/as.numeric(st_area(rv$layers_rv$planreg_sf))*100,2),
+                                  TRUE ~ Percent)
         ) 
     }
-    
-    
     
     rv$outAOI(x)
     rv$outtab1(x)

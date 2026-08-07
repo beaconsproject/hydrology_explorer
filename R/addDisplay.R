@@ -1,5 +1,24 @@
 addDisplayServer <- function(input, output, session, project, map, rv){
   
+  observe({
+    req(input$display4)
+    file <- input$display4$datapath
+    layers <- st_layers(file)$name
+    updateSelectInput(session = getDefaultReactiveDomain(), "display4a", choices = c("Select a layer", layers))
+  })
+  observe({
+    req(input$display4)
+    file <- input$display4$datapath
+    layers <- st_layers(file)$name
+    updateSelectInput(session = getDefaultReactiveDomain(), "display4b", choices = c("Select a layer", layers))
+  })
+  observe({
+    req(input$display4)
+    file <- input$display4$datapath
+    layers <- st_layers(file)$name
+    updateSelectInput(session = getDefaultReactiveDomain(), "display4c", choices = c("Select a layer", layers))
+  })
+  
   ################################################################################################
   ################################################################################################
   # Add display elements

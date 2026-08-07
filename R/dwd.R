@@ -91,7 +91,7 @@ dwdServer  <- function(input, output, session, project, map, rv){
   # Save Stats
   ##############################################################################
   output$downloadStats <- downloadHandler(
-    filename = function() { paste("hydrology_explorer_stats-", Sys.Date(), ".csv", sep="") },
+    filename = function() { paste("Hydrology_explorer_stats-", Sys.Date(), ".csv", sep="") },
     content = function(file) {
       write.csv(rv$outputsumStats(), file, row.names = FALSE)
     }

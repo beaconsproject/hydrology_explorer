@@ -1,5 +1,25 @@
 trackFeatureServer <- function(input, output, session, project, map, rv){
   
+  observe({
+    req(input$tabs == "trackFeature")  
+    
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments)
+    )
+    
+    if (missing_inputs) {# Check if input is unset or NULL
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please set input parameters prior to set intactness.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
+
   trackUI_static <- function() {
     tagList(
       
@@ -31,7 +51,7 @@ trackFeatureServer <- function(input, output, session, project, map, rv){
     trackUI_static()
   })
 
-  
+
   observe({
     req(input$upload_gpkgfeat)
     req(input$featformat == 'featgpkg')

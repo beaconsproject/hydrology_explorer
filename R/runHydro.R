@@ -1,5 +1,37 @@
 runHydroServer  <- function(input, output, session, project, map, rv){
   
+  observe({
+    req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
+    
+    missing_inputs <- any(
+      is.null(rv$layers_rv$planreg_sf),
+      is.null(rv$layers_rv$streams_sf),
+      is.null(rv$layers_rv$catchments)
+    )
+    
+    if (missing_inputs) {
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please confirm input parameters in previous step.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })
+  
+  observe({
+    req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
+    
+    if (is.null(rv$layers_rv$analysis_aoi)) {
+      showModal(modalDialog(
+        title = "Missing input parameters",
+        "Please confirm Area of Interest (AOI) in previous step.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+    }
+  })  
+  
   ####################################################################################################
   #UPSTREAM SECTION 
   catch_up <- eventReactive(input$confAnalysis, {

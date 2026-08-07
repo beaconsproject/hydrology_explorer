@@ -1,25 +1,53 @@
 setParamsServer <- function(input, output, session, project, map, rv){
   
+  preview_ready <- reactiveVal(FALSE)
   
+  observeEvent(input$selectsource, {
+    preview_ready(FALSE)
+  })
+  
+  observeEvent(input$upload_sa, {
+    preview_ready(FALSE)
+  })
+  observeEvent(input$previewLayers, {
+    preview_ready(TRUE)
+  })
   ################################################################################################
-  # Function to add a new group to group_names
-  addGroup <- function(new_group) {
-    current_groups <- rv$group_names()  # Retrieve the current value
-    if (!(new_group %in% current_groups)) {  # Check if the group is not already in the vector
-      updated_groups <- c(current_groups, new_group)  # Append the new group
-      rv$group_names(updated_groups)  # Update the reactiveVal
-    }
-  }
-  
-  removeGroup <- function(group_to_remove) {
-    current_groups <- rv$group_names()  # Retrieve the current value
-    updated_groups <- current_groups[current_groups != group_to_remove]  # Filter out the specified group
-    rv$group_names(updated_groups)  # Update the reactiveVal
-  }
-  
   # Required layers
-  required_layers <- c("catchments", "streams", "studyarea")
+  required_layers <- c("catchments", "streams", "studyarea", "analysis studyarea")
   
+  ####################################################################################################
+  # RENDER UI
+  output$include_layers_ui <- renderUI({
+    req(input$sa_gpkg)
+    
+    file <- input$sa_gpkg$datapath
+    layers <- tryCatch(
+      st_layers(file)$name,
+      error = function(e) NULL
+    )
+    req(layers)
+    
+    has_distexplo <- any(layers %in% distexplo_lyr)
+    
+    if (has_distexplo) {
+      div(style = "margin-top: -30px;", checkboxInput( "include_layers",  "Load Disturbance Explorer layers", value = FALSE))
+    }
+  })
+  
+  output$sa_upstream_ui <- renderUI({
+    req(upstream_extent())
+    
+    tagList(radioButtons("upsa_included", "Select analysis area:",
+                 choices = list("Use uploaded study area only" = "sa_only", 
+                                "Use uploaded study area and all upstream watershed" = "sa_up"),
+                 selected = "sa_only", 
+                 inline = FALSE),
+    actionButton("apply_changes", "Set analysis study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
+    )
+  }) 
+  ####################################################################################################
+  # READ SPATIAL DATA
   # Reactive function to validate the input file
   validate_csv <- reactive({
     req(input$csv_paths)  # Ensure the file input is not NULL
@@ -46,17 +74,18 @@ setParamsServer <- function(input, output, session, project, map, rv){
   
   ##############################################################################
   # Observe on layers names in gpkg
-  lyr_names <- eventReactive(input$selectsource, {
+  lyr_names <- reactive({
+    
     if (input$selectsource == "usedemo"){
       file <- 'www/demo.gpkg'
-    }else if (!is.null(input$upload_distExplo)) {
-      file <- input$upload_distExplo$datapath
-      ext <- tools::file_ext(file)
-      if (ext == "gpkg") {
-        layers <- st_layers(file)$name
-        return(layers)
-      }
-    }else{
+    } else if (isTRUE(input$include_layers)){
+        file <- input$sa_gpkg$datapath
+        ext <- tools::file_ext(file)
+        if (ext == "gpkg") {
+          layers <- st_layers(file)$name
+          return(layers)
+        }
+    } else{
       return(NULL)
     }
     layers <- st_layers(file)$name
@@ -65,217 +94,99 @@ setParamsServer <- function(input, output, session, project, map, rv){
   ################################################################################################
   # Observe on selectInput
   output$gpkgReady <- reactive({
-    !is.null(input$gpkg_file)
+    !is.null(input$advanced_gpkg)
   })
   outputOptions(output, "gpkgReady", suspendWhenHidden = FALSE)
   
   observe({
-    req(!is.null(input$gpkg_file))
-    layers <- st_layers(input$gpkg_file$datapath)$name
+    req(!is.null(input$sa_gpkg))
+    layers <- st_layers(input$sa_gpkg$datapath)$name
     updateSelectInput(session = getDefaultReactiveDomain(), "sa_layer", choices = layers, selected= if ("studyarea" %in% layers) "studyarea" else layers[1])
-    updateSelectInput(session = getDefaultReactiveDomain(), "catch_layer", choices = layers, selected= if ("catchments" %in% layers) "catchments" else layers[1])
-    updateSelectInput(session = getDefaultReactiveDomain(), "streams_layer", choices = layers, selected= if ("streams" %in% layers) "streams" else layers[1])
   })
   
- 
   observe({
-    req(input$display4)
-    file <- input$display4$datapath
-    layers <- st_layers(file)$name
-    updateSelectInput(session = getDefaultReactiveDomain(), "display4a", choices = c("Select a layer", layers))
+    req(!is.null(input$advanced_gpkg))
+    layers <- st_layers(input$advanced_gpkg$datapath)$name
+    updateSelectInput(session = getDefaultReactiveDomain(), "advanced_salyr", choices = layers, selected= if ("studyarea" %in% layers) "studyarea" else layers[1])
+    updateSelectInput(session = getDefaultReactiveDomain(), "advanced_catchlyr", choices = layers, selected= if ("catchments" %in% layers) "catchments" else layers[1])
+    updateSelectInput(session = getDefaultReactiveDomain(), "advanced_streamslyr", choices = layers, selected= if ("streams" %in% layers) "streams" else layers[1])
   })
-  observe({
-    req(input$display4)
-    file <- input$display4$datapath
-    layers <- st_layers(file)$name
-    updateSelectInput(session = getDefaultReactiveDomain(), "display4b", choices = c("Select a layer", layers))
-  })
-  observe({
-    req(input$display4)
-    file <- input$display4$datapath
-    layers <- st_layers(file)$name
-    updateSelectInput(session = getDefaultReactiveDomain(), "display4c", choices = c("Select a layer", layers))
-  })
-  observe({
-    req(input$upload_aoi)
-    req(input$sourceAOI == 'gpkgAOI')
-    file <- input$upload_aoi$datapath
-    layers <- st_layers(file)$name
-    updateSelectInput(session = getDefaultReactiveDomain(), "aoiLayer", choices = c("Select AOI layer", layers))
-  })
-  
   
   ################################################################################################
-  # Observe on tabs
-  observe({
-    req(input$tabs == "tabIntact")  # Trigger when "Set intactness" 
-    
-    missing_inputs <- any(
-      is.null(rv$layers_rv$planreg_sf),
-      is.null(rv$layers_rv$streams_sf),
-      is.null(rv$layers_rv$catchments)
-    )
-    
-    if (missing_inputs) {# Check if input is unset or NULL
-      showModal(modalDialog(
-        title = "Missing input parameters",
-        "Please set input parameters prior to set intactness.",
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-    }
-  })
-  
-  observe({
-    req(input$tabs == "addLayers")  # Trigger when "Select AOI" is active
-    
-    missing_inputs <- any(
-      is.null(rv$layers_rv$planreg_sf),
-      is.null(rv$layers_rv$streams_sf),
-      is.null(rv$layers_rv$catchments)
-    )
-    
-    if (missing_inputs) {# Check if intactSource is unset or NULL
-      showModal(modalDialog(
-        title = "Missing input parameters",
-        "Please set input parameters prior to upload additional elements.",
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-    }
-  })
-  
-  observe({
-    req(input$tabs == "trackFeature")  
-    
-    missing_inputs <- any(
-      is.null(rv$layers_rv$planreg_sf),
-      is.null(rv$layers_rv$streams_sf),
-      is.null(rv$layers_rv$catchments)
-    )
-    
-    if (missing_inputs) {# Check if input is unset or NULL
-      showModal(modalDialog(
-        title = "Missing input parameters",
-        "Please set input parameters prior to set intactness.",
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-    }
-  })
-  
-  observe({
-    req(input$tabs == "selectAOI")  # Trigger when "Select AOI" is active
-    
-    # Check if intactSource is unset or NULL
-    if (is.null(input$intactSource) || input$intactSource == "") {
-      showModal(modalDialog(
-        title = "Missing input parameters",
-        "Please set the Intactness Source before selecting an Area of Interest (AOI).",
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-    }
-  })
-  
-  observe({
-    req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
-    
-    missing_inputs <- any(
-      is.null(rv$layers_rv$planreg_sf),
-      is.null(rv$layers_rv$streams_sf),
-      is.null(rv$layers_rv$catchments)
-    )
-
-    if (missing_inputs) {
-      showModal(modalDialog(
-        title = "Missing input parameters",
-        "Please confirm input parameters in previous step.",
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-    }
-  })
-
-  observe({
-    req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
-
-    if (is.null(rv$layers_rv$analysis_aoi)) {
-      showModal(modalDialog(
-        title = "Missing input parameters",
-        "Please confirm Area of Interest (AOI) in previous step.",
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-    }
-  })  
-  ####################################################################################################
-  # READ SPATIAL DATA
   # Set studyarea
+  sa_sf <- reactive({
+    req(input$selectsource)
+    req(input$previewLayers)
+
+    if(input$selectsource == "usedemo"){
+      i<- st_read("www/demo.gpkg", 'studyarea', quiet=T) %>% st_zm(drop = TRUE, what = "ZM")
+    } else if (!is.null(input$csv_paths)) {
+      req(validate_csv())
+      i <- read_shp_from_csv(input$csv_paths, "studyarea")
+    } else if (!is.null(input$advanced_sa)) {
+      i <- read_shp_from_upload(input$advanced_sa)  %>% st_zm(drop = TRUE, what = "ZM")
+    }else if (!is.null(input$advanced_gpkg) && !is.null(input$advanced_salyr)){
+      req(input$advanced_salyr != "")
+      i <- st_read(input$advanced_gpkg$datapath, input$advanced_salyr, quiet = TRUE)  %>% st_zm(drop = TRUE, what = "ZM")
+    } else if (!is.null(input$sa_gpkg) && !is.null(input$sa_layer)){
+      req(input$sa_gpkg != "")
+      i <- st_read(input$sa_gpkg$datapath, input$sa_layer, quiet = TRUE)  %>% st_zm(drop = TRUE, what = "ZM")
+    }else if (!is.null(input$upload_sashp)){
+      req(input$upload_sashp != "")
+      i <- read_shp_from_upload(input$upload_sashp)  %>% st_zm(drop = TRUE, what = "ZM")
+    }else {
+      i <- NULL
+    }
+    
+    rv$layers_rv$sa_sf <- i
+    preview_ready(TRUE)
+    
+    return(i) 
+  })  
+  
+  # Set analysis area
   planreg_sf <- reactive({
     req(input$selectsource)
     req(input$previewLayers)
     
     if(input$selectsource == "usedemo"){
       i<- st_read("www/demo.gpkg", 'studyarea', quiet=T) %>% st_zm(drop = TRUE, what = "ZM")
-    } else if (!is.null(input$csv_paths)) {
+    # Provided by user
+    }else if (!is.null(input$csv_paths)) {
       req(validate_csv())
-      i <- read_shp_from_csv(input$csv_paths, "studyarea")
-    } else if (!is.null(input$upload_sa)) {
-      i <- read_shp_from_upload(input$upload_sa)  %>% st_zm(drop = TRUE, what = "ZM")
-    }else if (!is.null(input$gpkg_file) && !is.null(input$sa_layer)){
-      req(input$sa_layer != "")
-      i <- st_read(input$gpkg_file$datapath, input$sa_layer, quiet = TRUE)  %>% st_zm(drop = TRUE, what = "ZM")
-    } else {
+      i <- read_shp_from_csv(input$csv_paths, "analysis studyarea")
+    }else if (!is.null(input$advanced_planreg)) {
+      i <- read_shp_from_upload(input$advanced_planreg)  %>% st_zm(drop = TRUE, what = "ZM")
+    }else if (!is.null(input$advanced_gpkg) && !is.null(input$advanced_planreglyr)){
+      req(input$advanced_planreglyr != "")
+      i <- st_read(input$advanced_gpkg$datapath, input$advanced_planreglyr, quiet = TRUE)  %>% st_zm(drop = TRUE, what = "ZM")
+    }else if(input$upload_sa == "sa"){
+      req(input$upsa_included)
+      if(isTRUE(input$upsa_included == "sa_up")){
+        i <- st_union(rv$layers_rv$sa_sf, rv$upstream_extent())
+      } else{
+      #}else if (isTRUE(input$upsa_included == "sa_only")){
+        i <-  rv$layers_rv$sa_sf
+      } #else{
+        #i <- NULL
+      #}
+    }else{
       i <- NULL
+    }
+    if(!is.null(i)){
+      if (st_crs(i) != st_crs(catchments())) {
+        i <- st_transform(i, st_crs(catchments()))
+      }
     }
     rv$layers_rv$planreg_sf <- i
     return(i) 
-  })  
-  
-  # Set catchments
-  catchments <- reactive({
-    req(input$selectsource)
-    req(input$previewLayers)
-    
-    if(input$selectsource == "usedemo"){
-      i <- st_read("www/demo.gpkg", 'catchments', quiet=T)
-    } else if (!is.null(input$csv_paths)) {
-      req(validate_csv())
-      i <- read_shp_from_csv(input$csv_paths, "catchments")
-    } else if (!is.null(input$upload_catch)) {
-      i <- read_shp_from_upload(input$upload_catch)
-    }else if (!is.null(input$gpkg_file) && !is.null(input$catch_layer)){
-      req(input$catch_layer != "")
-      i <- st_read(input$gpkg_file$datapath, input$catch_layer, quiet = TRUE)
-    }else {
-      i <- NULL
-    }
-    
-    required_col <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
-    if(!is.na(required_col)){
-      showModal(modalDialog(
-        title = "Missing required column",
-        paste0("In the catchments layers, column(s) ", required_col, " is/are missing."),
-        easyClose = TRUE,
-        footer = modalButton("OK")
-      ))
-      return(FALSE)
-    }
-    req(is.na(required_col))
-    geom_idx <- which(names(i) == attr(i, "sf_column"))
-    names(i)[geom_idx] <- "geom"
-    st_geometry(i) <- "geom"
-    
-  
-    rv$layers_rv$catchments <- i
-    return(i)
   })
   
   # Set streams
   stream_sf <- reactive({
     req(input$selectsource)
     req(input$previewLayers)
+    req(catchments())
     
     if(input$selectsource == "usedemo"){
       stream <- st_read("www/demo.gpkg", 'streams', quiet=T)
@@ -284,9 +195,28 @@ setParamsServer <- function(input, output, session, project, map, rv){
       stream <- read_shp_from_csv(input$csv_paths, "streams")
     } else if (!is.null(input$upload_stream)) {
       stream <- read_shp_from_upload(input$upload_stream)
-    }else if (!is.null(input$gpkg_file)  && !is.null(input$streams_layer)){
+    }else if (!is.null(input$upload_sashp)){
+      req(sa_sf())
+      req(rv$layers_rv$catchments)
+      showModal(modalDialog(
+        title = "Extracting streams",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      stream <- extractStreams(rv$layers_rv$catchments, rv$layers_rv$sa_sf)
+      removeModal()
+    }else if (!is.null(input$advanced_gpkg)  && !is.null(input$streams_layer)){
       req(input$streams_layer != "")
-      stream <- st_read(input$gpkg_file$datapath, input$streams_layer, quiet = TRUE)
+      stream <- st_read(input$advanced_gpkg$datapath, input$streams_layer, quiet = TRUE)
+    }else if (!is.null(input$sa_layer)){
+      req(sa_sf())
+      showModal(modalDialog(
+        title = "Extracting streams",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      stream <- extractStreams(rv$layers_rv$catchments, rv$layers_rv$sa_sf)
+      removeModal()
     }else {
       stream <- NULL
     }
@@ -311,12 +241,118 @@ setParamsServer <- function(input, output, session, project, map, rv){
     rv$layers_rv$streams_sf <- stream
     return(stream)
   })
+  # Set catchments
+  catchments <- reactive({
+    req(input$selectsource)
+    req(input$previewLayers)
+
+    if(input$selectsource == "usedemo"){
+      i <- st_read("www/demo.gpkg", 'catchments', quiet=T)
+    } else if (!is.null(input$csv_paths)) {
+      req(validate_csv())
+      i <- read_shp_from_csv(input$csv_paths, "catchments")
+    } else if (!is.null(input$advanced_catchshp)) {
+      i <- read_shp_from_upload(input$advanced_catchshp)
+    }else if (!is.null(input$advanced_gpkg) && !is.null(input$advanced_catchlyr)){
+      req(input$advanced_catchlyr != "" && input$advanced_catchlyr)
+      i <- st_read(input$adances_gpkg$datapath, input$advanced_catchlyr, quiet = TRUE)
+    }else if (!is.null(input$upload_sashp)){
+      req(sa_sf())
+      showModal(modalDialog(
+        title = "Extracting catchments",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      i <- extractCatchments(sa_sf()) %>%
+        sf::st_collection_extract("POLYGON") %>%
+        sf::st_cast("MULTIPOLYGON")
+      removeModal()
+    }else if (!is.null(input$sa_layer)){
+      req(sa_sf())
+      showModal(modalDialog(
+        title = "Extracting catchments",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      i <- extractCatchments(sa_sf()) %>%
+        sf::st_collection_extract("POLYGON") %>%
+        sf::st_cast("MULTIPOLYGON")
+      removeModal()
+    }else {
+      i <- NULL
+    }
+
+    required_col <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
+    if(!is.na(required_col)){
+      showModal(modalDialog(
+        title = "Missing required column",
+        paste0("In the catchments layers, column(s) ", required_col, " is/are missing."),
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      return(FALSE)
+    }
+    req(is.na(required_col))
+    geom_idx <- which(names(i) == attr(i, "sf_column"))
+    names(i)[geom_idx] <- "geom"
+    st_geometry(i) <- "geom"
+  
+    rv$layers_rv$catchments <- i
+    return(i)
+  })
+  
+  upstream_extent <- reactive({
+    req(catchments())
+    req(stream_sf())
+    req(input$upload_sa == "sa")
+    
+    if (!is.null(input$upload_sashp) || !is.null(input$sa_layer)){
+      
+      catchnums <- catchments() |>
+        dplyr::filter(SKELUID %in% unique(stream_sf()$SKELUID)) |>
+        dplyr::pull(CATCHNUM)
+      
+      upList <- getAggregationUpstreamCatchments_R(catch_att, catchnums)
+      upList <- c(upList, catchments()$CATCHNUM)
+      if(length(upList>0)){
+        cloudcatch <-  catch_data()
+        catch_up <- cloudcatch %>%
+          dplyr::filter(CATCHNUM %in% upList) 
+          
+        catch_up <- sf::st_difference(
+          catch_up,
+          sf::st_union(catchments())
+        )
+      }else{
+        catch_up <- NULL
+      }
+      
+      rv$upstream_catch(catch_up)
+      
+      if(!is.null(catch_up)){
+        dslv <- catch_up %>%
+          dplyr::summarise(geometry = sf::st_union(geometry)) %>%
+          st_transform(st_crs(rv$layers_rv$sa_sf)) %>%
+          dplyr::mutate(up_sa_area_km2 = round(as.numeric(sf::st_area(geometry) / 1000000), 2))
+        
+      }else{
+        dslv <- NULL
+      }
+      rv$upstream_extent(dslv)
+      return(dslv)
+    }else {
+      rv$upstream_extent(NULL)
+      return(NULL)
+    }
+  })
+  
+  include_saup <- reactive(input$upsa_included == "sa_up")
   
   ################################################################################################
   ## distExplo output
   observeEvent(input$previewLayers,{
     req(planreg_sf())
-    req(lyr_names)
+    req(lyr_names())
     
     # show pop-up ...
     showModal(modalDialog(
@@ -328,9 +364,7 @@ setParamsServer <- function(input, output, session, project, map, rv){
     if(input$selectsource == 'usedemo'){
       gpkg_path <- 'www/demo.gpkg'
     }else{
-      req(input$upload_distExplo)
-      gpkg_path <- file.path(tempdir(), paste0("uploaded_", input$upload_distExplo$name))
-      file.copy(input$upload_distExplo$datapath, gpkg_path, overwrite = TRUE)
+      gpkg_path <- input$sa_gpkg$datapath
     }
     
     if ("fires" %in% lyr_names()) {
@@ -342,69 +376,77 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_cast('MULTIPOLYGON') %>% 
         st_zm(drop = TRUE, what = "ZM")  %>%
         mutate(area_ha = as.numeric(st_area(geom)/10000))
-      addGroup("fires")
       rv$layers_rv$fires <- fi
     }
-    if ("undisturbed" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'undisturbed', quiet = TRUE) %>% 
+    
+    undist_layer <- if ("undisturbed" %in% lyr_names()) {
+      "undisturbed"
+    } else if ("undisturbed_areas_500m" %in% lyr_names()) {
+      "undisturbed_areas_500m"
+    } else {
+      NULL
+    }
+    if (!is.null(undist_layer)) {
+      la <-st_read(gpkg_path, undist_layer, quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "undisturbed", quiet = TRUE))))
-      addGroup("undisturbed")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+       # dplyr::select(all_of(names(st_read(gpkg_path, undist_layer, quiet = TRUE))))
       rv$layers_rv$undisturbed <- la
     }
-    if ("Intact_FL_2000" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'Intact_FL_2000', quiet = TRUE) %>% 
+    dist_layer <- if ("disturbed" %in% lyr_names()) {
+      "disturbed"
+    } else if ("footprint_500m" %in% lyr_names()) {
+      "footprint_500m"
+    } else {
+      NULL
+    }
+    if (!is.null(dist_layer)) {
+      la <-st_read(gpkg_path, dist_layer, quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "Intact_FL_2000", quiet = TRUE))))      
-      addGroup("Intact_FL_2000")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+      # dplyr::select(all_of(names(st_read(gpkg_path, undist_layer, quiet = TRUE))))
+      rv$layers_rv$disturbed <- la
+    }
+    if ("intact_fl_2000" %in% lyr_names()) {
+      la <-st_read(gpkg_path, 'intact_fl_2000', quiet = TRUE) %>% 
+        st_transform(st_crs(planreg_sf())) %>%  
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+        #dplyr::select(all_of(names(st_read(gpkg_path, "intact_fl_2000", quiet = TRUE))))      
       rv$layers_rv$ifl2000 <- la
     }
-    if ("Intact_FL_2020" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'Intact_FL_2020', quiet = TRUE) %>% 
+    if ("intact_fl_2020" %in% lyr_names()) {
+      la <-st_read(gpkg_path, 'intact_fl_2020', quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "Intact_FL_2020", quiet = TRUE)))) 
-      addGroup("Intact_FL_2020")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+        #dplyr::select(all_of(names(st_read(gpkg_path, "intact_fl_2020", quiet = TRUE)))) 
       rv$layers_rv$ifl2020 <- la
     }
     if ("protected_areas" %in% lyr_names()) {
       la <-st_read(gpkg_path, 'protected_areas', quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "protected_areas", quiet = TRUE)))) 
-      addGroup("protected_areas")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+        #dplyr::select(all_of(names(st_read(gpkg_path, "protected_areas", quiet = TRUE)))) 
       rv$layers_rv$pa2021 <- la
     }
-    if ("Caribou_Herds" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'Caribou_Herds', quiet = TRUE) %>%
-        st_transform(st_crs(planreg_sf()))   
-      addGroup("Caribou_Herds")
-      rv$layers_rv$herds <- la
-    }
-    if ("Placer_Claims" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'Placer_Claims', quiet = TRUE) %>% 
+    if ("placer_claims" %in% lyr_names()) {
+      la <-st_read(gpkg_path, 'placer_claims', quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "Placer_Claims", quiet = TRUE)))) 
-      addGroup("Placer_Claims")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+        #dplyr::select(all_of(names(st_read(gpkg_path, "placer_claims", quiet = TRUE)))) 
       rv$layers_rv$placers <- la
     }
-    if ("Quartz_Claims" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'Quartz_Claims', quiet = TRUE) %>% 
+    if ("quartz_claims" %in% lyr_names()) {
+      la <-st_read(gpkg_path, 'quartz_claims', quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "Quartz_Claims", quiet = TRUE)))) 
-      addGroup("Quartz_Claims")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+        #dplyr::select(all_of(names(st_read(gpkg_path, "quartz_claims", quiet = TRUE)))) 
       rv$layers_rv$quartz <- la
     }
-    if ("Mining_Claims" %in% lyr_names()) {
-      la <-st_read(gpkg_path, 'Mining_Claims', quiet = TRUE) %>% 
+    if ("mining_claims" %in% lyr_names()) {
+      la <-st_read(gpkg_path, 'mining_claims', quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) %>%
-        dplyr::select(all_of(names(st_read(gpkg_path, "Mining_Claims", quiet = TRUE))))
-      addGroup("Mining_Claims")
+        st_intersection(st_make_valid(planreg_sf())) #%>%
+        #dplyr::select(all_of(names(st_read(gpkg_path, "mining_claims", quiet = TRUE))))
       rv$layers_rv$mines <- la
     } 
     if ("disturbed" %in% lyr_names()) {
@@ -414,7 +456,6 @@ setParamsServer <- function(input, output, session, project, map, rv){
         st_zm(drop = TRUE, what = "ZM")  %>%
         st_make_valid() %>%
         mutate(area_ha = as.numeric(st_area(geom)/10000))
-      addGroup("disturbed")
       rv$layers_rv$disturbed <- la
     }
   }, ignoreInit = TRUE)
@@ -424,9 +465,6 @@ setParamsServer <- function(input, output, session, project, map, rv){
   ####################################################################################################
   # Render planning region
   observeEvent(input$previewLayers, {
-    req(planreg_sf())
-    req(catchments())
-    req(stream_sf())
     # show pop-up ...
     showModal(modalDialog(
       title = "Please wait.", " Layers are being uploaded.",
@@ -434,102 +472,115 @@ setParamsServer <- function(input, output, session, project, map, rv){
       footer = modalButton("OK")
     ))
     
+    req(sa_sf())
+    req(catchments())
+    req(stream_sf())
+    
     grps <- rv$grps
     group_names_new <- c()
     
-    planreg_sf <- planreg_sf() %>% st_transform(4326)
-    stream_4326 <- st_transform(stream_sf(), 4326)
-    catch_4326 <- st_transform(catchments(), 4326)
-    legend <- c("Study area", "Streams", "Catchments")
+    sa_sf <- st_transform(rv$layers_rv$sa_sf, 4326)
+    stream_4326 <- st_transform(rv$layers_rv$streams_sf, 4326)
+    catch_4326 <- st_transform(rv$layers_rv$catchments, 4326)
+    mda_4326 <- mda_data() %>% st_transform(4326)
+    legend <- c("Study area", "Streams", "Catchments", "MDA")
     rv$overlayBase(legend)
-    map_bounds <- planreg_sf %>% st_bbox() %>% as.character()
-
+    map_bounds <- sa_sf %>% st_bbox() %>% as.character()
+    
     leafletProxy("map") %>% 
       clearGroup('Study area') %>%
+      clearGroup('Analysis study area') %>%
       clearGroup('Catchments') %>%
       clearGroup('Streams') %>%
-      clearGroup('undisturbed') %>%
-      clearGroup("Intact_FL_2000") %>%
-      clearGroup("Intact_FL_2020") %>%
-      clearGroup('fires') %>%
-      clearGroup('Placer_Claims') %>%
-      clearGroup('Quartz_Claims') %>%
-      clearGroup('protected_areas') %>%
-      clearGroup('disturbed') %>%
-      clearGroup('Mining_Claims') %>%
-      clearGroup('Caribou_Herds') %>%
+      clearGroup('Undisturbed') %>%
+      clearGroup("Intact FL 2000") %>%
+      clearGroup("Intact FL 2020") %>%
+      clearGroup('Fires') %>%
+      clearGroup('Placer claims') %>%
+      clearGroup('Quartz claims') %>%
+      clearGroup('Protected areas') %>%
+      clearGroup('Disturbed') %>%
+      clearGroup('Mining claims') %>%
+      clearGroup('Study area - upstream area') %>%
       clearGroup(rv$display1_name) %>%
       clearGroup(rv$display2_name) %>%
       clearGroup(rv$display3_name) %>%
       fitBounds(map_bounds[1], map_bounds[2], map_bounds[3], map_bounds[4]) %>% # set view to the selected FDA
-      addPolygons(data=planreg_sf, color='black', fillColor = "", fillOpacity = 0, weight=3, group="Study area", options = leafletOptions(pane = "ground")) %>%
       addPolylines(data=stream_4326, color='#0066FF', weight=1.2, group="Streams", options = leafletOptions(pane = "ground")) %>%
-      addPolygons(data=catch_4326, color='black', fillColor = "grey", fillOpacity = 0, weight=1, group="Catchments", options = leafletOptions(pane = "over")) 
-    
+      addPolygons(data=mda_4326, color='black', fillColor = "", fillOpacity = 0, weight=2, group="MDA", options = leafletOptions(pane = "ground")) %>%
+      addPolygons(data=sa_sf, color='#663399', fillColor = "", fillOpacity = 0, weight=3, group="Study area", options = leafletOptions(pane = "ground")) %>%
+      addPolygons(data=catch_4326, color='black', fillColor = "grey", fillOpacity = 0.4, weight=1, group="Catchments", options = leafletOptions(pane = "over")) 
+
+    if(!is.null(planreg_sf())){
+      planreg_sf <- st_transform(rv$layers_rv$planreg_sf, 4326)
+      leafletProxy("map") %>% addPolygons(data=planreg_sf, color='purple', fillColor = "", fillOpacity = 0, weight=3, group="Analysis study area", options = leafletOptions(pane = "ground"))
+      legend <- c("Study area", "Analysis study area", "Streams", "Catchments", "MDA")
+    }    
+
     # Optional
-    
     disturbed <- isolate(rv$layers_rv$disturbed)
     if(!is.null(disturbed)){
       disturbed <- st_transform(disturbed, 4326)
-      leafletProxy("map") %>% addPolygons(data=disturbed, color='black', stroke=F, fillOpacity=0.5, group="disturbed", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "disturbed")
+      leafletProxy("map") %>% addPolygons(data=disturbed, color='black', stroke=F, fillOpacity=0.5, group="Disturbed", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Disturbed")
     }
     undisturbed <- isolate(rv$layers_rv$undisturbed)
-    if(!is.null(disturbed)){
+    if(!is.null(undisturbed)){
       undisturbed <- st_transform(undisturbed, 4326)
-      leafletProxy("map") %>% addPolygons(data=undisturbed, color='#336633', stroke=F, fillOpacity=0.5, group="undisturbed", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "undisturbed")
+      leafletProxy("map") %>% addPolygons(data=undisturbed, color='#336633', stroke=F, fillOpacity=0.5, group="Undisturbed", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Undisturbed")
     }
-    
     fires <- isolate(rv$layers_rv$fires)
     if(!is.null(fires)){
       fires <- st_transform(fires, 4326)
-      leafletProxy("map") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group="fires", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "fires")
+      leafletProxy("map") %>% addPolygons(data=fires, fill=T, stroke=F, fillColor="#996633", fillOpacity=0.8, group="Fires", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Fires")
     }
     ifl2000 <- isolate(rv$layers_rv$ifl2000)
     if(!is.null(ifl2000)){
       ifl2000 <- st_transform(ifl2000, 4326)
-      leafletProxy("map") %>% addPolygons(data=ifl2000, fill=T, stroke=F, fillColor='#3366FF', fillOpacity=0.5, group="Intact_FL_2000", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Intact_FL_2000")
+      leafletProxy("map") %>% addPolygons(data=ifl2000, fill=T, stroke=F, fillColor='#3366FF', fillOpacity=0.5, group="Intact FL 2000", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Intact FL 2000")
     }
     ifl2020 <- isolate(rv$layers_rv$ifl2020)
     if(!is.null(ifl2020)){
       ifl2020 <- st_transform(ifl2020, 4326)
-      leafletProxy("map") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact_FL_2020", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Intact_FL_2020")
+      leafletProxy("map") %>% addPolygons(data=ifl2020, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2020", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Intact FL 2020")
     }
     pa2021 <- isolate(rv$layers_rv$pa2021)
     if(!is.null(pa2021)){
       pa2021 <- st_transform(pa2021, 4326)
-      leafletProxy("map") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="protected_areas", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "protected_areas")
-    }
-    herds <- isolate(rv$layers_rv$herds)
-    if(!is.null(herds)){
-      herds <- st_transform(herds, 4326)
-      leafletProxy("map") %>% addPolygons(data=herds, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Caribou_Herds", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Caribou_Herds")
+      leafletProxy("map") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Protected areas")
     }
     placers <- isolate(rv$layers_rv$placers)
     if(!is.null(placers)){
       placers <- st_transform(placers, 4326)
-      leafletProxy("map") %>% addPolygons(data=placers, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Placer_Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Placer_Claims")
+      leafletProxy("map") %>% addPolygons(data=placers, color= '#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Placer claims", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Placer claims")
     }
     quartz <- isolate(rv$layers_rv$quartz)
     if(!is.null(quartz)){
       quartz <- st_transform(quartz, 4326)
-      leafletProxy("map") %>% addPolygons(data=quartz, color = '#CCCCCC', fill=T, fillColor='#CCCCCC', weight=1, fillOpacity = 1, group="Quartz_Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Quartz_Claims")
+      leafletProxy("map") %>% addPolygons(data=quartz, color = '#CCCCCC', fill=T, fillColor='#CCCCCC', weight=1, fillOpacity = 1, group="Quartz claims", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Quartz claims")
     }
     mines <- isolate(rv$layers_rv$mines)
     if(!is.null(mines)){
       mines <- st_transform(mines, 4326)
-      leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining_Claims", options = leafletOptions(pane = "ground")) 
-      group_names_new <- c(group_names_new, "Mining_Claims")
+      leafletProxy("map") %>% addPolygons(data=mines, color='#666666', fill=T, fillColor='#666666', weight=1, fillOpacity = 1, group="Mining claims", options = leafletOptions(pane = "ground")) 
+      group_names_new <- c(group_names_new, "Mining claims")
     } 
     
+    if(isTRUE(input$upload_sa == "sa")){
+      up_sa <- isolate(upstream_extent())
+      if(!is.null(up_sa)){
+        up_sa <- st_transform(up_sa, 4326)
+        leafletProxy("map") %>% addPolygons(data=up_sa, color='#330066', stroke=F, fillOpacity=0.5, group="Study area - upstream area", options = leafletOptions(pane = "ground")) 
+        group_names_new <- c(group_names_new, "Study area - upstream area")
+      }
+    }
     leafletProxy("map") %>%
       addLayersControl(position = "topright",
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
@@ -543,31 +594,98 @@ setParamsServer <- function(input, output, session, project, map, rv){
     
   })
   
-  
-  mines_all <- reactive({
-    geoms <- list(quartz(), placers(), mines()) |>
-      purrr::compact() |>                # removes NULLs
-      purrr::map(sf::st_geometry)       # extract just the geometries
+  observeEvent(input$apply_changes, {
+    # show pop-up ...
+    showModal(modalDialog(
+      title = "Please wait.", " Layers are being uploaded.",
+      easyClose = TRUE,
+      footer = modalButton("OK")
+    ))
     
-    # If no layers, return NULL
-    if (length(geoms) == 0) return(NULL)
+    if(!is.null(rv$layers_rv$planreg_sf)){
+      planreg <- rv$layers_rv$planreg_sf
+    }else if(input$upsa_included == "sa_up"){
+      sf1 <- st_as_sf(rv$upstream_catch())
+      sf2 <- st_as_sf(rv$layers_rv$catchments)
+      
+      if("geom" %in% names(sf2)){
+        sf2 <- sf2 %>%
+          dplyr::rename(geometry = geom)
+      }
+      if("geom" %in% names(sf1)){
+        sf1 <- sf1 %>%
+          dplyr::rename(geometry = geom)
+      }
+      
+      catch <- dplyr::bind_rows(sf1, sf2)
+      rv$layers_rv$catchments <- catch
+      
+      planreg <- catch %>%
+        dplyr::summarise(geometry = sf::st_union(geometry)) %>%
+        st_buffer(dist = 20) %>% 
+        st_buffer(dist = -20)
+      rv$layers_rv$planreg_sf <- planreg
+      
+      stream <- extractStreams(catch, planreg)
+      rv$layers_rv$streams_sf <- stream
+    } else{
+      planreg <- rv$layers_rv$sa_sf
+      rv$layers_rv$planreg_sf <- planreg
+    }
     
-    # Combine geometries into one sf object
-    sf::st_as_sf(sf::st_union(do.call(c, geoms)))
+    planreg_sf <- planreg %>% st_transform(4326)
+    stream_4326 <- st_transform(rv$layers_rv$streams_sf, 4326)
+    catch_4326 <- st_transform(rv$layers_rv$catchments, 4326)
+    
+    legend <- c("Study area", "Analysis study area", "Streams", "Catchments", "MDA")
+    rv$group_names(setdiff(rv$group_names(), "Study area - upstream area"))
+    
+    leafletProxy("map") %>% 
+      clearGroup('Catchments') %>%
+      clearGroup('Streams') %>%
+      clearGroup("Study area - upstream area") %>%
+      addPolylines(data=stream_4326, color='#0066FF', weight=1.2, group="Streams", options = leafletOptions(pane = "ground")) %>%
+      addPolygons(data=planreg_sf, color='purple', fillColor = "", fillOpacity = 0, weight=3, group="Analysis study area", options = leafletOptions(pane = "ground")) %>%
+      addPolygons(data=catch_4326, color='black', fillColor = "grey", fillOpacity = 0, weight=1, group="Catchments", options = leafletOptions(pane = "over")) %>%
+      addLayersControl(position = "topright",
+                       baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
+                       overlayGroups = c(legend, rv$group_names()),
+                       options = layersControlOptions(collapsed = FALSE)) %>%
+      hideGroup(c("Streams", "Catchments", rv$group_names()))
+    
+    removeModal()
   })
-  
   ##############################################
   ##  Stats
   ##############################################
   
   #Update with Study area
   observeEvent(input$previewLayers, {
-    x <- tibble(Variables=c("Study area"), 
+    
+    req(rv$layers_rv$sa_sf)
+    x <- tibble(Variables=c("Study area", "Analysis study area"), 
                 Area_km2= NA_real_,
                 Percent = NA_real_)
+    
     x <- x %>% 
-      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0))),
+      mutate(Area_km2 = case_when(Variables == "Study area" ~  round(as.numeric(st_area(rv$layers_rv$sa_sf)/1000000,0))),
              Percent= case_when(Variables == "Study area" ~  100))
+    
+    if(input$selectsource == "usedemo"){
+      x <- x %>% 
+        mutate(Area_km2 = case_when(Variables == "Analysis study area" ~  round(as.numeric(st_area(rv$layers_rv$sa_sf)/1000000,0)),
+                                    TRUE ~ Area_km2),
+               Percent= case_when(Variables == "Analysis study area" ~  100,
+                                  TRUE ~ Percent))
+    }else if(input$selectsource == "usedata" && input$upload_sa == 'sa_advanced'){
+      req(!is.null(rv$layers_rv$planreg_sf))
+      x <- x %>% 
+        mutate(Area_km2 = case_when(Variables == "Analysis study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)),
+                                    TRUE ~ Area_km2),
+               Percent= case_when(Variables == "Analysis study area" ~  100,
+                                  TRUE ~ Percent))
+    }
+    
     rv$outAOI(x)
     rv$outtab1(x)
     
@@ -580,7 +698,31 @@ setParamsServer <- function(input, output, session, project, map, rv){
     )
     
     rv$outfeaturetab(y)
-  })
+  },
+  ignoreInit = TRUE)
+
+  observeEvent(input$apply_changes, {
+    req(planreg_sf())
+    x <- rv$outAOI()
+    
+    new_rows  <- tibble(Variables="Analysis study area", 
+                        Area_km2= NA_real_,
+                        Percent = NA_real_)
+    
+    x <- x %>% dplyr::filter(!Variables %in% new_rows$Variables)
+    x <- dplyr::bind_rows(x, new_rows)
+    
+    x <- x %>% 
+      mutate(Area_km2 = case_when(Variables == "Analysis study area" ~  round(as.numeric(st_area(rv$layers_rv$planreg_sf)/1000000,0)), 
+                                  TRUE ~ Area_km2),
+             Percent= case_when(Variables == "Analysis study area" ~  100,
+                                TRUE ~ Percent))
+    rv$outAOI(x)
+    rv$outtab1(x)
+    
+    rv$outputsumStats(x)
+  },   ignoreInit = TRUE)  
+  
   
   output$dynamicTabs <- renderUI({
     tabs <- list()

@@ -5,6 +5,7 @@
 #########################################################
 # Function to check if all required shapefile components exist
 check_shp <- function(shapefile_path) {
+  req(shapefile_path)
   folder_path <- dirname(shapefile_path)
   source_ext <- tools::file_ext(shapefile_path)
   base_name <- tools::file_path_sans_ext(basename(shapefile_path))
@@ -45,6 +46,7 @@ read_gpkg_from_upload <- function(path, name) {
 # read_shp_from_csv: read layer from path found in csv uploaded with fileInput
 read_shp_from_csv <- function(csv_file, layer_name) {
   req(csv_file)
+  
   csv_data <- read.csv(csv_file$datapath)
   if (layer_name %in% csv_data$Layer) {
     path <- csv_data$Path[csv_data$Layer == layer_name]
@@ -53,8 +55,8 @@ read_shp_from_csv <- function(csv_file, layer_name) {
       # Remove fid column if it exists
       if ("fid" %in% colnames(shp)) {
         shp <- shp %>% dplyr::select(-fid)
-        return(shp)
       }
+      return(shp)
     } else {
       stop(paste("The path for", layer_name, "in the CSV does not exist."))
     }
@@ -125,3 +127,58 @@ check_colnames <- function(x, cols){
      return(NA)
    }
 }
+
+extractCatchments <- function(sa_sf) {
+  #-------------------------
+  # Read MDA polygons
+  #-------------------------
+  mda <- mda_data()
+  sa_sf <- st_transform(sa_sf, st_crs(mda))
+  #-------------------------
+  # Find intersecting MDAs
+  #-------------------------
+  mda_ids <- mda |>
+    dplyr::filter(
+      lengths(sf::st_intersects(geometry, sa_sf)) > 0
+    ) |>
+    dplyr::pull(.data[["MDA"]]) |>
+    unique()
+  
+  if (length(mda_ids) == 0) {
+    return(NULL)
+  }
+  
+  #-------------------------
+  # Filter catchments
+  #-------------------------
+  catchments_tbl <- catch_data()
+  
+  catchments_subset <- catchments_tbl |>
+    dplyr::filter(.data[["MDA"]] %in% mda_ids) |>
+    dplyr::collect()
+  
+  #-------------------------
+  # Exact spatial filter
+  #-------------------------
+  catchments <- st_intersection(catchments_subset, sa_sf)
+  
+  return(catchments)
+}
+
+extractStreams <- function(catchments, sa_sf) {
+  streams_tbl <- streams_data()
+  ids <- unique(catchments$SKELUID)
+  
+  streams <- streams_tbl |>
+    dplyr::filter(.data[["SKELUID"]] %in% ids) |>
+    dplyr::collect()
+  
+  sa_sf <- st_transform(sa_sf, st_crs(streams))
+  streams_subset <- st_intersection(streams, sa_sf)
+  streams_ids <- streams_subset$SKELUID
+  
+  streams <- streams |>
+    dplyr::filter(.data[["SKELUID"]] %in% streams_ids) |>
+    dplyr::collect()
+}
+

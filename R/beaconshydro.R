@@ -409,10 +409,7 @@ dissolve_catchments_from_table <- function(catchments_sf, input_table, out_featu
   #check_for_rows(input_table)
   
   #Change geom column for geometry
-  if("geom" %in% names(catchments_sf)){
-    catchments_sf <- catchments_sf %>%
-      dplyr::rename(geometry = geom)
-  }
+  
   
   # get colnames to process
   if(length(dissolve_list > 0)){

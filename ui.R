@@ -59,41 +59,86 @@ ui = dashboardPage(skin="black",
                                                                       inline = FALSE)),
                        conditionalPanel(
                          condition = "input.selectsource == 'usedata'",
-                         radioButtons("upload_type", "How do you want to upload your data?",
-                                      choices = c("Upload individual Shapefile layers" = "layers",
-                                                  "Upload CSV with file paths" = "csv_file",
-                                                  "Upload GeoPackage with layers" = "gpkg"), selected = character(0))
+                         radioButtons(
+                           "upload_sa",
+                           "How do you want to provide your data?",
+                           choiceNames = list(
+                             HTML("<b>Study area only</b><br><small>Upload a study area polygon. Catchments and streams will be automatically extracted from the BEACONs reference dataset.</small>"),
+                             HTML("<b>Advanced: Upload custom datasets</b>")
+                           ),
+                           choiceValues = c("sa", "sa_advanced"), selected = character(0)
+                         )
                        ),
-                       # UPLOAD - Individual layers
+                       #FETCH DATA FROM SERVER
                        conditionalPanel(
-                         condition = "input.selectsource == 'usedata' && input.upload_type == 'layers'",
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa'",
+                         radioButtons("upload_satype", "Study area format:",
+                                      choices = c("Shapefile" = "sa_shp",
+                                                  "Geopackage" = "sa_gpkg"), selected = character(0), inline = TRUE)
+                       ),
+                       # using SHP
+                       conditionalPanel(
+                         condition = "input.upload_sa == 'sa' && input.upload_satype == 'sa_shp'",
+                         div(style = "margin-top: -10px;", fileInput("upload_sashp", "Upload study area shapefile", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
+                       ),
+                       # using GPKG
+                       conditionalPanel(
+                         condition = "input.upload_sa == 'sa' && input.upload_satype == 'sa_gpkg'",
+                         div(style = "margin-top: -20px;", fileInput("sa_gpkg", "Upload source dataset (.gpkg)", accept = ".gpkg")),
+                         div(style = "margin-top: -30px;", selectInput("sa_layer", "Select study area layer", choices = NULL,  multiple = FALSE)),
+                         uiOutput("include_layers_ui")
+                       ),
+                       
+                       #ADVANCED UPLOAD
+                       conditionalPanel(
+                         condition = "input.upload_sa == 'sa_advanced'",
+                         radioButtons("upload_type", "How would you like to provide your custom data?",
+                                      choices = c("Upload individual layers as shapefiles (study area, catchments, streams)" = "layers",
+                                                  "Provide a CSV containing file paths to the layers" = "csv_file",
+                                                  "Upload a GeoPackage containing all layers" = "gpkg"), selected = character(0))
+                       ),
+                       # ADVANCED - SHP
+                       conditionalPanel(
+                         condition = "input.upload_type == 'layers' && input.upload_sa == 'sa_advanced'",
                          tagList(
-                           div(style = "margin-top: -10px;", fileInput("upload_sa", "Study area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
-                           div(style = "margin-top: -30px;", fileInput("upload_stream", "Streams dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
-                           div(style = "margin-top: -30px;", fileInput("upload_catch", "Catchments dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
+                           div(style = "margin-top: -10px;", fileInput("advanced_sa", "Study area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
+                           div(style = "margin-top: -30px;", fileInput("advanced_streams", "Streams dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
+                           div(style = "margin-top: -30px;", fileInput("advanced_catch", "Catchments dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
+                           div(style = "margin-top: -30px;", fileInput("advanced_planreg", "Analysis area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
                          )
                        ),
                        
-                       # UPLOAD - CSV
+                       # ADVANCED - CSV
                        conditionalPanel(
-                         condition = "input.selectsource == 'usedata' && input.upload_type == 'csv_file'",
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa_advanced' && input.upload_type == 'csv_file'",
                          fileInput("csv_paths", "Upload CSV with file paths", accept = ".csv")
                        ),
                        
-                       # UPLOAD - GeoPackage
+                       # ADVANCED - GeoPackage
                        conditionalPanel(
-                         condition = "input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
-                         fileInput("gpkg_file", "Upload source dataset (.gpkg)", accept = ".gpkg")
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa_advanced' && input.upload_type == 'gpkg'",
+                         fileInput("advanced_gpkg", "Upload source dataset (.gpkg)", accept = ".gpkg")
                        ),
                        conditionalPanel(
                          condition = "output.gpkgReady == true && input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
-                         div(style = "margin-top: -10px;", selectInput("sa_layer", "Study area", choices = NULL,  multiple = FALSE)),
-                         div(style = "margin-top: -20px;", selectInput("catch_layer", "Catchments", choices = NULL, multiple = FALSE)),
-                         div(style = "margin-top: -20px;", selectInput("streams_layer", "Streams", choices = NULL,  multiple = FALSE))
+                         div(style = "margin-top: -10px;", selectInput("advanced_salyr", "Study area", choices = NULL,  multiple = FALSE)),
+                         div(style = "margin-top: -20px;", selectInput("advanced_catchlyr", "Catchments", choices = NULL, multiple = FALSE)),
+                         div(style = "margin-top: -20px;", selectInput("advanced_streamslyr", "Streams", choices = NULL,  multiple = FALSE)),
+                         div(style = "margin-top: -20px;", selectInput("advanced_planreglyr", "Streams", choices = NULL,  multiple = FALSE))
                        ),
-                       fileInput("upload_distExplo", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
+                       
+                       #CONFRIM UPLOAD
+                       #fileInput("upload_distExplo", "Upload GeoPackage from Disturbance Explorer (optional)", multiple = FALSE, accept='.gpkg'),
                        actionButton("previewLayers", "Preview study area", icon = icon(name = "map-location-dot", lib = "font-awesome"), class = "btn-warning", style="width:250px"),
+                       conditionalPanel(
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa'",
+                         uiOutput("sa_upstream_ui")
+                       )
+                       
                      ),
+                     
+                     
+                     
                      # UPLOAD - Intactness
                      conditionalPanel(
                        condition = "input.tabs== 'tabIntact'",

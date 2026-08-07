@@ -1,0 +1,117 @@
+app_name: BEACONs Hydrology Explorer
+
+version: 1.0
+
+purpose: "Create a data package for a study area located within the Yukon and British Columbia."
+
+other:   "Three sources of data are needed to use the app: bp_datasets.gpkg, project.gpkg, and species.gpkg. All layers are projected to the Yukon Albers equal area coordinate reference system (CRS; EPSG:3578)."
+
+access: "https://beaconsproject.shinyapps.io/geopackage_creator/"
+
+inputs:
+   studyarea:
+   
+   catchments:
+    
+   streams:
+
+optional:   
+   custom.gpkg:
+    - areal_disturbances
+    - disturbed
+    - fires
+    - linear_disturbances
+    - placer_claims
+    - protected_areas
+    - quartz_claims
+    - undisturbed
+
+   display_element_vect_1:
+   
+   display_element_vect_2:
+   
+   display_element_vect_3:
+   
+   display_element_rast_1:
+   
+   display_element_rast_2:
+
+required_columns:
+  catchments:
+    Area_land:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "The area of land inside the catchment"
+    Area_water:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "The area of water inside the catchment"
+    Area_total:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "The total area of the catchment"
+    CATCHNUM:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Catchment unique identifier"
+    ORDER1:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Order 1 stream attributes"
+    ORDER2:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Order 2 stream attributes"
+    ORDER3:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Order 3 stream attributes"
+    BASIN:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Basin ID of the catchment"
+    SKELUID:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Stream ID associated to the catchment"
+  streams:
+    SKELUID:
+      used_by:
+        - Hydro Explorer
+      format: character
+      allow_null: true
+      expected_values:
+      description: "Stream unique identifier"
+ 
+outputs:
+  - Hydro_explorer_output-YYYY-mm-dd.gpkg:
+  - Hydrology_explorer_stats-YYYY-mm-dd.csv
+next_apps:
+
