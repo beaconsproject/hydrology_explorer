@@ -251,7 +251,7 @@ ui = dashboardPage(skin="black",
                        tabItem(tabName="overview",
                                fluidRow(
                                  column(width = 10,  # Adjusted from 6 to 8 for better alignment
-                                        tabBox(id = "one", width="8",
+                                        tabBox(id = "one", width="10",
                                                #tabPanel(HTML("Overview"), includeMarkdown("docs/overview.md")),
                                                tabPanel(HTML("Overview"), htmlOutput("overviewMD")),
                                                tabPanel(HTML("User guide"), includeMarkdown("docs/user_guide.md")),
@@ -275,11 +275,11 @@ ui = dashboardPage(skin="black",
                                           ),
                                           tabPanel("User Guide",
                                                    div(
-                                                     style = "height: 600px; overflow-y: auto; padding-right: 10px;",
+                                                     style = "height: 700px; overflow-y: auto; padding-right: 10px;",
                                                      # Dynamically update the content of Guidance based on selected tab
                                                      conditionalPanel(
                                                        condition = "input.tabs == 'tabUpload'",
-                                                       includeMarkdown("./docs/upload_doc.md")
+                                                       includeMarkdown("./docs/setParams_doc.md")
                                                      ),
                                                      conditionalPanel(
                                                        condition = "input.tabs == 'tabIntact'",
