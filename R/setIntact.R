@@ -35,7 +35,7 @@ setIntactServer <- function(input, output, session, map, rv){
                                                   } else {c("Value in catchment dataset" = "intcatch",
                                                             "Use existing undisturbed layer" = "intIncluded",
                                                             "Upload intactness layer" = "intupload")
-                                                  }, selected = "intIncluded"),
+                                                  }, selected = "intcatch"),
       
       conditionalPanel("input.intactSource == 'intcatch'",
         selectInput("intactColumnName",  "Catchment dataset – select intactness attribute", choices = NULL)
@@ -219,9 +219,9 @@ setIntactServer <- function(input, output, session, map, rv){
     
     if(input$intactSource == "intcatch"){
       x <- x %>% 
-        mutate(Area_km2 = case_when(Variables == "Analysis area intactness" ~ round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/1000000,0)),
+        mutate(Area_km2 = case_when(Variables == "Analysis area intactness" ~ round(as.numeric(sum(rv$layers_rv$catchment_pr$area_intact)/1000000,0)),
                                     TRUE ~ Area_km2),
-               Percent= case_when(Variables == "Analysis area intactness" ~  round(as.numeric(sum(rv$layers_rv$catchment_pr$area_int)/as.numeric(st_area(rv$layers_rv$planreg_sf)))*100,2),
+               Percent= case_when(Variables == "Analysis area intactness" ~  round(as.numeric(sum(rv$layers_rv$catchment_pr$area_intact)/as.numeric(st_area(rv$layers_rv$planreg_sf)))*100,2),
                                   TRUE ~ Percent)
         ) 
     } else {
