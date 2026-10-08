@@ -1,4 +1,4 @@
-selectAOIServer  <- function(input, output, session, project, map, rv){
+selectAOIServer  <- function(input, output, session, map, rv){
   
   observe({
     req(input$tabs == "selectAOI")  # Trigger when "Select AOI" is active
@@ -288,8 +288,9 @@ selectAOIServer  <- function(input, output, session, project, map, rv){
   # Track a list of which catchnums have been selected
   observeEvent(input$map_shape_click,{
     req(input$tabs == "selectAOI")
-    
+
     clickId <- input$map_shape_click$id # id is the layerId assigned to the polygon layer in Leaflet
+    req(clickId)
     if(clickId %in% rv$selected_catchments$catchnum){
       rv$selected_catchments$catchnum <- rv$selected_catchments$catchnum[!rv$selected_catchments$catchnum %in% clickId]
     } else{

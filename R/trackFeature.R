@@ -1,4 +1,4 @@
-trackFeatureServer <- function(input, output, session, project, map, rv){
+trackFeatureServer <- function(input, output, session, map, rv){
   
   observe({
     req(input$tabs == "trackFeature")  

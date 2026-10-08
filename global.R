@@ -3,18 +3,12 @@ library(shinydashboard)
 library(dplyr)
 library(sf)
 library(sfarrow)
-library(terra)
-library(raster)
 library(leaflet)
 library(shinyjs)
-library(shinyWidgets)
-library(leafem)
 library(shinycssloaders)
-library(rhandsontable)
-library(tibble)
 library(markdown)
-library(purrr)
 library(readr)
+library(purrr)
 
 
 for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f)
@@ -49,6 +43,17 @@ overview_md_text <- paste(overview_md, collapse = "\n")
 access_cloud <- "https://data.beaconsproject.ca/app-data/catchments"
 
 catch_att <- readr::read_csv(file.path(access_cloud, "boreal_vPB25_attributes.csv"))
+
+####################################
+#### Custom function
+####################################
+reset_layers <- function(layers_rv) {
+  
+  for (nm in names(layers_rv)) {
+    layers_rv[[nm]] <- NULL
+  }
+  
+}
 
 cloud_mda <- file.path(access_cloud, "boreal_vPB25_MDA.parquet")
 mda_data <- local({
@@ -88,7 +93,7 @@ streams_data <- local({
 
 distexplo_lyr <- c("fires", 
                     "intact_fl_2000",
-                    "intact_fl_2020",
+                    "intact_fl_2025",
                     "footprint_500m",
                     "undisturbed_areas_500m",
                     "protected_areas", 

@@ -1,4 +1,4 @@
-setIntactServer <- function(input, output, session, project, map, rv){
+setIntactServer <- function(input, output, session, map, rv){
   
   observe({
     req(input$tabs == "tabIntact")  # Trigger when "Set intactness" 
@@ -114,7 +114,6 @@ setIntactServer <- function(input, output, session, project, map, rv){
     req(rv$layers_rv$planreg_sf)
     req(rv$layers_rv$catchments)
     req(input$intactSource)
-    req(intactness_sf())
     
     if(input$intactSource =='intcatch'){
       req(input$intactColumnName)  # Ensure the textInput value is available
@@ -172,14 +171,10 @@ setIntactServer <- function(input, output, session, project, map, rv){
   ####################################################################################################
   # Map viewer - fires and intactness
   ####################################################################################################
-  observeEvent(input$confIntact,{ 
+  observeEvent(input$confIntact,{
+    
     req(rv$layers_rv$catchment_pr)
-    
-    showModal(modalDialog(
-      title = "Mapping undisturbed areas",
-      easyClose = TRUE,
-      footer = modalButton("OK")))
-    
+
     leafletProxy("map") %>%
       clearGroup('Catchments') %>%
       clearGroup('Undisturbed')
@@ -187,6 +182,11 @@ setIntactServer <- function(input, output, session, project, map, rv){
     catch <- rv$layers_rv$catchment_pr %>% st_transform(4326)
     pop = ~paste("CATCHNUM:", CATCHNUM, "<br>Area (km²):", round(Area_total/1000000,1), "<br>Undisturbed (%):", intact*100 )
     if (isMappable(rv$layers_rv$intactness_sf)) { 
+      showModal(modalDialog(
+        title = "Mapping undisturbed areas",
+        easyClose = TRUE,
+        footer = modalButton("OK")))
+      
       intact <- st_transform(rv$layers_rv$intactness_sf, 4326)
       leafletProxy("map") %>% addPolygons(data=intact, color='blue', fill = T, fillOpacity = 0.2, weight=0, group='Undisturbed', options = leafletOptions(pane = "ground"))
       leafletProxy("map") %>% addPolygons(data=catch, color='black', fillColor = "grey", fillOpacity = 0, weight=1, layerId = ~CATCHNUM, popup = pop, group="Catchments", options = leafletOptions(pane = "over"))
@@ -200,7 +200,7 @@ setIntactServer <- function(input, output, session, project, map, rv){
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(), rv$group_names()),
                        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c("Streams", "Catchments", rv$group_names()))
+      hideGroup(c("Study area","Streams", "Catchments", rv$group_names()))
     
     removeModal()
     

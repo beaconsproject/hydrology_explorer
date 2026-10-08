@@ -1,4 +1,4 @@
-addDisplayServer <- function(input, output, session, project, map, rv){
+addDisplayServer <- function(input, output, session, map, rv){
   
   observe({
     req(input$display4)

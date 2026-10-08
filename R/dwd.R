@@ -1,4 +1,4 @@
-dwdServer  <- function(input, output, session, project, map, rv){
+dwdServer  <- function(input, output, session, map, rv){
   
   ################################################################################################
   # Save features to a geopackage

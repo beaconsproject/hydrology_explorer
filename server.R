@@ -27,7 +27,7 @@ server = function(input, output, session) {
                                                       disturbed = NULL,
                                                       undisturbed = NULL,
                                                       ifl2000 = NULL,
-                                                      ifl2020 = NULL,
+                                                      ifl2025 = NULL,
                                                       footprint500 = NULL,
                                                       undisturbed500 = NULL,
                                                       pa2021 = NULL,
@@ -110,25 +110,25 @@ server = function(input, output, session) {
   myMap <- leafletProxy("map", session)
   
   # Set input parameters
-  setParamsServer(input, output, session, project, myMap, reactiveValsList)
+  setParamsServer(input, output, session, myMap, reactiveValsList)
   
   # Set intactness
-  setIntactServer(input, output, session, project, myMap, reactiveValsList)
+  setIntactServer(input, output, session, myMap, reactiveValsList)
   
   # Add display layers
-  addDisplayServer(input, output, session, project, myMap, reactiveValsList)
+  addDisplayServer(input, output, session, myMap, reactiveValsList)
   
   # Set feature to track
-  trackFeatureServer(input, output, session, project, myMap, reactiveValsList)
+  trackFeatureServer(input, output, session, myMap, reactiveValsList)
 
   # Select AOI
-  selectAOIServer(input, output, session, project, myMap, reactiveValsList)
+  selectAOIServer(input, output, session, myMap, reactiveValsList)
   
   # run Upstream / Downstream
-  runHydroServer(input, output, session, project, myMap, reactiveValsList)
+  runHydroServer(input, output, session, myMap, reactiveValsList)
   
   # run Upstream / Downstream
-  dwdServer(input, output, session, project, myMap, reactiveValsList)
+  dwdServer(input, output, session, myMap, reactiveValsList)
   
   output$tab1 <- renderTable({
     reactiveValsList$outtab1()

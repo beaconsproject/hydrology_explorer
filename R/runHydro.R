@@ -1,4 +1,4 @@
-runHydroServer  <- function(input, output, session, project, map, rv){
+runHydroServer  <- function(input, output, session, map, rv){
   
   observe({
     req(input$tabs == "upstream")  # Trigger when "Select AOI" is active
@@ -124,11 +124,11 @@ runHydroServer  <- function(input, output, session, project, map, rv){
       
       # Compute intact ratio
       catch_up <- catch_up |>
-        mutate(intact = round(area_int / Area_total, 3))
+        mutate(intact = round(area_int / as.numeric(st_area(catch_up)), 3))
     }
     catch_up <- catch_up %>%
       mutate(up =1,
-             Area_total = as.numeric(st_area(geom)))
+             Area_total = as.numeric(st_area(geometry)))
     # Return
     rv$layers_rv$catch_up <- catch_up
     return(catch_up)
@@ -226,7 +226,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
     }
     catch_stem <- catch_stem %>%
       mutate(stem =1,
-             Area_total = as.numeric(st_area(geom)))
+             Area_total = as.numeric(st_area(geometry)))
     rv$layers_rv$catch_stem <- catch_stem
     return(catch_stem)
   })
@@ -276,11 +276,11 @@ runHydroServer  <- function(input, output, session, project, map, rv){
         
         # Compute intact ratio
         catch_down <- catch_down %>%
-          mutate(intact = round(area_int / Area_total, 3))
+          mutate(intact = round(area_int / as.numeric(st_area(catch_down)), 3))
       }
       catch_down <- catch_down %>%
         mutate(down =1,
-               Area_total = as.numeric(st_area(geom)))
+               Area_total = as.numeric(st_area(geometry)))
     }else{
       catch_down <- NULL
     }
@@ -353,7 +353,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
                        baseGroups=c("Esri.WorldTopoMap", "Esri.WorldImagery", "Blank Background"),
                        overlayGroups = c(rv$overlayBase(), rv$group_names(), rv$grps(), rv$trackfeat_name(), legend),
                        options = layersControlOptions(collapsed = TRUE)) %>%
-      hideGroup(c("Catchemnts","Downstream area", rv$group_names()))
+      hideGroup(c("Catchments","Downstream area", rv$group_names()))
   })
   
   #Update with Upstream/Downstream stats
@@ -424,7 +424,7 @@ runHydroServer  <- function(input, output, session, project, map, rv){
         upstream_feat <- upstream_area %>%
           st_union() %>%
           st_intersection(rv$layers_rv$trackFeat)
-      } else {upstream_fire <- NULL}
+      } else {upstream_feat <- NULL}
       
       if(!is.null(downstream_stem_int)){
         downstream_stem_feat <- downstream_stem_int %>%

@@ -124,7 +124,7 @@ ui = dashboardPage(skin="black",
                          div(style = "margin-top: -10px;", selectInput("advanced_salyr", "Study area", choices = NULL,  multiple = FALSE)),
                          div(style = "margin-top: -20px;", selectInput("advanced_catchlyr", "Catchments", choices = NULL, multiple = FALSE)),
                          div(style = "margin-top: -20px;", selectInput("advanced_streamslyr", "Streams", choices = NULL,  multiple = FALSE)),
-                         div(style = "margin-top: -20px;", selectInput("advanced_planreglyr", "Streams", choices = NULL,  multiple = FALSE))
+                         div(style = "margin-top: -20px;", selectInput("advanced_planreglyr", "Analysis area", choices = NULL,  multiple = FALSE))
                        ),
                        
                        #CONFRIM UPLOAD
@@ -223,7 +223,7 @@ ui = dashboardPage(skin="black",
                      conditionalPanel(
                        condition=" input.tabs=='selectAOI' && input.typeAOI == 'uploadAOI' && input.sourceAOI || input.tabs=='selectAOI' && input.typeAOI == 'catchAOI'",
                        br(),
-                       actionButton(inputId = "confAOI", label = div(style = "font-size:13px;background-color:gey;color: black",HTML(" Confirm AOI boundary (Analysis AOI)")), icon = icon(name = "check", lib = "font-awesome"), class = "btn-warning", style="width:250px")
+                       actionButton(inputId = "confAOI", label = div(style = "font-size:13px;background-color:gey;color: black",HTML(" Confirm AOI boundary (Analysis AOI)")), icon = icon(name = "fas fa-draw-polygon", lib = "font-awesome"), class = "btn-warning", style="width:250px")
                      ),
                      # tab upstream
                      conditionalPanel(
