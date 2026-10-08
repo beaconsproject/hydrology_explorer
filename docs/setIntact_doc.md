@@ -1,15 +1,27 @@
 ### Set intactness
 
-In this step, the user specifies the source for intactness value or spatial layer used to specify or calculate catchment intactness (0-1 or 0-100% intact). 
+This step defines how catchment intactness is measured. Intactness identifies areas without a visible human footprint (e.g., roads, mine sites) 
+and is used as a proxy for the ecological integrity of a catchment, ranging from 0 (fully disturbed) to 1 (100% undisturbed). Catchment intactness 
+is used to calculate the area-weighted intactness (AWI) of the upstream and downstream areas.
 
-**Select source for intactness** offers three options: 
+Start with **Select source of intactness**. Up to three options are available:
 
-1. **Use existing undisturbed layer** - If a Disturbance Explorer GeoPackage was uploaded in the previous step, it will include an undisturbed layer. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
-   
-2. **Value in catchment dataset** - If it exists, select the attribute in the catchment dataset that contains values for the proportion of the catchment undisturbed or intact. Values will range from 0 to 1, with 1 = 100% intact. 
+1. **Value in catchment dataset** - Select the attribute in the catchment dataset that contains the proportion of each catchment that is intact. Values must be numeric and range from 0 (fully disturbed) to 1 (100% undisturbed).
 
-   📌 Select this option when using the embedded Demo dataset. The intactness attribute is called "intact".
+ &#x1F4CC; Note: Select this option when using the demo dataset. The intactness attribute is called "intact".
 
-3. **Upload intactness layer** -  The intactness layer is a polygonal feature and can be uploaded via a GeoPackage or Shapefile. If a GeoPackage is used, the user must specify which layer contains the intactness data. The app will use this spatial layer to calculate the proportion of the catchment intact. Note: This value will be added to the catchment dataset contained in the Download GeoPackage.
+2. **Use existing undisturbed layer** - This option is only available if **Load Disturbance Explorer layers** was checked in **Set input parameters**. The app uses the undisturbed layer to calculate the proportion of each catchment that is intact.
 
-Press the **Confirm** button. If an intactness layer is provided, it will be displayed on the map.
+3. **Upload intactness layer** - Upload a polygon layer of intact (undisturbed) areas as a Shapefile or a GeoPackage. 
+   - **Shapefile**: browse to the shapefile and select all associated files (e.g., .shp, .shx, .dbf, .prj), then click "Open".
+   - **GeoPackage**: browse to the GeoPackage, click "Open", and select the intactness layer.
+
+   The app uses this layer to calculate the proportion of each catchment that is intact.
+
+&#x1F4CC; Note: When intactness is calculated from a spatial layer (options 2 and 3), the resulting values are added to the catchment dataset included in the downloaded GeoPackage.
+
+Click **Confirm** to apply the selection. If a spatial layer is used, it is displayed on the map as **Undisturbed**. The statistics table on the right is updated with the **Analysis area intactness**.
+
+<br>
+
+From here, proceed to **Add display elements (OPTIONAL)** or **Set feature to track (OPTIONAL)**, or move directly to **Select AOI** in the left-side panel.
