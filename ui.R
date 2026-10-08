@@ -137,8 +137,6 @@ ui = dashboardPage(skin="black",
                        
                      ),
                      
-                     
-                     
                      # UPLOAD - Intactness
                      conditionalPanel(
                        condition = "input.tabs== 'tabIntact'",
@@ -162,7 +160,7 @@ ui = dashboardPage(skin="black",
                      ),
                      conditionalPanel(
                        condition = "input.tabs=='addLayers' && input.extraupload == 'extrashp'",
-                       div(style = "margin-top: -10px;",fileInput(inputId = "display1",   label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#663300; margin-right:8px; border:1px solid #000;"></span>Select layer 1'),
+                       div(style = "margin-top: -10px;",fileInput(inputId = "display1",   label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#FF9933; margin-right:8px; border:1px solid #000;"></span>Select layer 1'),
                                                                   multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile")),
                        div(style = "margin-top: -30px;",fileInput(inputId = "display2", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#330066; margin-right:8px; border:1px solid #000;"></span>Select layer 2'),
                                                                   multiple = TRUE, accept = c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'), placeholder = "Select a ShapeFile")),
@@ -173,7 +171,7 @@ ui = dashboardPage(skin="black",
                        condition = "input.tabs=='addLayers' && input.extraupload == 'extragpkg'",
                        fileInput(inputId = "display4", label = HTML("<h5><b>OPTIONAL - </b>Upload a GeoPackage that contains layers to be displayed on the map.</h5>"),
                                  multiple = FALSE, accept = ".gpkg", placeholder = "Select a GeoPackage"),
-                       div(style = "margin-top: -10px;", selectInput("display4a", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#663300; margin-right:8px; border:1px solid #000;"></span>Select layer 1'), choices = NULL)),
+                       div(style = "margin-top: -10px;", selectInput("display4a", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#FF9933; margin-right:8px; border:1px solid #000;"></span>Select layer 1'), choices = NULL)),
                        div(style = "margin-top: -20px;", selectInput("display4b", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#330066; margin-right:8px; border:1px solid #000;"></span>Select layer 2'), choices = NULL)),
                        div(style = "margin-top: -20px;", selectInput("display4c", label = HTML('<span style="display:inline-block; width:15px; height:15px; background-color:#003333; margin-right:8px; border:1px solid #000;"></span>Select layer 3'), choices = NULL))
                      ),
