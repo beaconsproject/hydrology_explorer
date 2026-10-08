@@ -17,7 +17,7 @@ Add up to **three vector layers** to the map as visual references, e.g., salmon 
 - **Supported geometries:** points, lines and polygons. Rasters are not supported.
 - **Names:** the file name (Shapefile) or the layer name (GeoPackage, first 25 characters) is used as the display name. Short names are recommended.
 - **Colors** are fixed by position (see the color box next to each layer) and cannot be changed:
-  - Layer 1: brown
+  - Layer 1: orange
   - Layer 2: purple
   - Layer 3: dark teal
 - **Projection:** any CRS is accepted. Layers are reprojected for display.
