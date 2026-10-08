@@ -111,8 +111,7 @@ selectAOIServer  <- function(input, output, session, map, rv){
           st_transform(st_crs(rv$layers_rv$planreg_sf)) %>%
           st_union() %>%
           st_sf() %>%
-          st_make_valid() %>%
-          st_intersection(rv$layers_rv$planreg_sf)
+          st_make_valid() 
         
         # Check overlap between AOI and planreg_sf
         overlap <- suppressWarnings(st_intersects(aoi, rv$layers_rv$planreg_sf, sparse = FALSE))
