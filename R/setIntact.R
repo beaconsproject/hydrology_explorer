@@ -103,7 +103,10 @@ setIntactServer <- function(input, output, session, map, rv){
         i <- st_transform(i, st_crs(rv$layers_rv$planreg_sf))
       }
     }
-    i <- st_make_valid(i)
+    i <- i %>%
+      st_union() %>%
+      st_as_sf() %>%
+      st_make_valid()
     rv$layers_rv$intactness_sf <- i
     return(i)
   })
