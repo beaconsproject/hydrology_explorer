@@ -14,6 +14,9 @@ selectAOIServer  <- function(input, output, session, map, rv){
     }
   })
   
+  observeEvent(list(input$typeAOI, input$sourceAOI, input$shp_aoi, input$gpkg_aoi), {
+    shinyjs::enable("confAOI")
+  }, ignoreInit = TRUE)
   ################################################################################################
   ################################################################################################
   # Set AOI
@@ -76,8 +79,8 @@ selectAOIServer  <- function(input, output, session, map, rv){
             easyClose = TRUE,
             footer = modalButton("OK")
           ))
-          
-          rv$layers_rv$aoi <- NULL
+          shinyjs::disable("confAOI")
+          rv$layers_rv$aoi_sf <- NULL
           return(NULL)
         }
         
@@ -104,7 +107,15 @@ selectAOIServer  <- function(input, output, session, map, rv){
       } else if (input$sourceAOI == "gpkgAOI") {
         req(input$gpkg_aoi)
         req(input$aoiLayer != "Select AOI layer")
-        
+
+        if (is.null(rv$layers_rv$planreg_sf)) {
+          showModal(modalDialog(
+            title = "Study region is missing. Please select a study region and reload your AOI.",
+            easyClose = TRUE, footer = modalButton("OK")
+          ))
+          return(NULL)
+        }
+
         infile <- input$gpkg_aoi
         aoi <- read_gpkg_from_upload(infile$datapath, input$aoiLayer) %>%
           dplyr::select(any_of(c("geometry", "geom"))) %>%
@@ -123,8 +134,8 @@ selectAOIServer  <- function(input, output, session, map, rv){
             easyClose = TRUE,
             footer = modalButton("OK")
           ))
-          
-          rv$layers_rv$aoi <- NULL
+          shinyjs::disable("confAOI")
+          rv$layers_rv$aoi_sf <- NULL
           return(NULL)
         }
         
@@ -174,6 +185,7 @@ selectAOIServer  <- function(input, output, session, map, rv){
     aoi$AOI_ID <- paste0("AOI_", seq_len(nrow(aoi)))
     
     rv$layers_rv$aoi_sf <- aoi
+    shinyjs::enable("confAOI")
     return(aoi)
   })
   
@@ -209,7 +221,7 @@ selectAOIServer  <- function(input, output, session, map, rv){
           weighted_intact <- sum(as.numeric(st_area(analysis_aoi)) * (analysis_aoi[[intact_col]]), na.rm = TRUE)
           # Total area
           total_area <- sum(as.numeric(st_area(analysis_aoi)), na.rm = TRUE)
-          intactness <- weighted_intact / total_area * 100
+          intactness <- weighted_intact / total_area
           merged_sf <- st_union(analysis_aoi)
           
           # Assign intactness to merged feature
@@ -239,12 +251,13 @@ selectAOIServer  <- function(input, output, session, map, rv){
     } else { #input$typeAOI == "uploadAOI" && isFALSE(input$editAOI)
       if(input$intactSource=="intcatch"){
         merged_aoi <- rv$layers_rv$aoi_sf
+        
         intact_col <- input$intactColumnName
         aoi_catch_inter <- st_intersection(merged_aoi, rv$layers_rv$catchment_pr)
         aoi_catch_inter$area <- as.numeric(st_area(aoi_catch_inter))
-        weighted_intact_area <- sum(aoi_catch_inter$area * (aoi_catch_inter[[intact_col]] / 100), na.rm = TRUE)
+        weighted_intact_area <- sum(aoi_catch_inter$area * (aoi_catch_inter[[intact_col]]), na.rm = TRUE)
         total_aoi_area <- as.numeric(sf::st_area(merged_aoi))
-        intactness_value <- (weighted_intact_area / total_aoi_area) * 100
+        intactness_value <- (weighted_intact_area / total_aoi_area)
         merged_aoi$intact <- intactness_value
       }else { #intupload
         analysis_aoi <- rv$layers_rv$aoi_sf
@@ -252,7 +265,7 @@ selectAOIServer  <- function(input, output, session, map, rv){
         
         total_area <- as.numeric(st_area(analysis_aoi))
         intact_area <- as.numeric(sum(st_area(intact_intersection), na.rm = TRUE))
-        intactness <- (intact_area / total_area) * 100
+        intactness <- (intact_area / total_area)
         
         merged_aoi <- sf::st_sf(
           intact = intactness,
