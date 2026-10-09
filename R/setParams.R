@@ -247,6 +247,7 @@ setParamsServer <- function(input, output, session, map, rv){
   # Set catchments
   catchments <- reactive({
     req(input$selectsource)
+    req(input$previewLayers)
     req(isTRUE(preview_ready()))
 
     if(input$selectsource == "usedemo"){
@@ -488,9 +489,9 @@ setParamsServer <- function(input, output, session, map, rv){
     grps <- rv$grps
     group_names_new <- c()
     
-    sa_sf <- st_transform(rv$layers_rv$sa_sf, 4326)
-    stream_4326 <- st_transform(rv$layers_rv$streams_sf, 4326)
-    catch_4326 <- st_transform(rv$layers_rv$catchments, 4326)
+    sa_sf <- st_transform(sa_sf(), 4326)
+    stream_4326 <- st_transform(stream_sf(), 4326)
+    catch_4326 <- st_transform(catchments(), 4326)
     mda_4326 <- mda_data() %>% st_transform(4326)
     legend <- c("Study area", "Streams", "Catchments", "MDA")
     rv$overlayBase(legend)

@@ -8,7 +8,7 @@ Start with **Select source of intactness**. Up to three options are available:
 
 1. **Value in catchment dataset** - Select the attribute in the catchment dataset that contains the proportion of each catchment that is intact. Values must be numeric and range from 0 (fully disturbed) to 1 (100% undisturbed).
 
- &#x1F4CC; Note: Select this option when using the demo dataset. The intactness attribute is called "intact".
+ &#x1F4CC; Note: Select this option when using the demo dataset. The intactness attribute is called "intactKBA".
 
 2. **Use existing undisturbed layer** - This option is only available if **Load Disturbance Explorer layers** was checked in **Set input parameters**. The app uses the undisturbed layer to calculate the proportion of each catchment that is intact.
 
