@@ -39,9 +39,9 @@ dwdServer  <- function(input, output, session, map, rv){
       }
       
       catchment_updated <- catchment_updated[,c("CATCHNUM", "Area_land", "Area_water", "Area_total", "intact", "down", "stem", "up")]
-      sa_stats <- data.frame(area_km2 = rv$outtab1()[1,2],
-                              area_intact_km2  = rv$outtab1()[2,2],
-                              area_intact_per  = rv$outtab1()[2,3],
+      sa_stats <- data.frame(area_km2 = rv$outtab1()[2,2],
+                              area_intact_km2  = rv$outtab1()[3,2],
+                              area_intact_per  = rv$outtab1()[3,3],
                               Feature_km2 = rv$outfeaturetab()[1,2],
                               Feature_per = rv$outfeaturetab()[1,3]
                               )
@@ -53,14 +53,14 @@ dwdServer  <- function(input, output, session, map, rv){
       ))
       studyarea <- cbind(sa_sf, sa_stats)
       
-      aoi_stats <- data.frame(AOI_area = rv$outtab1()[3,2],
-                      AOI_intact  = rv$outtab1()[4,3],
-                      Upstream_area = rv$outtab1()[5,2],
-                      Upstream_mean_AWI= rv$outtab1()[8,3],
-                      Downstream_area = rv$outtab1()[7,2],
-                      Downstream_mean_AWI = rv$outtab1()[10,3],
-                      Downstream_stem_area = rv$outtab1()[6,2],
-                      Downstream_stem_mean_AWI = rv$outtab1()[9,3],
+      aoi_stats <- data.frame(AOI_area = rv$outtab1()[4,2],
+                      AOI_intact  = rv$outtab1()[5,3],
+                      Upstream_area = rv$outtab1()[6,2],
+                      Upstream_mean_AWI= rv$outtab1()[9,3],
+                      Downstream_area = rv$outtab1()[8,2],
+                      Downstream_mean_AWI = rv$outtab1()[11,3],
+                      Downstream_stem_area = rv$outtab1()[7,2],
+                      Downstream_stem_mean_AWI = rv$outtab1()[10,3],
                       Feat_aoi_km2 = rv$outfeaturetab()[2,2],
                       Feat_aoi_per = rv$outfeaturetab()[2,3],
                       Feat_within_upstream_area = rv$outfeaturetab()[4,2],
