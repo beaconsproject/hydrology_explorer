@@ -205,8 +205,8 @@ selectAOIServer  <- function(input, output, session, map, rv){
       if(nrow(analysis_aoi)>0){
         if(input$intactSource=="intcatch"){
           intact_col <- input$intactColumnName
-          # Weighted intact area = area * percentage (assuming % is 0-100)
-          weighted_intact <- sum(as.numeric(st_area(analysis_aoi)) * (analysis_aoi[[intact_col]] / 100), na.rm = TRUE)
+          
+          weighted_intact <- sum(as.numeric(st_area(analysis_aoi)) * (analysis_aoi[[intact_col]]), na.rm = TRUE)
           # Total area
           total_area <- sum(as.numeric(st_area(analysis_aoi)), na.rm = TRUE)
           intactness <- weighted_intact / total_area * 100
