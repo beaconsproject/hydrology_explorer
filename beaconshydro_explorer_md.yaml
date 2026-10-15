@@ -2,116 +2,146 @@ app_name: BEACONs Hydrology Explorer
 
 version: 1.0
 
-purpose: "Create a data package for a study area located within the Yukon and British Columbia."
+purpose: "R shiny application that identifies the areas upstream, along the downstream stem, and downstream of an area of interest (AOI), using BEACONs catchments as building blocks, and calculates their associated hydrologic metrics."
 
-other:   "Three sources of data are needed to use the app: bp_datasets.gpkg, project.gpkg, and species.gpkg. All layers are projected to the Yukon Albers equal area coordinate reference system (CRS; EPSG:3578)."
+other:   "The application calculates the area and area-weighted intactness (AWI) of the upstream, downstream stem, and downstream areas, 
+the Dendritic Connectivity Index (DCI) of the stream network within the AOI, and the area and percent of an optional tracked feature 
+(e.g., fires, mining claims) within each area. Catchment intactness can come from a catchment attribute, a Disturbance Explorer 
+undisturbed layer, or an uploaded intactness layer. Users can export summary statistics in CSV format, as well as a GeoPackage 
+containing the upstream and downstream areas and input layers for use in GIS software such as QGIS or ArcGIS. All layers must use 
+the same projected coordinate reference system (CRS)."
 
-access: "https://beaconsproject.shinyapps.io/geopackage_creator/"
+access: "https://beaconsproject.shinyapps.io/beaconshydro_explorer/"
 
 inputs:
+   # Study area only: catchments and streams are extracted from the BEACONs reference dataset
    studyarea:
-   
+
+   # Advanced: Upload custom datasets
+   analysis studyarea:
+
    catchments:
-    
+
    streams:
 
-optional:   
+optional:
    custom.gpkg:
-    - areal_disturbances
-    - disturbed
+    # Disturbance Explorer layers (loaded with "Load Disturbance Explorer layers")
+    - undisturbed            # or undisturbed_areas_500m
+    - disturbed              # or footprint_500m
     - fires
-    - linear_disturbances
-    - placer_claims
     - protected_areas
+    - placer_claims
     - quartz_claims
-    - undisturbed
+    - mining_claims
+    - intact_fl_2000
+    - intact_fl_2025
+
+   intactness_layer:
+
+   feature_to_track:
 
    display_element_vect_1:
-   
+
    display_element_vect_2:
-   
+
    display_element_vect_3:
-   
-   display_element_rast_1:
-   
-   display_element_rast_2:
 
 required_columns:
   catchments:
-    Area_land:
-      used_by:
-        - Hydro Explorer
-      format: character
-      allow_null: true
-      expected_values:
-      description: "The area of land inside the catchment"
-    Area_water:
-      used_by:
-        - Hydro Explorer
-      format: character
-      allow_null: true
-      expected_values:
-      description: "The area of water inside the catchment"
-    Area_total:
-      used_by:
-        - Hydro Explorer
-      format: character
-      allow_null: true
-      expected_values:
-      description: "The total area of the catchment"
     CATCHNUM:
       used_by:
         - Hydro Explorer
-      format: character
-      allow_null: true
+      format: integer
+      allow_null: false
       expected_values:
       description: "Catchment unique identifier"
+    SKELUID:
+      used_by:
+        - Hydro Explorer
+      format: integer
+      allow_null: false
+      expected_values:
+      description: "Stream identifier linking the catchment to the streams layer"
+    BASIN:
+      used_by:
+        - Hydro Explorer
+      format: integer
+      allow_null: true
+      expected_values:
+      description: "Basin ID of the catchment"
     ORDER1:
       used_by:
         - Hydro Explorer
       format: character
       allow_null: true
       expected_values:
-      description: "Order 1 stream attributes"
+      description: "Order 1 stream attributes, used to identify upstream and downstream catchments"
     ORDER2:
       used_by:
         - Hydro Explorer
       format: character
       allow_null: true
       expected_values:
-      description: "Order 2 stream attributes"
+      description: "Order 2 stream attributes, used to identify upstream and downstream catchments"
     ORDER3:
       used_by:
         - Hydro Explorer
       format: character
       allow_null: true
       expected_values:
-      description: "Order 3 stream attributes"
-    BASIN:
+      description: "Order 3 stream attributes, used to identify upstream and downstream catchments"
+    Area_total:
       used_by:
         - Hydro Explorer
-      format: character
+      format: numeric
       allow_null: true
       expected_values:
-      description: "Basin ID of the catchment"
-    SKELUID:
+      description: "Total area of the catchment (m2)"
+    Area_land:
       used_by:
         - Hydro Explorer
-      format: character
+      format: numeric
       allow_null: true
       expected_values:
-      description: "Stream ID associated to the catchment"
+      description: "Area of land inside the catchment (m2)"
+    Area_water:
+      used_by:
+        - Hydro Explorer
+      format: numeric
+      allow_null: true
+      expected_values:
+      description: "Area of water inside the catchment (m2)"
   streams:
     SKELUID:
       used_by:
         - Hydro Explorer
-      format: character
-      allow_null: true
+      format: integer
+      allow_null: false
       expected_values:
-      description: "Stream unique identifier"
- 
+      description: "Stream unique identifier; must match SKELUID in the catchments layer"
+
+optional_columns:
+  catchments:
+    intactness attribute (any name):
+      used_by:
+        - Hydro Explorer
+      format: numeric
+      allow_null: false
+      expected_values: "0 (fully disturbed) to 1 (100% undisturbed)"
+      description: "Proportion of the catchment that is undisturbed. Selected by the user in Set intactness. Not required if intactness is calculated from an undisturbed or intactness layer."
+
 outputs:
   - Hydro_explorer_output-YYYY-mm-dd.gpkg:
+    - studyarea
+    - aoi
+    - catchments
+    - streams
+    - upstream
+    - downstream_stem
+    - downstream
+    - intactness             # if provided
+    - feature to track       # if provided; named after the uploaded layer
   - Hydrology_explorer_stats-YYYY-mm-dd.csv
-next_apps:
 
+next_apps:
