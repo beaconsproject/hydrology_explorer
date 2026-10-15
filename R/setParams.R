@@ -308,6 +308,7 @@ setParamsServer <- function(input, output, session, map, rv){
   upstream_extent <- reactive({
     req(catchments())
     req(stream_sf())
+    req(input$selectsource == "usedata")
     req(input$upload_sa == "sa")
     
     if (!is.null(input$upload_sashp) || !is.null(input$sa_layer)){
@@ -401,7 +402,7 @@ setParamsServer <- function(input, output, session, map, rv){
     if (!is.null(undist_layer)) {
       la <-st_read(gpkg_path, undist_layer, quiet = TRUE) %>% 
         st_transform(st_crs(planreg_sf())) %>%  
-        st_intersection(st_make_valid(planreg_sf())) #%>%
+        st_intersection(st_geometry(st_make_valid(planreg_sf()))) #%>%
       rv$layers_rv$undisturbed <- la
     }
     dist_layer <- if ("disturbed" %in% lyr_names()) {
@@ -444,7 +445,7 @@ setParamsServer <- function(input, output, session, map, rv){
         st_transform(st_crs(planreg_sf())) %>%  
         st_intersection(st_make_valid(planreg_sf())) #%>%
         #dplyr::select(all_of(names(st_read(gpkg_path, "protected_areas", quiet = TRUE)))) 
-      rv$layers_rv$pa2021 <- la
+      rv$layers_rv$pas <- la
     }
     if ("placer_claims" %in% lyr_names()) {
       la <-st_read(gpkg_path, 'placer_claims', quiet = TRUE) %>% 
@@ -559,10 +560,10 @@ setParamsServer <- function(input, output, session, map, rv){
       leafletProxy("map") %>% addPolygons(data=ifl2025, fill=T, stroke=F, fillColor='#000066', fillOpacity=0.5, group="Intact FL 2025", options = leafletOptions(pane = "ground")) 
       group_names_new <- c(group_names_new, "Intact FL 2025")
     }
-    pa2021 <- isolate(rv$layers_rv$pa2021)
-    if(!is.null(pa2021)){
-      pa2021 <- st_transform(pa2021, 4326)
-      leafletProxy("map") %>% addPolygons(data=pa2021, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
+    pas <- isolate(rv$layers_rv$pas)
+    if(!is.null(pas)){
+      pas <- st_transform(pas, 4326)
+      leafletProxy("map") %>% addPolygons(data=pas, fill=T, stroke=F, fillColor='#699999', fillOpacity=1,  group="Protected areas", options = leafletOptions(pane = "ground")) 
       group_names_new <- c(group_names_new, "Protected areas")
     }
     placers <- isolate(rv$layers_rv$placers)
@@ -641,7 +642,7 @@ setParamsServer <- function(input, output, session, map, rv){
       planreg <- rv$layers_rv$sa_sf
       rv$layers_rv$planreg_sf <- planreg
     }
-    
+  
     planreg_sf <- planreg %>% st_transform(4326)
     stream_4326 <- st_transform(rv$layers_rv$streams_sf, 4326)
     catch_4326 <- st_transform(rv$layers_rv$catchments, 4326)
