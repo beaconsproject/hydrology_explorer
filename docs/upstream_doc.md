@@ -2,8 +2,6 @@
 
 This step identifies the areas upstream and downstream of the Analysis AOI and calculates their associated intactness and hydrology statistics.
 
-### Step 1. Generate upstream and downstream areas
-
 Click **View upstream and downstream areas** in the left-side panel. Depending on the size of the study area, this may take several minutes. When done, the following areas are added to the map:
 
 - **Upstream area**: catchments draining into the Analysis AOI.
@@ -15,9 +13,6 @@ be turned on and off using the legend in the top-right corner. The **Downstream 
 
 &#x1F4CC; Note:  Upstream and downstream areas are not computed beyond the extent of the catchments layer.
 
-<br>
-
-### Step 2. Review the statistics
 
 The tables on the right are updated with the following statistics:
 
@@ -38,7 +33,7 @@ to 1 (connected) (Cote et al. 2009):
 All statistics are combined in the **Summary statistics** tab, located across the top, and can be downloaded as a CSV file using
 **Download summary statistics table (.csv)**.
 
-<br>
+&nbsp;
 
 From here, proceed to **Download results** in the left-side panel.
 

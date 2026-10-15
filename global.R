@@ -25,15 +25,15 @@ isMappable <- function(x) {
 }
 
 # Define the last update date (git last commit)
-app_version_date <- system("git log -1 --format=%ci", intern = TRUE)
-date_only <- substr(app_version_date, 1, 10)
+# Define the last update date (git last commit)
+app_version_date <- as.Date(readLines("app_version.txt"))
 
 # Read the Markdown file
 overview_md <- readLines("docs/overview.md")
 
 # Replace placeholder in the Markdown
 overview_md <- c(
-  paste0('<div style="text-align: right; font-size:0.9em; color: gray;">Last update: ', date_only, '</div>'),
+  paste0('<div style="text-align: right; font-size:0.9em; color: gray;">Last update: ', app_version_date, '</div>'),
   overview_md
 )
 

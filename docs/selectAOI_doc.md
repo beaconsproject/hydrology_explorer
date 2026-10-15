@@ -1,10 +1,3 @@
-. **Select a set of catchments on the map** - This option allows users to idenity an AOI by selecting catchments on the map. The AOI may be comprised of non-neighbouring catchments such as geographically dispersed salmon spawning sites or mine sites. All selected catchments are combined to form a new area of interest (AOI) for analysis.
-
-Note: The upstream and downstream area will not be computed beyond the extent of the provided catchments layer. 
-
-The statistics table will update with additional statistics, including Dendritic Connectivity Index (DCI) for the AOI. DCI is a measure of longitudinal connectivity within the AOI, ranging from 0 (low connectivity) to 1 (high connectivity) (Cote et al. 2009).
-
-
 ## Select AOI
 
 This step defines the area of interest (AOI), such as a conservation area or a mine site, for which upstream and downstream areas will be 
@@ -36,7 +29,7 @@ in black. When an uploaded AOI is not edited, both are the same.
 The statistics table on the right is updated with the area and intactness of the **Analysis AOI**. If a feature to track was set, the 
 **Feature statistics** table is updated with the feature area **Within Analysis AOI**.
 
-<br>
+&nbsp;
 
 From here, proceed to **Generate upstream and downstream** in the left-side panel.
 
