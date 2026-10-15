@@ -271,7 +271,7 @@ ui = dashboardPage(skin="black",
                                           tabPanel(HTML("<b>Mapview</b>"),
                                                  leafletOutput("map", height = 750) %>% withSpinner()
                                           ),
-                                          tabPanel("User Guide",
+                                          tabPanel("Guidance",
                                                    div(
                                                      style = "height: 700px; overflow-y: auto; padding-right: 10px;",
                                                      # Dynamically update the content of Guidance based on selected tab

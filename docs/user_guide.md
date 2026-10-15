@@ -38,11 +38,11 @@ spatial layers required to run the app. If selected, study area, streams, and ca
       - **Upload individual layers as shapefiles**: browse to each shapefile and select all associated files.
       - **Provide a CSV containing file paths to the layers**: the CSV must have the following structure:
 
-        Layer,Path <br>
-        studyarea,C:/data/study_area.shp <br>
-        streams,C:/data/streams.shp <br>
-        catchments,C:/data/catchments.shp <br>
-        analysis studyarea,C:/data/analysis_area.shp
+        <pre>Layer,Path
+        studyarea,C:/data/study_area.shp
+        streams,C:/data/streams.shp
+        catchments,C:/data/catchments.shp
+        analysis studyarea,C:/data/analysis_area.shp</pre>
 
       - **Upload a GeoPackage containing all layers**: browse to the GeoPackage, click "Open", and select the layers that correspond to Study area, Catchments, Streams, and Analysis area.
 
@@ -175,14 +175,17 @@ and downstream areas.
 - **Feature statistics** (if a feature to track was set): area (km²) and percent of the feature within the Analysis AOI, the upstream, downstream 
 stem, and overall downstream areas.
 - **Dendritic Connectivity Index (DCI)**: longitudinal connectivity of the stream network within the Analysis AOI, ranging from 0 (fragmented) 
-to 1 (connected) (Cote et al. 2009):
+to 1 (connected) (Cote et al. 2009).
 
-| DCI | Rating |
-|---|---|
-| ≥ 0.9 | Very High |
-| 0.8 - 0.9 | High |
-| 0.7 - 0.8 | Moderate |
-| < 0.7 | Low |
+<style>.dci-table td, .dci-table th { padding: 2px 10px !important; line-height: 1.1; }</style>
+
+<table class="table table-bordered dci-table" style="width:auto; margin: 0 auto;">
+  <tr><th>DCI</th><th>Rating</th></tr>
+  <tr><td>&ge; 0.9</td><td>Very High</td></tr>
+  <tr><td>0.8 - 0.9</td><td>High</td></tr>
+  <tr><td>0.7 - 0.8</td><td>Moderate</td></tr>
+  <tr><td>&lt; 0.7</td><td>Low</td></tr>
+</table>
 
 All statistics are combined in the **Summary statistics** tab, located across the top, and can be downloaded as a CSV file using
 **Download summary statistics table (.csv)**.

@@ -20,20 +20,23 @@ The tables on the right are updated with the following statistics:
 and downstream areas.
 - **Feature statistics** (if a feature to track was set): area (km²) and percent of the feature within the Analysis AOI, the upstream, downstream 
 stem, and overall downstream areas.
-- **Dendritic Connectivity Index (DCI)**: longitudinal connectivity of the stream network within the Analysis AOI, ranging from 0 (fragmented) 
-to 1 (connected) (Cote et al. 2009):
+- **Dendritic Connectivity Index (DCI)**: longitudinal connectivity of the stream network within the Analysis AOI, ranging from 0 (fragmented) to 1 (connected) (Cote et al. 2009).
+   
+<style>.dci-table td, .dci-table th { padding: 2px 10px !important; line-height: 1.1; }</style>
 
-| DCI | Rating |
-|---|---|
-| ≥ 0.9 | Very High |
-| 0.8 - 0.9 | High |
-| 0.7 - 0.8 | Moderate |
-| < 0.7 | Low |
+<table class="table table-bordered dci-table" style="width:auto; margin: 0 auto;">
+  <tr><th>DCI</th><th>Rating</th></tr>
+  <tr><td>&ge; 0.9</td><td>Very High</td></tr>
+  <tr><td>0.8 - 0.9</td><td>High</td></tr>
+  <tr><td>0.7 - 0.8</td><td>Moderate</td></tr>
+  <tr><td>&lt; 0.7</td><td>Low</td></tr>
+</table>
+
+
+&nbsp;
 
 All statistics are combined in the **Summary statistics** tab, located across the top, and can be downloaded as a CSV file using
 **Download summary statistics table (.csv)**.
-
-&nbsp;
 
 From here, proceed to **Download results** in the left-side panel.
 

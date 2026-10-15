@@ -25,11 +25,11 @@ spatial layers required to run the app. If selected, study area, streams, and ca
       - **Upload individual layers as shapefiles**: browse to each shapefile and select all associated files.
       - **Provide a CSV containing file paths to the layers**: the CSV must have the following structure:
 
-        Layer,Path <br>
-        studyarea,C:/data/study_area.shp <br>
-        streams,C:/data/streams.shp <br>
-        catchments,C:/data/catchments.shp <br>
-        analysis studyarea,C:/data/analysis_area.shp
+        <pre>Layer,Path
+        studyarea,C:/data/study_area.shp
+        streams,C:/data/streams.shp
+        catchments,C:/data/catchments.shp
+        analysis studyarea,C:/data/analysis_area.shp</pre>
 
       - **Upload a GeoPackage containing all layers**: browse to the GeoPackage, click "Open", and select the layers that correspond to Study area, Catchments, Streams, and Analysis area.
 
