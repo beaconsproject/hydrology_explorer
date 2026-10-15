@@ -78,12 +78,12 @@ ui = dashboardPage(skin="black",
                        ),
                        # using SHP
                        conditionalPanel(
-                         condition = "input.upload_sa == 'sa' && input.upload_satype == 'sa_shp'",
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa' && input.upload_satype == 'sa_shp'",
                          div(style = "margin-top: -10px;", fileInput("upload_sashp", "Upload study area shapefile", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
                        ),
                        # using GPKG
                        conditionalPanel(
-                         condition = "input.upload_sa == 'sa' && input.upload_satype == 'sa_gpkg'",
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa' && input.upload_satype == 'sa_gpkg'",
                          div(style = "margin-top: -20px;", fileInput("sa_gpkg", "Upload source dataset (.gpkg)", accept = ".gpkg")),
                          div(style = "margin-top: -30px;", selectInput("sa_layer", "Select study area layer", choices = NULL,  multiple = FALSE)),
                          uiOutput("include_layers_ui")
@@ -91,7 +91,7 @@ ui = dashboardPage(skin="black",
                        
                        #ADVANCED UPLOAD
                        conditionalPanel(
-                         condition = "input.upload_sa == 'sa_advanced'",
+                         condition = "input.selectsource == 'usedata' && input.upload_sa == 'sa_advanced'",
                          radioButtons("upload_type", "How would you like to provide your custom data?",
                                       choices = c("Upload individual layers as shapefiles (study area, catchments, streams)" = "layers",
                                                   "Provide a CSV containing file paths to the layers" = "csv_file",
@@ -99,7 +99,7 @@ ui = dashboardPage(skin="black",
                        ),
                        # ADVANCED - SHP
                        conditionalPanel(
-                         condition = "input.upload_type == 'layers' && input.upload_sa == 'sa_advanced'",
+                         condition = "input.selectsource == 'usedata' && input.upload_type == 'layers' && input.upload_sa == 'sa_advanced'",
                          tagList(
                            div(style = "margin-top: -10px;", fileInput("advanced_sa", "Study area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
                            div(style = "margin-top: -30px;", fileInput("advanced_streams", "Streams dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
