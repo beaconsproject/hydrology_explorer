@@ -75,15 +75,24 @@ dwdServer  <- function(input, output, session, map, rv){
       ))
       aoi <- cbind(analysis_aoi, aoi_stats)
       
-      st_write(rv$layers_rv$streams_sf, dsn=file, layer='streams', append=TRUE)
+      st_write(rv$layers_rv$streams_sf, dsn=file, layer='streams', append=FALSE)
       st_write(studyarea, dsn=file, layer='studyarea', append=TRUE)
-      st_write(aoi, dsn=file, layer='aoi', append=TRUE) 
-      st_write(catchment_updated, dsn=file, layer='catchments', append=TRUE)
-      if (!is.null(rv$layers_rv$trackFeat)) st_write(rv$layers_rv$trackFeat, dsn=file, layer=input$featLayer, append=TRUE)
-      if (!is.null(rv$layers_rv$undisturbed)) st_write(rv$layers_rv$undisturbed, dsn=file, layer='intactness', append=TRUE)
-      if (!is.null(rv$layers_rv$catch_up)) st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_total", "intact", "up")], dsn=file, layer='upstream', append=TRUE)
-      if (!is.null(rv$layers_rv$catch_down)) st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_total", "intact", "down")], dsn=file, layer='downstream', append=TRUE)
-      if (!is.null(rv$layers_rv$catch_stem)) st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_total", "intact", "stem")], dsn=file, layer='downstream_stem', append=TRUE)
+      st_write(aoi, dsn=file, layer='aoi', append=FALSE) 
+      st_write(catchment_updated, dsn=file, layer='catchments', append=FALSE)
+      
+      if (!is.null(rv$layers_rv$trackFeat)) st_write(rv$layers_rv$trackFeat, dsn=file, layer=input$featLayer, append=FALSE)
+      if (!is.null(rv$layers_rv$undisturbed)) st_write(rv$layers_rv$undisturbed, dsn=file, layer='undisturbed', append=FALSE)
+      if (!is.null(rv$layers_rv$catch_up)) st_write(rv$layers_rv$catch_up[,c("CATCHNUM", "Area_total", "intact", "up")], dsn=file, layer='upstream', append=FALSE)
+      if (!is.null(rv$layers_rv$catch_down)) st_write(rv$layers_rv$catch_down[,c("CATCHNUM", "Area_total", "intact", "down")], dsn=file, layer='downstream', append=FALSE)
+      if (!is.null(rv$layers_rv$catch_stem)) st_write(rv$layers_rv$catch_stem[,c("CATCHNUM", "Area_total", "intact", "stem")], dsn=file, layer='downstream_stem', append=FALSE)
+
+      if (!is.null(rv$layers_rv$fires)) st_write(rv$layers_rv$fires, dsn=file, layer="fires", append=TRUE)
+      if (!is.null(rv$layers_rv$ifl2000)) st_write(rv$layers_rv$ifl2000, dsn=file, layer="intact_fl_2000", append=FALSE)
+      if (!is.null(rv$layers_rv$ifl2025)) st_write(rv$layers_rv$ifl2025, dsn=file, layer="intact_fl_2025", append=FALSE)
+      if (!is.null(rv$layers_rv$pas)) st_write(rv$layers_rv$pas, dsn=file, layer="protected_areas", append=FALSE)
+      if (!is.null(rv$layers_rv$placers)) st_write(rv$layers_rv$placers, dsn=file, layer="placer_claims", append=FALSE)
+      if (!is.null(rv$layers_rv$quartz)) st_write(rv$layers_rv$quartz, dsn=file, layer="quartz_claims", append=FALSE)
+      if (!is.null(rv$layers_rv$mines)) st_write(rv$layers_rv$mines, dsn=file, layer="mining_claims", append=FALSE)
     }
   )
   
