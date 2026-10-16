@@ -103,8 +103,7 @@ ui = dashboardPage(skin="black",
                          tagList(
                            div(style = "margin-top: -10px;", fileInput("advanced_sa", "Study area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
                            div(style = "margin-top: -30px;", fileInput("advanced_streams", "Streams dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
-                           div(style = "margin-top: -30px;", fileInput("advanced_catch", "Catchments dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg'))),
-                           div(style = "margin-top: -30px;", fileInput("advanced_planreg", "Analysis area", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
+                           div(style = "margin-top: -30px;", fileInput("advanced_catch", "Catchments dataset", multiple = TRUE, accept=c('.shp','.dbf','.sbn','.sbx','.shx','.prj','.cpg')))
                          )
                        ),
                        
@@ -123,8 +122,7 @@ ui = dashboardPage(skin="black",
                          condition = "output.gpkgReady == true && input.selectsource == 'usedata' && input.upload_type == 'gpkg'",
                          div(style = "margin-top: -10px;", selectInput("advanced_salyr", "Study area", choices = NULL,  multiple = FALSE)),
                          div(style = "margin-top: -20px;", selectInput("advanced_catchlyr", "Catchments", choices = NULL, multiple = FALSE)),
-                         div(style = "margin-top: -20px;", selectInput("advanced_streamslyr", "Streams", choices = NULL,  multiple = FALSE)),
-                         div(style = "margin-top: -20px;", selectInput("advanced_planreglyr", "Analysis area", choices = NULL,  multiple = FALSE))
+                         div(style = "margin-top: -20px;", selectInput("advanced_streamslyr", "Streams", choices = NULL,  multiple = FALSE))
                        ),
                        
                        #CONFRIM UPLOAD

@@ -21,21 +21,21 @@ spatial layers required to run the app. If selected, study area, streams, and ca
       **Disturbance Explorer**, check **Load Disturbance Explorer layers** to also load layers such as undisturbed areas, fires, protected areas, 
       and mining claims.
 
-   ii) **Advanced: Upload custom datasets** - Provide your own study area, catchments,  and streams, and !!analysis area!! in one of three ways:
+   ii) **Advanced: Upload custom datasets** - Provide your own study area, catchments,  and streams in one of three ways:
       - **Upload individual layers as shapefiles**: browse to each shapefile and select all associated files.
       - **Provide a CSV containing file paths to the layers**: the CSV must have the following structure:
 
         <pre>Layer,Path
         studyarea,C:/data/study_area.shp
         streams,C:/data/streams.shp
-        catchments,C:/data/catchments.shp
-        analysis studyarea,C:/data/analysis_area.shp</pre>
+        catchments,C:/data/catchments.shp</pre>
 
       - **Upload a GeoPackage containing all layers**: browse to the GeoPackage, click "Open", and select the layers that correspond to Study area, Catchments, Streams, and Analysis area.
 
-&#x1F4CC; **Note:** All layers must use the same projected coordinate reference system (CRS), and the catchments and streams must capture the
-full extent of the study area. Refer to the **Dataset Requirements** tab (in the **Welcome** section from the main menu) for detailed 
-specifications on required attributes and formatting.
+&#x1F4CC; **Note:** All layers must use the same projected coordinate reference system (CRS), and the catchments and streams must capture 
+the full extent of the study area. When Advanced: Upload custom datasets is selected, the uploaded Study area automatically becomes the 
+analysis area used for processing. The Analysis area cannot be changed using the options described in Step 2. Refer to the **Dataset 
+Requirements** tab (in the **Welcome** section from the main menu) for detailed specifications on required attributes and formatting.
 
 Press the **Preview study area** button to load the three spatial layers into the map. Once loaded, the layers will appear on a map and 
 can be turned on and off using the legend in the top-right corner, and the statistics tables on the right will start to populate. 

@@ -21,7 +21,7 @@ setParamsServer <- function(input, output, session, map, rv){
  
   ################################################################################################
   # Required layers
-  required_layers <- c("catchments", "streams", "studyarea", "analysis studyarea")
+  required_layers <- c("catchments", "streams", "studyarea")
   
   ####################################################################################################
   # RENDER UI
@@ -117,7 +117,6 @@ setParamsServer <- function(input, output, session, map, rv){
     updateSelectInput(session = getDefaultReactiveDomain(), "advanced_salyr", choices = layers, selected= if ("studyarea" %in% layers) "studyarea" else layers[1])
     updateSelectInput(session = getDefaultReactiveDomain(), "advanced_catchlyr", choices = layers, selected= if ("catchments" %in% layers) "catchments" else layers[1])
     updateSelectInput(session = getDefaultReactiveDomain(), "advanced_streamslyr", choices = layers, selected= if ("streams" %in% layers) "streams" else layers[1])
-    updateSelectInput(session = getDefaultReactiveDomain(), "advanced_planreglyr", choices = layers, selected= if ("analysis_studyarea" %in% layers) "analysis_studyarea" else layers[1])
   })
   
   ################################################################################################
@@ -161,12 +160,12 @@ setParamsServer <- function(input, output, session, map, rv){
     # Provided by user
     }else if (!is.null(input$csv_paths)) {
       req(validate_csv())
-      i <- read_shp_from_csv(input$csv_paths, "analysis studyarea")
-    }else if (!is.null(input$advanced_planreg)) {
-      i <- read_shp_from_upload(input$advanced_planreg)  %>% st_zm(drop = TRUE, what = "ZM")
-    }else if (!is.null(input$advanced_gpkg) && !is.null(input$advanced_planreglyr)){
-      req(input$advanced_planreglyr != "")
-      i <- st_read(input$advanced_gpkg$datapath, input$advanced_planreglyr, quiet = TRUE)  %>% st_zm(drop = TRUE, what = "ZM")
+      i <- sa_sf()
+    }else if (!is.null(input$advanced_sa)) {
+      i <- sa_sf()
+    }else if (!is.null(input$advanced_gpkg) && !is.null(input$advanced_salyr)){
+      req(input$advanced_salyr != "")
+      i <- sa_sf()
     }else if(input$upload_sa == "sa"){
       if(isTRUE(input$upsa_included == "sa_up")){
         i <- st_union(rv$layers_rv$sa_sf, rv$upstream_extent())
@@ -196,8 +195,8 @@ setParamsServer <- function(input, output, session, map, rv){
     } else if (!is.null(input$csv_paths)) {
       req(validate_csv())
       stream <- read_shp_from_csv(input$csv_paths, "streams")
-    } else if (!is.null(input$upload_stream)) {
-      stream <- read_shp_from_upload(input$upload_stream)
+    } else if (!is.null(input$advanced_streams)) {
+      stream <- read_shp_from_upload(input$advanced_streams)
     }else if (!is.null(input$upload_sashp)){
       req(sa_sf())
       req(rv$layers_rv$catchments)
@@ -229,11 +228,11 @@ setParamsServer <- function(input, output, session, map, rv){
       stream <- bind_cols(stream, coords_df)
     }
     req(stream)
-    required_col <- check_colnames(stream, c("SKELUID"))
-    if(!is.na(required_col)){
+    missing_col <- check_colnames(stream, c("SKELUID"))
+    if(length(missing_col)>0){
       showModal(modalDialog(
         title = "Missing required column",
-        paste0("In the stream layers, column ", required_col, " is missing."),
+        paste0("In the stream layers, column ", missing_col, " is missing."),
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
@@ -286,11 +285,11 @@ setParamsServer <- function(input, output, session, map, rv){
       i <- NULL
     }
 
-    required_col <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
-    if(!is.na(required_col)){
+  missing_cols <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
+    if(length(missing_cols) > 0){
       showModal(modalDialog(
         title = "Missing required column",
-        paste0("In the catchments layers, column(s) ", required_col, " is/are missing."),
+        paste0("In the catchments layer, the following required column(s) are missing: ", paste(missing_cols, collapse = ", "), "."),
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
@@ -489,7 +488,7 @@ setParamsServer <- function(input, output, session, map, rv){
     
     grps <- rv$grps
     group_names_new <- c()
-    
+  
     sa_sf <- st_transform(sa_sf(), 4326)
     stream_4326 <- st_transform(stream_sf(), 4326)
     catch_4326 <- st_transform(catchments(), 4326)
