@@ -239,7 +239,7 @@ getAggregationUpstreamCatchments_R <- function(catchment_tab, agg_catchments){
   return(outVals)
 }
 
-get_upstream_catchments <- function(cons_sf, cons_id, catchments_sf){
+get_upstream_catchments <- function(conservation_areas_sf, conservation_areas_id, catchments_sf){
   
   if(!all(c("ORDER1", "ORDER2", "ORDER3", "BASIN", "CATCHNUM") %in% colnames(catchments_sf))){
     stop("catchments_sf must have attributes: ORDER1, ORDER2, ORDER3, BASIN, CATCHNUM")
@@ -248,7 +248,7 @@ get_upstream_catchments <- function(cons_sf, cons_id, catchments_sf){
   catchments_sf <- make_catchnum_integer(catchments_sf)
   
   # get list of catchnums in each PA
-  cons_catchnums_tab <- catchnums_in_polygon(cons_sf, cons_id, catchments_sf)
+  cons_catchnums_tab <- catchnums_in_polygon(conservation_areas_sf, conservation_areas_id, catchments_sf)
   
   
   up_agg_list <- list()
@@ -328,7 +328,7 @@ getAggregationDownstreamCatchments_R <- function(catchment_tab, agg_catchments){
   return(outVals)
 }
 
-get_downstream_catchments <- function(cons_sf, cons_id, catchments_sf){
+get_downstream_catchments <- function(conservation_areas_sf, conservation_areas_id, catchments_sf){
   
   if(!all(c("ORDER1", "ORDER2", "ORDER3", "BASIN", "CATCHNUM") %in% colnames(catchments_sf))){
     stop("catchments_sf must have attributes: ORDER1, ORDER2, ORDER3, BASIN, CATCHNUM")
@@ -337,7 +337,7 @@ get_downstream_catchments <- function(cons_sf, cons_id, catchments_sf){
   catchments_sf <- make_catchnum_integer(catchments_sf)
   
   # get list of catchnums in each PA
-  cons_catchnums_tab <- catchnums_in_polygon(cons_sf, cons_id, catchments_sf)
+  cons_catchnums_tab <- catchnums_in_polygon(conservation_areas_sf, conservation_areas_id, catchments_sf)
   
   down_agg_list <- list()
   for(col_id in colnames(cons_catchnums_tab)){
@@ -370,33 +370,33 @@ sep_network_names <- function(network_names){
   return(out_val)
 }
 
-catchnums_in_polygon <- function(cons_sf, cons_id, catchments_sf){
-  if(cons_id == "CATCHNUM"){
-    cons_id <- "CONS_ID"
-    names(cons_sf)[names(cons_sf) == "CATCHNUM"] <- "CONS_ID"
+catchnums_in_polygon <- function(conservation_areas_sf, conservation_areas_id, catchments_sf){
+  if(conservation_areas_id == "CATCHNUM"){
+    conservation_areas_id <- "CONS_ID"
+    names(conservation_areas_sf)[names(conservation_areas_sf) == "CATCHNUM"] <- "CONS_ID"
   }
   
   sf::st_agr(catchments_sf) = "constant"
   
   catch_within <- catchments_sf %>%
     sf::st_point_on_surface() %>% # get catchment centroids.
-    sf::st_within(cons_sf) %>% # test within for all centroids in all PAs, returns a row for each match. row.id is a catchnum index, col.id is a PA index.
+    sf::st_within(conservation_areas_sf) %>% # test within for all centroids in all PAs, returns a row for each match. row.id is a catchnum index, col.id is a PA index.
     as.data.frame()
   
   catchments_sf$key <- 1:nrow(catchments_sf) # add a key column to sf table. Must be an index to match st_within output
   sf_catch_key <- sf::st_drop_geometry(catchments_sf[c("key","CATCHNUM")])
-  cons_sf$key <- 1:nrow(cons_sf) # add key to cons_sf
-  cons_key <- sf::st_drop_geometry(cons_sf[c("key",cons_id)])
+  conservation_areas_sf$key <- 1:nrow(conservation_areas_sf) # add key to conservation_areas_sf
+  cons_key <- sf::st_drop_geometry(conservation_areas_sf[c("key",conservation_areas_id)])
   
   # convert indexes from st_within to catchnums using the keys to join
   tbl_long <- catch_within %>%
     dplyr::left_join(sf_catch_key, by = c("row.id" = "key")) %>%
     dplyr::left_join(cons_key, by = c("col.id" = "key")) %>%
-    dplyr::select(CATCHNUM, .data[[cons_id]]) %>%
-    dplyr::arrange(.data[[cons_id]])
+    dplyr::select(CATCHNUM, .data[[conservation_areas_id]]) %>%
+    dplyr::arrange(.data[[conservation_areas_id]])
   
   # convert long table to wide table with missing values as NA
-  out_tab <- long_to_wide(tbl_long, cons_id, "CATCHNUM")
+  out_tab <- long_to_wide(tbl_long, conservation_areas_id, "CATCHNUM")
   return(out_tab)
 }
 
@@ -534,15 +534,15 @@ make_catchnum_integer <- function(catchments_sf){
   return(catchments_sf)
 }
 
-get_catch_list <- function(cons_ids, input_table){
+get_catch_list <- function(conservation_areas_id, input_table){
   
   # check nets are in input_table
-  if(!all(cons_ids %in% colnames(input_table))){
-    stop(paste0("names do not appear as colnames in the input table: ", cons_ids[!cons_ids %in% colnames(input_table)]))
+  if(!all(conservation_areas_id %in% colnames(input_table))){
+    stop(paste0("names do not appear as colnames in the input table: ", conservation_areas_id[!conservation_areas_id %in% colnames(input_table)]))
   }
   
   # get unique catchments vector from input_table using vector of colnames
-  net_catchments <- unique(unlist(lapply(cons_ids, function(x){
+  net_catchments <- unique(unlist(lapply(conservation_areas_id, function(x){
     input_table[[x]]
   })))
   
@@ -610,38 +610,69 @@ list_to_wide <- function(values_list){
   return(out_tab)
 }
 
-calc_dci <- function(CAs_sf, stream_sf, CAs_id = "network", buffer_width = 0.1){
+calc_dci <- function(conservation_areas_sf, stream_sf, conservation_areas_id = "network", buffer_width = 0.1, progress = NULL){
   
-  stopifnot(sf::st_crs(CAs_sf) == sf::st_crs(stream_sf))
+  report <- function(value, detail) {
+    if (!is.null(progress)) {
+      progress(value, detail)
+    }
+  }
+  
+  stopifnot(sf::st_crs(conservation_areas_sf) == sf::st_crs(stream_sf))
   
   # set stream and conservation area attributes to be constant throughout each polygon to avoid warnings in st_intersection
   sf::st_agr(stream_sf) = "constant"
-  sf::st_agr(CAs_sf) = "constant"
+  sf::st_agr(conservation_areas_sf) = "constant"
   
-  # clip streams to full area of all conservation areas
-  reserve_dci <- CAs_sf %>%
-    sf::st_intersection(stream_sf, sf::st_union()) %>% # get streams just for the required region
-    dplyr::filter(BASIN != -1) %>% # remove isolated stream segments
-    sf::st_buffer(dist = buffer_width, endCapStyle = "ROUND") %>% # buffer to make sure streams are connected
-    dplyr::summarise(geometry = sf::st_union(geometry)) %>% # merge into single feature
-    sf::st_intersection(CAs_sf) %>% # intersect with reserves to get buffered stream for each reserve
-    dplyr::select(dplyr::all_of(CAs_id)) %>%
-    sf::st_cast("MULTIPOLYGON", warn = FALSE) %>% # this is needed to avoid geometries being lost in the POLYGON cast
-    sf::st_cast("POLYGON", warn = FALSE) %>% # explode into individual stream segments
-    dplyr::mutate(stream_length = as.numeric(sf::st_area(geometry)) / buffer_width) %>% # divide area by buffer to get length of each stream segment
-    sf::st_drop_geometry() %>% # drop the geometry for speed
-    dplyr::group_by(!!sym(CAs_id)) %>% # for each network...
-    dplyr::summarise(L = sum(stream_length), dci = sum((stream_length*stream_length) / (L*L)))  # calculate L2 then use to calculate dci
+  report(0.05, "Clipping streams to conservation areas")
+  
+  conservation_area_union <- sf::st_union(sf::st_geometry(conservation_areas_sf))
+  
+  stream_candidates <- stream_sf |>
+    dplyr::filter(BASIN != -1) |>
+    sf::st_filter(conservation_area_union)
+  
+  stream_prepped <- sf::st_intersection(
+    stream_candidates,
+    conservation_area_union
+  )
+  
+  report(0.25, "Buffering stream sections")
+  buffered_streams <- stream_prepped |>
+    sf::st_buffer(dist = buffer_width, endCapStyle = "ROUND")
+  
+  report(0.50, "Merging connected stream sections")
+  merged_streams <- sf::st_sf(
+    geometry = sf::st_union(sf::st_geometry(buffered_streams))
+  )
+  
+  report(0.70, "Calculating components within each conservation area")
+  reserve_dci <- sf::st_intersection(merged_streams, conservation_areas_sf) |>
+    dplyr::select(dplyr::all_of(conservation_areas_id)) |>
+    sf::st_cast("MULTIPOLYGON", warn = FALSE) |>
+    sf::st_cast("POLYGON", warn = FALSE) |>
+    dplyr::mutate(
+      stream_length = as.numeric(sf::st_area(geometry)) / buffer_width
+    ) |>
+    sf::st_drop_geometry() |>
+    dplyr::group_by(!!sym(conservation_areas_id)) |>
+    dplyr::summarise(
+      dci = sum(stream_length^2) / sum(stream_length)^2,
+      .groups = "drop"
+    )
   
   # reserves that do not intersect the stream network get dropped during st_intersection.
   # join dci back to original reserves and set missing reserves to have dci of 0
-  dci <- dplyr::left_join(sf::st_drop_geometry(CAs_sf), reserve_dci, by = CAs_id) %>%
-    tidyr::replace_na(list(dci=0)) %>%
+  report(0.90, "Joining DCI values to conservation areas")
+  dci <- dplyr::left_join(sf::st_drop_geometry(conservation_areas_sf), reserve_dci, by = conservation_areas_id) %>%
+    dplyr::mutate(dci = tidyr::replace_na(dci, 0)) %>%
     dplyr::pull(dci) %>%
     round(3)
   
+  report(1, "Complete")
   return(dci)
 }
+
 
 # This should be written in RCPP
 ks_stat <- function(refVal, netVal) {
@@ -745,19 +776,31 @@ bc_plot <- function(refVal, netVal, plotTitle="", labels=data.frame()) {
 #' NA values are always removed. For categorical rasters, values can optionally be subset for the calculation and graphs using 
 #' \code{categorical_class_values}.
 #'
-#' @param reserves_sf sf object with unique id column named \code{network}
+#' @param conservation_areas_sf sf object of the features (e.g. conservation areas or networks) to evaluate.
+#' @param reserves_id String matching the unique identifier column in \code{conservation_areas_sf}.
 #' @param reference_sf sf object of the reference area to compare against.
-#' @param raster_layer Raster object that will be clipped to the reference and reserve areas, with crs matching reserves_sf
-#' @param raster_type 'categorical' will use Bray-Curtis, 'continuous' will use KS-statistic.
-#' @param categorical_class_values Vector of raster values in \code{raster_layer} of type 'categorical' to include in the calculation. 
-#' Allows unwanted values to be dropped. Defaults to include all non-NA values.
-#' @param plot_out_dir Path to folder in which to save plots. Default is not to create plots. 
-#' Only creates plots if valid file path is provided. Dir will be created if it doesn't exist.
-#' @param categorical_class_labels Optional data.frame object with columns \code{values} and \code{labels} indicating the label to use in Bray-Curtis graphs
-#' for each raster value. Defaults to using the raster values. Labels can be provided for all or a subset of values. See examples.
+#' @param raster_layer Single-layer terra SpatRaster that will be clipped to the reference and reserve areas, with crs matching
+#' \code{conservation_areas_sf} and \code{reference_sf}.
+#' @param raster_type 'continuous' (default) will use the KS-statistic, 'categorical' will use Bray-Curtis.
+#' @param categorical_class_values Vector of raster values in \code{raster_layer} to include in the calculation. Required when
+#' \code{raster_type = 'categorical'}; values not listed are ignored. Not used for continuous rasters.
+#' @param plot_out_dir Path to folder in which to save plots. Default (\code{NULL}) is not to create plots.
+#' The folder will be created if it doesn't exist.
+#' @param categorical_class_labels Optional data.frame whose first column holds raster values and second column the label to use
+#' in Bray-Curtis graphs for each value. Defaults to using the raster values. Labels can be provided for all or a subset of values.
+#' @param progress Optional callback function for reporting progress. The function
+#'   should accept two arguments: `value`, a numeric value between 0 and 1
+#'   indicating the progress, and `detail`, a character string describing the
+#'   current processing step. Defaults to `NULL`.
+#' @param reference_sample_n Continuous rasters only: maximum number of cells randomly sampled in the reference area.
+#' Defaults to 1,000,000.
+#' @param reserve_sample_n Continuous rasters only: maximum number of cells randomly sampled in each reserve.
+#' Defaults to 500,000.
+#' @param seed Random seed set before sampling, so continuous results are reproducible. Defaults to 20260903.
 #'
-#' @return A vector of dissimilarity values matching the order of the input \code{reserves_sf}. Optionally a dissimilarity plot saved in the 
-#' \code{plot_out_dir} for each computed value.
+#' @return A numeric vector of dissimilarity values, named by \code{reserves_id} and matching the order of \code{conservation_areas_sf}.
+#' Reserves with no valid raster values get \code{NA}. Optionally a dissimilarity plot saved in \code{plot_out_dir} for each
+#' computed value.
 #'
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
@@ -770,129 +813,255 @@ bc_plot <- function(refVal, netVal, plotTitle="", labels=data.frame()) {
 #'   builder_table_sample, 
 #'   "network",
 #'   dissolve_list = c("PB_0001", "PB_0002", "PB_0003"))
-#' calc_dissimilarity(reserves, ref_poly, led_sample, 'categorical')
-#' calc_dissimilarity(reserves, ref_poly, led_sample, 'categorical', c(1,2,3,4,5))
-#' calc_dissimilarity(reserves, ref_poly, led_sample, 'categorical', c(1,2,3,4,5), 
+#' calc_dissimilarity(reserves, "network", ref_poly, led_sample, 'categorical')
+#' calc_dissimilarity(reserves, , ref_poly, led_sample, 'categorical', c(1,2,3,4,5))
+#' calc_dissimilarity(reserves, "network", ref_poly, led_sample, 'categorical', c(1,2,3,4,5), 
 #'   "C:/temp/plots", data.frame(values=c(1,2,3,4,5), labels=c("one","two","three","four","five")))
 #' calc_dissimilarity(reserves, ref_poly, led_sample, 'continuous', plot_out_dir="C:/temp/plots")
-calc_dissimilarity <- function(reserves_sf, reference_sf, raster_layer, raster_type, categorical_class_values=c(), plot_out_dir=NULL, categorical_class_labels=data.frame()){
+calc_dissimilarity <- function(
+    conservation_areas_sf,
+    reserves_id,
+    reference_sf,
+    raster_layer,
+    raster_type = c("continuous", "categorical"),
+    categorical_class_values = NULL,
+    plot_out_dir = NULL,
+    categorical_class_labels = data.frame(),
+    progress = NULL,
+    reference_sample_n = 1000000L,
+    reserve_sample_n = 500000L,
+    seed = 20260903
+) {
+  raster_type <- match.arg(raster_type)
   
-  # geometries should match
-  stopifnot(sf::st_crs(reserves_sf) == sf::st_crs(reference_sf))
-  stopifnot(sf::st_crs(reserves_sf) == sf::st_crs(raster_layer))
-  
-  # set up output vector
-  result_vector <- c()
-  
-  # check raster_layer is valid
-  if(!raster_type %in% c('categorical', 'continuous')){
-    stop("raster_layer must be on of: 'categorical', 'continuous'")
-  }
-  
-  # check for network column
-  check_network(reserves_sf)
-  
-  # check geometry column is present in sf objects
-  check_for_geometry(reference_sf)
-  check_for_geometry(reserves_sf)
-  
-  # should plots be made? Attempt to create directory if it doesn't already exist
-  if(!is.null(plot_out_dir)){
-    make_plots <- TRUE
-    dir.create(plot_out_dir, recursive = TRUE, showWarnings = FALSE)
-  } else{
-    make_plots <- FALSE
-  }
-  
-  # get the reference area and make sure it is a single geometry
-  ref_sf <- reference_sf %>%
-    dplyr::summarise(geometry = sf::st_union(.data$geometry))
-  
-  # extract values in ref area
-  ref_ext <- exactextractr::exact_extract(raster_layer, reference_sf, progress = FALSE)[[1]]
-  
-  # filter by class_vals if provided, remove NAs, only keep cells with majority in reference_sf
-  if(raster_type == 'categorical' & length(categorical_class_values) > 0){
-    reference_vals <- ref_ext %>%
-      dplyr::filter(!is.na(.data$value)) %>%
-      dplyr::filter(.data$value %in% categorical_class_values) %>%
-      dplyr::filter(.data$coverage_fraction > 0.5) %>% # only keep values from cells with at least half their area in the polygon
-      dplyr::pull(.data$value)
-  } else{
-    reference_vals <- ref_ext %>%
-      dplyr::filter(!is.na(.data$value)) %>%
-      dplyr::filter(.data$coverage_fraction > 0.5) %>%
-      dplyr::pull(.data$value)
-  }
-  
-  # split networks into blocks of 10 for processing
-  net_list <- as.character(reserves_sf$network)
-  net_list_grouped <- split(net_list, ceiling(seq_along(net_list)/10))
-  
-  # run in blocks of 10 - seems optimal for maintaining a fast extract
-  counter <- 1
-  for(net_list_g in net_list_grouped){
-    
-    message(paste0("processing ", counter*10-9, " of ", length(net_list)))
-    counter <- counter + 1
-    
-    reserves_sf_g <- reserves_sf[reserves_sf$network %in% net_list_g,] # subset dissolved networks by the block of networks
-    x <- exactextractr::exact_extract(raster_layer, reserves_sf_g, progress = FALSE) # extract
-    
-    names(x) <- net_list_g # name the list elements by their associated netname
-    
-    for(net in net_list_g){
-      
-      # for each network in the block, extract the values...
-      if(raster_type == 'categorical' & length(categorical_class_values) > 0){
-        target_vals <- x[[net]] %>%
-          dplyr::filter(!is.na(.data$value)) %>%
-          dplyr::filter(.data$value %in% categorical_class_values) %>%
-          dplyr::filter(.data$coverage_fraction > 0.5) %>% # only keep values from cells with at least half their area in the polygon
-          dplyr::pull(.data$value)
-      } else{
-        target_vals <- x[[net]] %>%
-          dplyr::filter(!is.na(.data$value)) %>%
-          dplyr::filter(.data$coverage_fraction > 0.5) %>%
-          dplyr::pull(.data$value)
-      }
-      
-      # run dissimilarity
-      if(raster_type == "categorical"){
-        result <- bc_stat(reference_vals, target_vals)
-      } else{
-        result <- ks_stat(reference_vals, target_vals)
-      }
-      
-      # add result t return vector
-      result_vector <- c(result_vector, result)
-      
-      # generate plot if requested
-      if(make_plots){
-        plot_out_path <- file.path(plot_out_dir, paste0(net, ".png"))
-        
-        if(raster_type == 'categorical'){
-          plt <- bc_plot(reference_vals, target_vals, plotTitle = paste0(net, " (BC=", result, ")"), labels=categorical_class_labels)
-        } else{
-          plt <- ks_plot(reference_vals, target_vals, plotTitle = paste0(net, " (KS=", result, ")"))
-        }
-        ggplot2::ggsave(plt, file=plot_out_path)
-      }
+  report <- function(value, detail) {
+    if (!is.null(progress)) {
+      progress(value, detail)
     }
   }
-  return(result_vector)
-}
-
-check_network <- function(reserves_sf){
   
-  if(!"network" %in% names(reserves_sf)){
-    stop("Object must contain column: network")
+  # --------------------------------------------------
+  # Validate inputs
+  # --------------------------------------------------
+  reserves_vect <- terra::vect(conservation_areas_sf)
+  reference_vect <- terra::vect(reference_sf)
+  
+  if (!terra::same.crs(reserves_vect, raster_layer)) {
+    stop("conservation_areas_sf and raster_layer do not have the same CRS.")
   }
   
-  # make sure it's a character
-  if(!is.character(reserves_sf$network)){
-    reserves_sf$network <- as.character(reserves_sf$network)
+  if (!terra::same.crs(reference_vect, raster_layer)) {
+    stop("reference_sf and raster_layer do not have the same CRS.")
   }
   
-  return(reserves_sf)
+  if (terra::nlyr(raster_layer) != 1L) {
+    stop("raster_layer must have exactly one layer.")
+  }
+  
+  if (raster_type == "categorical" &&
+      (is.null(categorical_class_values) ||
+       length(categorical_class_values) == 0L)) {
+    stop(
+      "For categorical rasters, provide categorical_class_values."
+    )
+  }
+  
+  if (!reserves_id %in% names(conservation_areas_sf)) {
+    stop("reserves_id is not a column in conservation_areas_sf.")
+  }
+  
+  # --------------------------------------------------
+  # Plot setup
+  # --------------------------------------------------
+  make_plots <- !is.null(plot_out_dir)
+  
+  if (make_plots) {
+    dir.create(plot_out_dir, recursive = TRUE, showWarnings = FALSE)
+  }
+  
+  # --------------------------------------------------
+  # Helpers
+  # --------------------------------------------------
+  
+  # For continuous rasters: retain a bounded sample, never every cell.
+  sample_values_in_polygon <- function(r, v, n) {
+    r_crop <- terra::crop(r, terra::ext(v), snap = "out")
+    r_mask <- terra::mask(r_crop, v, touches = FALSE)
+    
+    vals <- terra::spatSample(r_mask, size = n, method = "random", na.rm = TRUE, as.df = TRUE, warn = FALSE)[[1]]
+    vals[!is.na(vals)]
+  }
+  
+  # For categorical rasters: retain only one count per class.
+  class_counts_in_polygon <- function(r, v, classes) {
+    r_crop <- terra::crop(r, terra::ext(v), snap = "out")
+    r_mask <- terra::mask(r_crop, v, touches = FALSE)
+    
+    tab <- terra::freq(r_mask, bylayer = FALSE)
+    counts <- setNames(numeric(length(classes)), as.character(classes))
+    
+    if (!is.null(tab) && nrow(tab) > 0L) {
+      keep <- tab$value %in% classes
+      
+      if (any(keep)) {
+        counts[as.character(tab$value[keep])] <- tab$count[keep]
+      }
+    }
+    counts
+  }
+  
+  # Bray-Curtis dissimilarity of class proportions.
+  # Normalizing is important: otherwise larger reserves look more
+  # dissimilar merely because they contain more raster cells.
+  bray_curtis_from_counts <- function(reference_counts, target_counts) {
+    if (sum(reference_counts) == 0 || sum(target_counts) == 0) {
+      return(NA_real_)
+    }
+    
+    reference_prop <- reference_counts / sum(reference_counts)
+    target_prop <- target_counts / sum(target_counts)
+    
+    sum(abs(reference_prop - target_prop)) / 2
+  }
+  
+  categorical_composition_plot <- function(
+    reference_counts,
+    target_counts,
+    title,
+    labels = data.frame()
+  ) {
+    reference_prop <- reference_counts / sum(reference_counts)
+    target_prop <- target_counts / sum(target_counts)
+    
+    class_names <- names(reference_counts)
+    display_names <- class_names
+    
+    # If labels has at least two columns, treat first as class value
+    # and second as display label.
+    if (is.data.frame(labels) && ncol(labels) >= 2L) {
+      label_index <- match(class_names, as.character(labels[[1]]))
+      has_label <- !is.na(label_index)
+      
+      display_names[has_label] <- as.character(
+        labels[[2]][label_index[has_label]]
+      )
+    }
+    
+    plot_data <- data.frame(
+      class = rep(display_names, 2L),
+      proportion = c(reference_prop, target_prop),
+      area = rep(
+        c("Reference", "Reserve"),
+        each = length(display_names)
+      )
+    )
+    
+    ggplot2::ggplot(plot_data, ggplot2::aes(x = class, y = proportion, fill = area)) +
+      ggplot2::geom_col(position = "dodge") +
+      ggplot2::labs(title = title, x = NULL, y = "Class proportion",  fill = NULL) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+  }
+  
+  # --------------------------------------------------
+  # Reference representation, calculated once
+  # --------------------------------------------------
+  report(0.10, "Preparing reference distribution")
+  
+  if (raster_type == "continuous") {
+    set.seed(seed)
+    
+    message("Sampling reference values...")
+    report(0.20, "Sampling reference values")
+    
+    reference_vals <- sample_values_in_polygon(raster_layer, reference_vect, n = reference_sample_n)
+    
+    if (length(reference_vals) == 0L) {
+      stop("No non-missing raster values were found in the reference area.")
+    }
+    
+  } else {
+    message("Counting reference classes...")
+    report(0.20, "Counting reference classes")
+    
+    reference_counts <- class_counts_in_polygon(raster_layer, reference_vect, classes = categorical_class_values)
+    
+    if (sum(reference_counts) == 0L) {
+      stop("No values matching categorical_class_values were found in the reference area.")
+    }
+  }
+  
+  # --------------------------------------------------
+  # Main reserve loop
+  # --------------------------------------------------
+  reserve_ids <- as.character(conservation_areas_sf[[reserves_id]])
+  
+  result_vector <- numeric(length(reserve_ids))
+  names(result_vector) <- reserve_ids
+  
+  n_reserves <- length(reserve_ids)
+  
+  if (n_reserves == 0L) {
+    return(result_vector)
+  }
+  
+  for (i in seq_along(reserve_ids)) {
+    id <- reserve_ids[i]
+    
+    message(sprintf("[%d/%d] %s", i, n_reserves, id))
+    
+    report(0.25 + 0.70 * (i - 1) / n_reserves, sprintf("Calculating %d of %d: %s", i, n_reserves, id))
+    
+    reserve_poly <- reserves_vect[
+      reserves_vect[[reserves_id]] == id,
+    ]
+    
+    if (raster_type == "continuous") {
+      target_vals <- try(
+        sample_values_in_polygon(raster_layer, reserve_poly, n = reserve_sample_n),
+        silent = TRUE
+      )
+      
+      if (inherits(target_vals, "try-error") ||
+          length(target_vals) == 0L) {
+        result_vector[i] <- NA_real_
+        next
+      }
+      
+      metric <- ks_stat(reference_vals, target_vals)
+      
+      if (make_plots) {
+        outfile <- file.path(plot_out_dir, paste0(id, ".png"))
+        
+        plt <- ks_plot(reference_vals, target_vals, plotTitle = paste0(id, " (KS=", round(metric, 3), ")"))
+        ggplot2::ggsave(outfile, plt, width = 7, height = 5)
+      }
+      
+    } else {
+      target_counts <- try(
+        class_counts_in_polygon(raster_layer, reserve_poly, classes = categorical_class_values),
+        silent = TRUE
+      )
+      
+      if (inherits(target_counts, "try-error") ||
+          sum(target_counts) == 0L) {
+        result_vector[i] <- NA_real_
+        next
+      }
+      
+      metric <- bray_curtis_from_counts(reference_counts, target_counts)
+      
+      if (make_plots) {
+        outfile <- file.path(plot_out_dir, paste0(id, ".png"))
+        
+        plt <- categorical_composition_plot(reference_counts, target_counts, title = paste0(id," (Bray-Curtis=", round(metric, 3),")"), labels = categorical_class_labels)
+        ggplot2::ggsave(outfile, plt, width = 7, height = 5)
+      }
+    }
+    
+    result_vector[i] <- metric
+    gc(verbose = FALSE)
+  }
+  report(1, "Dissimilarity calculation complete")
+  result_vector
 }
