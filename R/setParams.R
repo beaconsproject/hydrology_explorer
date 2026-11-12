@@ -228,8 +228,8 @@ setParamsServer <- function(input, output, session, map, rv){
       stream <- bind_cols(stream, coords_df)
     }
     req(stream)
-    missing_col <- check_colnames(stream, c("SKELUID"))
-    if(length(missing_col)>0){
+    missing_cols <- check_colnames(stream, c("SKELUID"))
+    if(length(missing_cols)>0){
       showModal(modalDialog(
         title = "Missing required column",
         paste0("In the stream layers, column ", missing_col, " is missing."),
@@ -238,13 +238,13 @@ setParamsServer <- function(input, output, session, map, rv){
       ))
       return(FALSE)
     }
-    req(is.na(required_col))
-    
+
     rv$layers_rv$streams_sf <- stream
     return(stream)
   })
   # Set catchments
   catchments <- reactive({
+    
     req(input$selectsource)
     req(input$previewLayers)
     req(isTRUE(preview_ready()))
@@ -285,7 +285,7 @@ setParamsServer <- function(input, output, session, map, rv){
       i <- NULL
     }
 
-  missing_cols <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
+    missing_cols <- check_colnames(i, c("Area_land", "Area_water","Area_total", "CATCHNUM", "ORDER1", "ORDER2", "ORDER3", "BASIN", "SKELUID"))
     if(length(missing_cols) > 0){
       showModal(modalDialog(
         title = "Missing required column",
@@ -295,7 +295,6 @@ setParamsServer <- function(input, output, session, map, rv){
       ))
       return(FALSE)
     }
-    req(is.na(required_col))
     geom_idx <- which(names(i) == attr(i, "sf_column"))
     names(i)[geom_idx] <- "geometry"
     st_geometry(i) <- "geometry"
