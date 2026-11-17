@@ -11,7 +11,17 @@ library(readr)
 library(purrr)
 
 
+# Use the installed package, or local R_tools_public folder when developing
+tools_dev <- Sys.getenv("BEACONS_TOOLS_DEV")   # e.g. "E:/MelinaStuff/BEACONs/git/R_tools_public"
+if (nzchar(tools_dev)) {
+  devtools::load_all(tools_dev, quiet = TRUE)
+} else {
+  library(beaconsRtools)
+}
+
+# Source module
 for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f)
+
 
 MB <- 1024^2
 
